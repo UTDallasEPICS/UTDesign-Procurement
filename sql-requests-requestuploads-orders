@@ -1,19 +1,5 @@
 
-
-create table orders(
- admin INT,
- orderID INT AUTO_INCREMENT PRIMARY KEY,
- requestID INT NOT NULL,
- dateOrdered DATE, 
- orderNumber VARCHAR(250),
- orderDetails VARCHAR(500),
- trackingInfo VARCHAR(500),
- shippingCost DECIMAL(7,2)
- 
- );
- 
- 
- create table requests(
+ CREATE table requests(
  requestID INT AUTO_INCREMENT PRIMARY KEY,
  projectID INT NOT NULL,
  studentID INT,
@@ -29,4 +15,22 @@ create table orders(
  
  );
  
+ CREATE table requestUploads (
+ uploadID INT AUTO_INCREMENT PRIMARY KEY,
+ attachmentPath VARCHAR(60),
+ attachmentName VARCHAR(100)
+ 
+ );
+ 
+ CREATE table orders(
+ admin INT,
+ orderID INT AUTO_INCREMENT PRIMARY KEY,
+ requestID INT NOT NULL,
+ dateOrdered DATE, 
+ orderNumber VARCHAR(250),
+ orderDetails VARCHAR(500),
+ trackingInfo VARCHAR(500),
+ shippingCost DECIMAL(7,2)
+ 
+ );
  
