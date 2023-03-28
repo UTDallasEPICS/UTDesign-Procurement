@@ -193,6 +193,7 @@ enum Status {
   UNDER_REVIEW
   APPROVED
   REJECTED
+  CANCELLED
 }
 
 model Process {
