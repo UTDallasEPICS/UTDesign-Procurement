@@ -1,8 +1,8 @@
 # UTDesign-Procurement
 
 ## Requires knowledge of 
-### -Prisma for Database table configuration 
-### -React/Next.js 
+ -Prisma for Database table configuration 
+-React/Next.js 
 
 ## Helpfull videos
 ### Prisma
