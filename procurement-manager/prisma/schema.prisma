@@ -11,16 +11,16 @@ datasource db {
 }
 
 model User {
-  userID           Int              @id @default(autoincrement())
-  netID            String // parsed from email in our API
+  userID           Int              @id @unique @default(autoincrement())
+  netID            String           @unique // parsed from email in our API 
   firstName        String
   lastName         String
-  email            String
+  email            String           @unique
   active           Boolean
   responsibilities String?
   deactivationDate DateTime?
   // RELATIONSHIPS HERE ::
-  role             Role             @relation(fields: [roleID], references: [roleID])
+  role             Role             @relation(fields: [roleID], references: [roleID]) //unique?
   roleID           Int
   Request          Request[]
   mentorProcess    Process[]        @relation("Mentor")
@@ -34,7 +34,7 @@ model User {
 
 model Role {
   roleID         Int              @id @default(autoincrement())
-  role           String
+  role           String           @unique
   User           User[]
   PreviousRecord PreviousRecord[]
 }
@@ -42,7 +42,7 @@ model Role {
 model Project {
   projectID         Int                 @id @default(autoincrement())
   projectType       String
-  projectNum        Int
+  projectNum        Int                 @unique
   projectTitle      String
   startingBudget    Decimal
   sponsorCompany    String
@@ -193,6 +193,9 @@ enum Status {
   UNDER_REVIEW
   APPROVED
   REJECTED
+  ORDERED
+  DELIVERED
+  CANCELLED
 }
 
 model Process {
@@ -215,7 +218,7 @@ model Process {
 
 model Department {
   departmentID      Int                 @id @default(autoincrement())
-  department        String
+  department        String              @unique
   DepartmentUser    DepartmentUser[]
   ProjectDepartment ProjectDepartment[]
 }
@@ -242,7 +245,7 @@ model DepartmentUser {
 
 model WorksOn {
   user      User    @relation(fields: [userID], references: [userID])
-  userID    Int
+  userID    Int     @unique
   project   Project @relation(fields: [projectID], references: [projectID])
   projectID Int
 
@@ -251,7 +254,7 @@ model WorksOn {
 
 model ProjectDepartment {
   department   Department @relation(fields: [departmentID], references: [departmentID])
-  departmentID Int
+  departmentID Int        @unique
   project      Project    @relation(fields: [projectID], references: [projectID])
   projectID    Int
 
