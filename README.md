@@ -2,6 +2,7 @@
 
 ## Requires knowledge of 
  -Prisma for Database table configuration 
+ 
 -React/Next.js 
 
 ## Helpfull videos
