@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Student Orders Page</title>
+	<style>
+		body {
+			position: relative;
+			width: 1728px;
+			height: 1117px;
+			background: #FFFFFF;
+		}
+	</style>
+</head>
+<body>
+	<head>
+	<title>Rectangle 13</title>
+	<style>
+		.rectangle-13 {
+			position: absolute;
+			width: 1738px;
+			height: 91px;
+			left: 0px;
+			top: 0px;
+			background: #E87500;
+		}
+		.utd-procurement {
+			position: absolute;
+			width: 1037px;
+			height: 75px;
+			left: 21px;
+			top: 8px;
+			font-family: 'Inter';
+			font-style: normal;
+			font-weight: 700;
+			font-size: 48px;
+			line-height: 58px;
+			color: #FFFFFF;
+			text-align: center;
+			margin: 0 auto;
+		}
+		.log-out {
+			position: absolute;
+			width: 125px;
+			height: 36px;
+			left: 1603px;
+			top: 23px;
+			font-family: 'Inter';
+			font-style: normal;
+			font-weight: 700;
+			font-size: 28px;
+			line-height: 34px;
+			text-decoration-line: underline;
+			color: #FFFFFF;
+			cursor: pointer;
+		}
+	</style>
+</head>
+<body>
+	<div class="rectangle-13">
+		<div class="utd-procurement">UTD Procurement Manager</div>
+		<div class="log-out">Log Out</div>
+	</div>
+
+</body>
+</body>
+</html>
