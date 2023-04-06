@@ -38,8 +38,8 @@
         color: #FFFFFF;
       }
     
-    .budget{
-    position: absolute;
+.budget{
+position: absolute;
 width: 353px;
 height: 43px;
 left: 537px;
@@ -129,8 +129,8 @@ background: #FFFFFF;
 border: 1.5px solid #000000;
 box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25), 0px 4px 4px rgba(0, 0, 0, 0.25);
 }
-    .expense-justification{
-    position: absolute;
+.expense-justification{
+position: absolute;
 width: 472px;
 height: 36px;
 left: -5px;
@@ -145,21 +145,19 @@ text-align: center;
 
 color: #000000;
     }
-    .expense-field{
-    box-sizing: border-box;
-
+.expense-field{
+box-sizing: border-box;
 position: absolute;
 width: 1609px;
 height: 64px;
 left: 23px;
 top: 351px;
-
 background: #FFFFFF;
 border: 1.5px solid #000000;
 box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
     }
-    .additional-info{
-    position: absolute;
+.additional-info{
+position: absolute;
 width: 604px;
 height: 72px;
 left: -67px;
@@ -204,15 +202,14 @@ text-align: center;
 
 color: #000000;
 }
-    .itemdescription-field{
-    box-sizing: border-box;
-
+    
+.itemdescription-field{
+box-sizing: border-box;
 position: absolute;
 width: 1609px;
 height: 64px;
 left: 23px;
 top: 582px;
-
 background: #FFFFFF;
 border: 1.5px solid #000000;
 box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
@@ -233,11 +230,10 @@ line-height: 48px;
 text-align: center;
 
 color: #000000;
-}
+    }
     .itemlink-field{
     box-sizing: border-box;
-
-position: absolute;
+    position: absolute;
 width: 1609px;
 height: 64px;
 left: 23px;
@@ -247,35 +243,229 @@ background: #FFFFFF;
 border: 1.5px solid #000000;
 box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
     }
+
+.part-num{
+position: absolute;
+width: 469px;
+height: 65px;
+left: -89px;
+top: 756px;
+font-family: 'Inter';
+font-style: normal;
+font-weight: 600;
+font-size: 40px;
+line-height: 48px;
+text-align: center;
+color: #000000;
+
+}
+.partnum-field{
+box-sizing: border-box;
+position: absolute;
+width: 846px;
+height: 64px;
+left: 23px;
+top: 801px;
+background: #FFFFFF;
+border: 1.5px solid #000000;
+box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+}
+
+.quantity{
+position: absolute;
+width: 469px;
+height: 65px;
+left: 828px;
+top: 756px;
+
+font-family: 'Inter';
+font-style: normal;
+font-weight: 600;
+font-size: 40px;
+line-height: 48px;
+text-align: center;
+
+color: #000000;
+
+}
+
+.quantity-field{
+box-sizing: border-box;
+position: absolute;
+width: 643px;
+height: 64px;
+left: 975px;
+top: 801px;
+background: #FFFFFF;
+border: 1.5px solid #000000;
+box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+}
+
+.unit-cost{
+  position: absolute;
+width: 337px;
+height: 72px;
+left: -55px;
+top: 864px;
+
+font-family: 'Inter';
+font-style: normal;
+font-weight: 600;
+font-size: 40px;
+line-height: 48px;
+text-align: center;
+
+color: #000000;
+
+}
+.unitcost-field{
+box-sizing: border-box;
+position: absolute;
+width: 846px;
+height: 64px;
+left: 23px;
+top: 910px;
+background: #FFFFFF;
+border: 1.5px solid #000000;
+box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+  }
+
+.total-cost{
+position: absolute;
+width: 469px;
+height: 65px;
+left: 839px;
+top: 870px;
+font-family: 'Inter';
+font-style: normal;
+font-weight: 600;
+font-size: 40px;
+line-height: 48px;
+text-align: center;
+color: #000000;
+}
+
+.totalcost-field{
+box-sizing: border-box;
+position: absolute;
+width: 643px;
+height: 64px;
+left: 975px;
+top: 915px;
+background: #FFFFFF;
+border: 1.5px solid #000000;
+box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+}
+
+.supporting-docs{
+position: absolute;
+width: 681px;
+height: 78px;
+left: -93px;
+top: 985px;
+font-family: 'Inter';
+font-style: normal;
+font-weight: 600;
+font-size: 40px;
+line-height: 48px;
+text-align: center;
+color: #000000;
+
+
+    }
+
+.add-item{
+position: absolute;
+width: 498px;
+height: 44px;
+left: 631px;
+top: 1044px;
+font-family: 'Inter';
+font-style: normal;
+font-weight: 500;
+font-size: 38px;
+line-height: 46px;
+text-align: center;
+text-decoration-line: underline;
+color: #000000;
+
+}
+
+.submit-box{
+position: absolute;
+width: 237px;
+height: 73px;
+left: 1463px;
+top: 1029px;
+background: #154734;
+}
+.submit-text{
+position: absolute;
+width: 168px;
+height: 58px;
+left: 1498px;
+top: 1037px;
+font-family: 'Inter';
+font-style: normal;
+font-weight: 700;
+font-size: 48px;
+line-height: 58px;
+text-align: center;
+color: #FFFFFF;
+
+}
+    
     </style>
   </head>
   <body>
     
-      <div class="rectangle-1"></div>
-      <div class="request-form">Request Form</div>
+<div class="rectangle-1"></div>
+<div class="request-form">Request Form</div>
    </div>
-  <div class="budget">Budget:</div>
-  <div class="remaining">Remaining:</div>
+<div class="budget">Budget:</div>
+<div class="remaining">Remaining:</div>
   </div>
+    
 <div class="vendor">Vendor:</div>
 <div class="vendor-field"></div>
 <div class="date">Date Needed:</div>
 <div class="date-field"></div>
-</div>
+    
+
+  </div>
 
 <div class="expense-justification">Expense Justification:</div>
 <div class ="expense-field"></div>
+    
 <div class="additional-info">Additional Information:</div>
 <div class ="additionalinfo-field"></div>
+    
 <div class="item-description">Item Description:</div>
 <div class ="itemdescription-field"></div>
+    
 <div class="item-link">Item Link:</div>
 <div class= "itemlink-field"></div>
 
+<div class="part-num">Part Number:</div>
+<div class="partnum-field"></div>
+
+<div class="quantity">Quantity:</div>
+<div class="quantity-field"></div>
+
+<div class="unit-cost">Unit Cost:</div>
+<div class="unitcost-field"></div>
+
+<div class="total-cost">Total Cost:</div>
+<div class="totalcost-field"></div>
+
+<div class="supporting-docs">Supporting Documents</div>
+<div class="add-item">Add Item</div>
+
+<div class="submit-box"></div>
+<div class="submit-text">Submit</div>
 
 
 
   
   </body>
 </html>
-
