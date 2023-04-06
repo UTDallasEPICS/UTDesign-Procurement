@@ -14,8 +14,7 @@
 </head>
 
 <body>
-  <!--<head>-->
-  <!--<title>Rectangle 1</title>-->
+ 
   <style>
     .rectangle-1 {
       position: absolute;
@@ -210,7 +209,7 @@
       
     }
   </style>
-  <!--</head>-->
+ 
 
   <body>
     <div class="rectangle-1">
