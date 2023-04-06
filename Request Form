@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-  <title>Student Orders Page</title>
+  <title>Request Form</title>
   <style>
     body {
       position: relative;
@@ -39,7 +39,214 @@
       }
     
     .budget{
+    position: absolute;
+width: 353px;
+height: 43px;
+left: 537px;
+top: 107px;
+
+font-family: 'Inter';
+font-style: normal;
+font-weight: 600;
+font-size: 40px;
+line-height: 48px;
+text-align: center;
+
+color: #000000;
+    }
+   .remaining{
+    position: absolute;
+width: 409px;
+height: 56px;
+left: 1151px;
+top: 107px;
+
+font-family: 'Inter';
+font-style: normal;
+font-weight: 600;
+font-size: 40px;
+line-height: 48px;
+text-align: center;
+
+color: #000000;
+    }
+    .vendor{
+    position: absolute;
+width: 469px;
+height: 65px;
+left: -141px;
+top: 192px;
+
+font-family: 'Inter';
+font-style: normal;
+font-weight: 600;
+font-size: 40px;
+line-height: 48px;
+text-align: center;
+
+color: #000000;
+}
+    .vendor-field{
+    box-sizing: border-box;
+
+position: absolute;
+width: 801px;
+height: 64px;
+left: 27px;
+top: 234px;
+
+background: #FFFFFF;
+border: 1.5px solid #000000;
+box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+    }
     
+    .date{
+    position: absolute;
+width: 352px;
+height: 48px;
+left: 869px;
+top: 177px;
+
+font-family: 'Inter';
+font-style: normal;
+font-weight: 600;
+font-size: 40px;
+line-height: 48px;
+text-align: center;
+
+color: #000000;
+    }
+   .date-field{
+    box-sizing: border-box;
+
+position: absolute;
+width: 708px;
+height: 64px;
+left: 924px;
+top: 234px;
+
+background: #FFFFFF;
+border: 1.5px solid #000000;
+box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25), 0px 4px 4px rgba(0, 0, 0, 0.25);
+}
+    .expense-justification{
+    position: absolute;
+width: 472px;
+height: 36px;
+left: -5px;
+top: 298px;
+
+font-family: 'Inter';
+font-style: normal;
+font-weight: 600;
+font-size: 40px;
+line-height: 48px;
+text-align: center;
+
+color: #000000;
+    }
+    .expense-field{
+    box-sizing: border-box;
+
+position: absolute;
+width: 1609px;
+height: 64px;
+left: 23px;
+top: 351px;
+
+background: #FFFFFF;
+border: 1.5px solid #000000;
+box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+    }
+    .additional-info{
+    position: absolute;
+width: 604px;
+height: 72px;
+left: -67px;
+top: 415px;
+
+font-family: 'Inter';
+font-style: normal;
+font-weight: 600;
+font-size: 40px;
+line-height: 48px;
+text-align: center;
+
+color: #000000;
+    }
+    .additionalinfo-field{
+    box-sizing: border-box;
+
+position: absolute;
+width: 1609px;
+height: 64px;
+left: 23px;
+top: 460px;
+
+background: #FFFFFF;
+border: 1.5px solid #000000;
+box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+    }
+    
+    .item-description{
+    position: absolute;
+width: 469px;
+height: 65px;
+left: -52px;
+top: 530px;
+
+font-family: 'Inter';
+font-style: normal;
+font-weight: 600;
+font-size: 40px;
+line-height: 48px;
+text-align: center;
+
+color: #000000;
+}
+    .itemdescription-field{
+    box-sizing: border-box;
+
+position: absolute;
+width: 1609px;
+height: 64px;
+left: 23px;
+top: 582px;
+
+background: #FFFFFF;
+border: 1.5px solid #000000;
+box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+    }
+    
+    .item-link{
+    position: absolute;
+width: 411px;
+height: 65px;
+left: -90px;
+top: 648px;
+
+font-family: 'Inter';
+font-style: normal;
+font-weight: 600;
+font-size: 40px;
+line-height: 48px;
+text-align: center;
+
+color: #000000;
+}
+    .itemlink-field{
+    box-sizing: border-box;
+
+position: absolute;
+width: 1609px;
+height: 64px;
+left: 23px;
+top: 690px;
+
+background: #FFFFFF;
+border: 1.5px solid #000000;
+box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+    }
     </style>
   </head>
   <body>
@@ -47,6 +254,28 @@
       <div class="rectangle-1"></div>
       <div class="request-form">Request Form</div>
    </div>
+  <div class="budget">Budget:</div>
+  <div class="remaining">Remaining:</div>
+  </div>
+<div class="vendor">Vendor:</div>
+<div class="vendor-field"></div>
+<div class="date">Date Needed:</div>
+<div class="date-field"></div>
+</div>
+
+<div class="expense-justification">Expense Justification:</div>
+<div class ="expense-field"></div>
+<div class="additional-info">Additional Information:</div>
+<div class ="additionalinfo-field"></div>
+<div class="item-description">Item Description:</div>
+<div class ="itemdescription-field"></div>
+<div class="item-link">Item Link:</div>
+<div class= "itemlink-field"></div>
+
+
+
+
   
   </body>
 </html>
+
