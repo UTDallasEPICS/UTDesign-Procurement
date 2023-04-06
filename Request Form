@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  <title>Student Orders Page</title>
+  <style>
+    body {
+      position: relative;
+      width: 1728px;
+      height: 1117px;
+      background: #FFFFFF;
+    }
+  </style>
+</head>
+<body>
+  <style>
+      
+     .rectangle-1 {
+      position: absolute;
+      width: 1738px;
+      height: 107px;
+      left: 0px;
+      top: 0px;
+      background: #154734;
+    }
+
+      .request-form {
+        position: absolute;  `
+        width: 608px;
+        height: 76px;
+        left: 565px;
+        top: 16px;
+        font-family: 'Inter';
+        font-style: normal;
+        font-weight: 700;
+        font-size: 64px;
+        line-height: 77px;
+        text-align: center;
+        color: #FFFFFF;
+      }
+    
+    .budget{
+    
+    </style>
+  </head>
+  <body>
+    
+      <div class="rectangle-1"></div>
+      <div class="request-form">Request Form</div>
+   </div>
+  
+  </body>
+</html>
