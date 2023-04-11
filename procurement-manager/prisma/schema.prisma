@@ -1,0 +1,263 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  userID           Int              @id @unique @default(autoincrement())
+  netID            String           @unique // parsed from email in our API 
+  firstName        String
+  lastName         String
+  email            String           @unique
+  active           Boolean
+  responsibilities String?
+  deactivationDate DateTime?
+  // RELATIONSHIPS HERE ::
+  role             Role             @relation(fields: [roleID], references: [roleID]) //unique?
+  roleID           Int
+  Request          Request[]
+  mentorProcess    Process[]        @relation("Mentor")
+  adminProcess     Process[]        @relation("Admin")
+  PreviousRecord   PreviousRecord[]
+  Order            Order[]
+  Reimbursement    Reimbursement[]
+  DepartmentUser   DepartmentUser[]
+  WorksOn          WorksOn[]
+}
+
+model Role {
+  roleID         Int              @id @default(autoincrement())
+  role           String           @unique
+  User           User[]
+  PreviousRecord PreviousRecord[]
+}
+
+model Project {
+  projectID         Int                 @id @default(autoincrement())
+  projectType       String
+  projectNum        Int                 @unique
+  projectTitle      String
+  startingBudget    Decimal
+  sponsorCompany    String
+  activationDate    DateTime
+  deactivationDate  DateTime?
+  additionalInfo    String?
+  costCenter        Int?
+  // RELATIONSHIPS HERE ::
+  Request           Request[]
+  PreviousRecord    PreviousRecord[]
+  OtherExpense      OtherExpense[]
+  Reimbursement     Reimbursement[]
+  WorksOn           WorksOn[]
+  ProjectDepartment ProjectDepartment[]
+}
+
+model PreviousRecord {
+  recordID  Int     @id @default(autoincrement())
+  // RELATIONSHIPS HERE :: 
+  project   Project @relation(fields: [projectID], references: [projectID])
+  projectID Int
+  role      Role    @relation(fields: [roleID], references: [roleID])
+  roleID    Int
+  user      User    @relation(fields: [userID], references: [userID])
+  userID    Int
+}
+
+// ----------EVERYTHING WITHIN PROCUREMENT FORM----------------//
+// A Request is a procurement form sent by students
+model Request {
+  requestID Int @id @default(autoincrement())
+
+  dateNeeded     DateTime
+  dateSubmitted  DateTime
+  dateOrdered    DateTime?
+  dateReceived   DateTime?
+  dateApproved   DateTime?
+  justification  String? // reason why item(s) is included
+  additionalInfo String?
+  // RELATIONSHIPS HERE ::
+  project        Project        @relation(fields: [projectID], references: [projectID])
+  projectID      Int
+  student        User           @relation(fields: [studentID], references: [userID])
+  studentID      Int
+  RequestItem    RequestItem[]
+  Order          Order[]
+  OtherExpense   OtherExpense[]
+  Process        Process[]
+}
+
+// A RequestItem is each item field that is being requested to order by students
+model RequestItem {
+  itemID Int @id @default(autoincrement())
+
+  description String
+  url         String
+  partNumber  String
+  quantity    Int
+  unitPrice   Decimal?
+  // RELATIONSHIPS HERE ::
+  request     Request        @relation(fields: [requestID], references: [requestID])
+  requestID   Int
+  vendor      Vendor         @relation(fields: [vendorID], references: [vendorID])
+  vendorID    Int
+  upload      RequestUpload? @relation(fields: [uploadID], references: [uploadID])
+  uploadID    Int?
+}
+
+// An Order happens after Request has been processed (approved and verified by mentor and admin) and admin "orders" the items
+model Order {
+  orderID Int @id @default(autoincrement())
+
+  dateOrdered  DateTime
+  orderNumber  String
+  orderDetails String
+  trackingInfo String
+  shippingCost Decimal
+  // RELATIONSHIPS HERE ::
+  request      Request  @relation(fields: [requestID], references: [requestID])
+  requestID    Int
+  admin        User     @relation(fields: [adminID], references: [userID])
+  adminID      Int // changed to NOT NULL since an order should show which admin made the order
+}
+
+model OtherExpense {
+  expenseID       Int      @id @default(autoincrement())
+  expenseType     String
+  expenseAmount   Decimal
+  expenseDate     DateTime
+  expenseComments String?
+  // RELATIONSHIPS HERE ::
+  project         Project  @relation(fields: [projectID], references: [projectID])
+  projectID       Int
+  request         Request  @relation(fields: [requestID], references: [requestID])
+  requestID       Int
+}
+
+model RequestUpload {
+  uploadID       Int           @id @default(autoincrement())
+  attachmentPath String?
+  attachmentName String?
+  // RELATIONSHIPS HERE ::
+  RequestItem    RequestItem[]
+}
+
+// ------------------------------------------------------------//
+
+// ----------EVERYTHING WITHIN REIMBURSEMENT FORM----------------//
+model Reimbursement {
+  reimbursementID   Int                 @id @default(autoincrement())
+  dateSubmitted     DateTime
+  status            String
+  justification     String?
+  additionalInfo    String?
+  // RELATIONSHIPS HERE ::
+  project           Project             @relation(fields: [projectID], references: [projectID])
+  projectID         Int
+  student           User                @relation(fields: [studentID], references: [userID])
+  studentID         Int // changed to NOT NULL since this should show which student submitted the reimbursement form
+  Process           Process[]
+  ReimbursementItem ReimbursementItem[]
+}
+
+model ReimbursementItem {
+  itemID          Int                  @id @default(autoincrement())
+  receiptDate     DateTime
+  description     String
+  receiptTotal    Decimal
+  // RELATIONSHIPS HERE ::
+  reimbursement   Reimbursement        @relation(fields: [reimbursementID], references: [reimbursementID])
+  reimbursementID Int
+  vendor          Vendor               @relation(fields: [vendorID], references: [vendorID])
+  vendorID        Int
+  upload          ReimbursementUpload? @relation(fields: [uploadID], references: [uploadID])
+  uploadID        Int?
+}
+
+model ReimbursementUpload {
+  uploadID          Int                 @id @default(autoincrement())
+  attachmentPath    String
+  attachmentName    String
+  // RELATIONSHIPS HERE ::
+  ReimbursementItem ReimbursementItem[]
+}
+
+// --------------------------------------------------------------//
+enum Status {
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+  ORDERED
+  DELIVERED
+  CANCELLED
+}
+
+model Process {
+  processID               Int           @id @default(autoincrement())
+  status                  Status        @default(UNDER_REVIEW)
+  mentorProcessed         DateTime?
+  mentorProcessedComments String?
+  adminProcessed          DateTime?
+  adminProcessedComments  String?
+  // RELATIONSHIPS HERE ::
+  mentor                  User?         @relation("Mentor", fields: [mentorID], references: [userID])
+  mentorID                Int?
+  admin                   User?         @relation("Admin", fields: [adminID], references: [userID])
+  adminID                 Int?
+  request                 Request       @relation(fields: [requestID], references: [requestID])
+  requestID               Int
+  reimbursement           Reimbursement @relation(fields: [reimbursementID], references: [reimbursementID])
+  reimbursementID         Int
+}
+
+model Department {
+  departmentID      Int                 @id @default(autoincrement())
+  department        String              @unique
+  DepartmentUser    DepartmentUser[]
+  ProjectDepartment ProjectDepartment[]
+}
+
+model Vendor {
+  vendorID          Int                 @id @default(autoincrement())
+  vendorName        String
+  RequestItem       RequestItem[]
+  ReimbursementItem ReimbursementItem[]
+}
+
+// I don't know if these are needed...
+//---------ASSOCIATION TABLES---------//
+// user and their department
+model DepartmentUser {
+  department   Department @relation(fields: [departmentID], references: [departmentID])
+  departmentID Int
+  user         User       @relation(fields: [userID], references: [userID])
+  userID       Int
+
+  @@id([departmentID, userID])
+}
+
+model WorksOn {
+  user      User    @relation(fields: [userID], references: [userID])
+  userID    Int     @unique
+  project   Project @relation(fields: [projectID], references: [projectID])
+  projectID Int
+
+  @@id([userID, projectID])
+}
+
+model ProjectDepartment {
+  department   Department @relation(fields: [departmentID], references: [departmentID])
+  departmentID Int        @unique
+  project      Project    @relation(fields: [projectID], references: [projectID])
+  projectID    Int
+
+  @@id([departmentID, projectID])
+}
+
+//-----------------------------------//
