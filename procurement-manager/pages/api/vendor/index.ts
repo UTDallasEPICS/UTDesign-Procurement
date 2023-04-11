@@ -1,5 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import { prisma } from '@/db'
+
 // admin to create projects
 // make sure it is admin only
 export default async function handler(
@@ -7,15 +8,10 @@ export default async function handler(
   res: NextApiResponse
 ) {
   try {
-    // creating sample data in Project
-    const response = await prisma.project.create({
+    // creating sample vendor
+    const response = await prisma.vendor.create({
       data: {
-        projectType: 'Sample',
-        projectNum: 1566,
-        projectTitle: 'Sample Project',
-        startingBudget: 0,
-        sponsorCompany: '',
-        activationDate: new Date(),
+        vendorName: 'Test Vendor',
       },
     })
 

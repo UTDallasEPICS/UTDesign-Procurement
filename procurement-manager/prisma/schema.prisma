@@ -47,7 +47,7 @@ model Project {
   startingBudget    Decimal
   sponsorCompany    String
   activationDate    DateTime
-  deactivationDate  DateTime
+  deactivationDate  DateTime?
   additionalInfo    String?
   costCenter        Int?
   // RELATIONSHIPS HERE ::
@@ -75,26 +75,22 @@ model PreviousRecord {
 model Request {
   requestID Int @id @default(autoincrement())
 
-  dateNeeded        DateTime
-  dateSubmitted     DateTime
-  dateOrdered       DateTime
-  DateReceved       DateTime
-  dateApproved      DateTime
-  justification     String? // reason why item(s) is included
-  additionalInfo    String?
-  status            String?
+  dateNeeded     DateTime
+  dateSubmitted  DateTime
+  dateOrdered    DateTime?
+  dateReceived   DateTime?
+  dateApproved   DateTime?
+  justification  String? // reason why item(s) is included
+  additionalInfo String?
   // RELATIONSHIPS HERE ::
-  project           Project             @relation(fields: [projectID], references: [projectID])
-  projectID         Int
-  student           User                @relation(fields: [studentID], references: [userID])
-  studentID         Int
-  vendor            Vendor              @relation(fields: [vendorID], references: [vendorID])
-  vendorID          Int
-  RequestItem       RequestItem[]
-  Order             Order[]
-  OtherExpense      OtherExpense[]
-  ReimbursementItem ReimbursementItem[]
-  Process           Process[]
+  project        Project        @relation(fields: [projectID], references: [projectID])
+  projectID      Int
+  student        User           @relation(fields: [studentID], references: [userID])
+  studentID      Int
+  RequestItem    RequestItem[]
+  Order          Order[]
+  OtherExpense   OtherExpense[]
+  Process        Process[]
 }
 
 // A RequestItem is each item field that is being requested to order by students
@@ -171,19 +167,17 @@ model Reimbursement {
 }
 
 model ReimbursementItem {
-  itemID           Int                  @id @default(autoincrement())
-  receiptDate      DateTime
-  description      String
-  receiptTotal     Decimal
+  itemID          Int                  @id @default(autoincrement())
+  receiptDate     DateTime
+  description     String
+  receiptTotal    Decimal
   // RELATIONSHIPS HERE ::
-  reimbursement    Reimbursement        @relation(fields: [reimbursementID], references: [reimbursementID])
-  reimbursementID  Int
-  vendor           Vendor               @relation(fields: [vendorID], references: [vendorID])
-  vendorID         Int
-  upload           ReimbursementUpload? @relation(fields: [uploadID], references: [uploadID])
-  uploadID         Int?
-  Request          Request?             @relation(fields: [requestRequestID], references: [requestID])
-  requestRequestID Int?
+  reimbursement   Reimbursement        @relation(fields: [reimbursementID], references: [reimbursementID])
+  reimbursementID Int
+  vendor          Vendor               @relation(fields: [vendorID], references: [vendorID])
+  vendorID        Int
+  upload          ReimbursementUpload? @relation(fields: [uploadID], references: [uploadID])
+  uploadID        Int?
 }
 
 model ReimbursementUpload {
@@ -232,7 +226,6 @@ model Department {
 model Vendor {
   vendorID          Int                 @id @default(autoincrement())
   vendorName        String
-  Request           Request[]
   RequestItem       RequestItem[]
   ReimbursementItem ReimbursementItem[]
 }
