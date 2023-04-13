@@ -37,7 +37,7 @@ export default function Mentor() {
           <Collapse in={isOpen}>
             <div id="collapseContent">
               <Row className="small-row">
-                <Card>
+                <Card style={{ backgroundColor: '#f8f9fa' }}>
                   <Card.Body>
                     <Row className="smaller-row">
                       <Col>

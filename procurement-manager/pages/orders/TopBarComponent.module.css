@@ -10,10 +10,14 @@
     background: #e87500;
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: space-between;
+    /* Change from flex-start to space-between */
     padding: 0 20px;
     box-sizing: border-box;
+    color: white;
+    font-weight: bold;
     position: relative;
+    /* Add this line to set the position property */
 }
 
 .menuSection {
@@ -26,12 +30,15 @@
 
 .navigation {
     display: flex;
-    gap: 30px;
+    gap: 200px;
 }
 
 .navigationLink {
     color: white;
     text-decoration: none;
+    font-weight: bold;
+    text-decoration: underline;
+    font-size:25px;
 }
 
 .navigationLink:hover {
@@ -39,11 +46,7 @@
 }
 
 .logout {
-    position: absolute;
-    top: 50%;
-    right: 20px;
     text-decoration: underline;
     color: #007bff;
     cursor: pointer;
-    transform: translateY(-50%);
 }
