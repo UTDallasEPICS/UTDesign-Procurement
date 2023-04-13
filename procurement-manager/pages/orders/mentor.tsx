@@ -57,7 +57,12 @@ export default function Mentor() {
                         <h5>Budget Used: $300/500</h5>
                       </Col>
                     </Row>
-                    <Row className="smaller-row d-flex justify-content-end">
+                    <Row className="smaller-row d-flex justify-content-between">
+                      <Col md="auto">
+                        <a href="#" className="text-info" style={{ textDecoration: 'underline' }}>
+                          View Request Form
+                        </a>
+                      </Col>
                       <Col md="auto">
                         <Button variant="dark" size="lg">
                           REJECT

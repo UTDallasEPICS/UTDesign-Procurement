@@ -7,6 +7,14 @@ const TopBarComponent: React.FC = () => {
     <div className={styles.topBar}>
       <div className={styles.headerSection}>
         <h1>UTD Procurement Manager</h1>
+        <span
+          className={styles.logout}
+          onClick={() => {
+            console.log('Logging out...');
+          }}
+        >
+          Log Out
+        </span>
       </div>
       <div className={styles.menuSection}>
         <nav className={styles.navigation}>
