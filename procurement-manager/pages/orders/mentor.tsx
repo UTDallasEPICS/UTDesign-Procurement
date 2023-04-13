@@ -1,6 +1,8 @@
+// Mentor.tsx
 import React, { useState } from 'react';
-import { Container, Row, Col, Card, Button, Collapse } from 'react-bootstrap';
+import { Container, Row, Col, Button, Collapse } from 'react-bootstrap';
 import TopBarComponent from './TopBarComponent';
+import RequestCard from './RequestCard'; // Import the RequestCard component
 
 export default function Mentor() {
   const [isOpen, setIsOpen] = useState(true);
@@ -37,52 +39,8 @@ export default function Mentor() {
           <Collapse in={isOpen}>
             <div id="collapseContent">
               <Row className="small-row">
-                <Card style={{ backgroundColor: '#f8f9fa' }}>
-                  <Card.Body>
-                    <Row className="smaller-row">
-                      <Col>
-                        <h4>Request Number</h4>
-                        <h5>#1</h5>
-                      </Col>
-                      <Col>
-                        <h4>Date Requested</h4>
-                        <h5>4/11/2023</h5>
-                      </Col>
-                      <Col>
-                        <h4>Date Needed</h4>
-                        <h5>4/13/2023</h5>
-                      </Col>
-                      <Col>
-                        <h5>Order Total: $200</h5>
-                        <h5>Budget Used: $300/500</h5>
-                      </Col>
-                    </Row>
-                    <Row className="smaller-row d-flex justify-content-between">
-                      <Col md="auto">
-                        <a href="#" className="text-info" style={{ textDecoration: 'underline' }}>
-                          View Request Form
-                        </a>
-                      </Col>
-                      <Col md="auto">
-                       <Button
-                          variant="dark"
-                          size="lg"
-                          style={{ minWidth: '300px', marginRight: '40px' }}
-                        >
-                          REJECT
-                        </Button>{' '}
-                        <Button
-                          variant="success"
-                          size="lg"
-                          style={{ minWidth: '300px' }}
-                        >
-                          APPROVE
-                        </Button>{' '}
-
-                      </Col>
-                    </Row>
-                  </Card.Body>
-                </Card>
+                <RequestCard /> {/* Use the RequestCard component */}
+                <RequestCard />
               </Row>
             </div>
           </Collapse>
