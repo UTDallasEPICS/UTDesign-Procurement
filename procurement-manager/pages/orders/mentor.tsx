@@ -64,12 +64,21 @@ export default function Mentor() {
                         </a>
                       </Col>
                       <Col md="auto">
-                        <Button variant="dark" size="lg">
+                       <Button
+                          variant="dark"
+                          size="lg"
+                          style={{ minWidth: '300px', marginRight: '40px' }}
+                        >
                           REJECT
                         </Button>{' '}
-                        <Button variant="success" size="lg">
+                        <Button
+                          variant="success"
+                          size="lg"
+                          style={{ minWidth: '300px' }}
+                        >
                           APPROVE
                         </Button>{' '}
+
                       </Col>
                     </Row>
                   </Card.Body>
