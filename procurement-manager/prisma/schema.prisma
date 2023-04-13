@@ -10,6 +10,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+
 model User {
   userID           Int              @id @unique @default(autoincrement())
   netID            String           @unique // parsed from email in our API 
