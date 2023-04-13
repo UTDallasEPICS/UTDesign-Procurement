@@ -20,10 +20,10 @@ const RequestCard: React.FC<RequestCardProps> = ({ requestNumber, dateRequested,
         <span className="font-weight-bold mr-2">Date Requested: {dateRequested}</span>
         <span className="font-weight-bold mr-2">Date Needed: {dateNeeded}</span>
         <Button variant="success" size="sm">
-          Approve
+          APPROVE
         </Button>
-        <Button variant="danger" size="sm">
-          Reject
+        <Button variant="dark" size="sm">
+          REJECT
         </Button>
       </Card.Body>
     </Card>
