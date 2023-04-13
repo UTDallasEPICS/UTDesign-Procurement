@@ -1,0 +1,38 @@
+/* TopBarComponent.module.css */
+.topBar {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.headerSection {
+    height: 91px;
+    background: #e87500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 20px;
+    box-sizing: border-box;
+}
+
+.menuSection {
+    height: 92px;
+    background: #154734;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.navigation {
+    display: flex;
+    gap: 30px;
+}
+
+.navigationLink {
+    color: white;
+    text-decoration: none;
+}
+
+.navigationLink:hover {
+    text-decoration: underline;
+}

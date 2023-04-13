@@ -1,9 +1,11 @@
 import React from 'react'
 import { Container, Row, Col, Card, Button } from 'react-bootstrap'
+import TopBarComponent from './TopBarComponent';
 
 export default function mentor() {
   return (
     <>
+    <TopBarComponent />
     <Container>
         <Row className='big-row'>
             <Row className='small-row'>
