@@ -21,8 +21,8 @@ export default function Mentor() {
                 Request
               </h3>
             </Col>
-            <Col lg={2}>
-              <h4>Budget: $100/500</h4>
+            <Col lg={2} className="d-flex align-items-center justify-content-end">
+              <h4 className="mr-2">Budget: $100/500</h4>
               <Button
                 variant="outline-secondary"
                 size="sm"
@@ -57,16 +57,8 @@ export default function Mentor() {
                         <h5>Budget Used: $300/500</h5>
                       </Col>
                     </Row>
-                    <Row className="smaller-row">
-                      <Col>
-                        <Button variant="danger" size="lg">
-                          REJECT
-                        </Button>{' '}
-                        <Button variant="success" size="lg">
-                          APPROVE
-                        </Button>{' '}
-                      </Col>
-                      <Col>
+                    <Row className="smaller-row d-flex justify-content-end">
+                      <Col md="auto">
                         <Button variant="dark" size="lg">
                           REJECT
                         </Button>{' '}
