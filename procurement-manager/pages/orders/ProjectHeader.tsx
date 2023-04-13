@@ -1,25 +1,48 @@
 import React from 'react';
-import { Row, Col, Button } from 'react-bootstrap';
+import { Col, Button, Row } from 'react-bootstrap';
 
 interface ProjectHeaderProps {
-  title: string;
-  budget: string;
+  projectName: string;
+  expenses: number;
+  available: number;
+  budgetTotal: number;
+  onToggleCollapse: () => void;
   isOpen: boolean;
-  toggleCollapse: () => void;
 }
 
-const ProjectHeader: React.FC<ProjectHeaderProps> = ({ title, budget, isOpen, toggleCollapse }) => {
+const ProjectHeader: React.FC<ProjectHeaderProps> = ({
+  projectName,
+  expenses,
+  available,
+  budgetTotal,
+  onToggleCollapse,
+  isOpen,
+}) => {
   return (
-    <Row className="small-row">
-      <Col lg={10}>
-        <h3>{title}</h3>
+    <Row className="align-items-center">
+      <Col md={5}>
+        <h3>{projectName}</h3>
       </Col>
-      <Col lg={2} className="d-flex align-items-center justify-content-end">
-        <h4 className="mr-2">{budget}</h4>
+      <Col md={2}>
+        <p style={{ fontSize: '1.5rem' }}>
+          <strong>Expenses:</strong> ${expenses}
+        </p>
+      </Col>
+      <Col md={2}>
+        <p style={{ fontSize: '1.5rem' }}>
+          <strong>Available:</strong> ${available}
+        </p>
+      </Col>
+      <Col md={2}>
+        <p style={{ fontSize: '1.5rem' }}>
+          <strong>Budget:</strong> ${budgetTotal}
+        </p>
+      </Col>
+      <Col md={1}>
         <Button
           variant="outline-secondary"
           size="sm"
-          onClick={toggleCollapse}
+          onClick={onToggleCollapse}
           aria-controls="collapseContent"
           aria-expanded={isOpen}
         >
