@@ -40,7 +40,7 @@ const RequestCard: React.FC<RequestCardProps> = ({
               >
                 APPROVE
               </Button>{' '}
-              <Button variant="dark" size="sm" onClick={onReject} className="ms-2">
+              <Button variant="dark" size="sm" onClick={onReject} className="ms-4">
                 REJECT
               </Button>
             </div>
