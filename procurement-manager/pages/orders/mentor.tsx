@@ -3,12 +3,25 @@ import { Container, Row, Col, Button, Collapse } from 'react-bootstrap';
 import TopBarComponent from './TopBarComponent';
 import RequestCard from './RequestCard';
 import ProjectHeader from './ProjectHeader';
+import RejectionModal from './RejectionModal';
 
 export default function Mentor() {
   const [isOpen, setIsOpen] = useState({ project1: true, project2: true });
+  const [showRejectModal, setShowRejectModal] = useState(false);
+  const [rejectedRequestNumber, setRejectedRequestNumber] = useState<number | null>(null);
 
   const toggleCollapse = (project: keyof typeof isOpen) => {
     setIsOpen({ ...isOpen, [project]: !isOpen[project] });
+  };
+
+  const handleReject = (requestNumber: number) => {
+    setRejectedRequestNumber(requestNumber);
+    setShowRejectModal(true);
+  };
+
+  const handleSubmitRejection = (reason: string) => {
+    console.log(`Request #${rejectedRequestNumber} rejected with reason: ${reason}`);
+    setShowRejectModal(false);
   };
 
   // Define the cards for each project
@@ -68,7 +81,11 @@ export default function Mentor() {
           <Collapse in={isOpen.project1}>
             <div>
               {project1Cards.map((card, index) => (
-                <RequestCard key={index} {...card} />
+                <RequestCard
+                  key={index}
+                  {...card}
+                  onReject={() => handleReject(card.requestNumber)}
+                />
               ))}
             </div>
           </Collapse>
@@ -85,12 +102,21 @@ export default function Mentor() {
           <Collapse in={isOpen.project2}>
             <div>
               {project2Cards.map((card, index) => (
-                <RequestCard key={index} {...card} />
+                <RequestCard
+                  key={index}
+                  {...card}
+                  onReject={() => handleReject(card.requestNumber)}
+                />
               ))}
             </div>
           </Collapse>
         </Row>
       </Container>
+      <RejectionModal
+        show={showRejectModal}
+        onHide={() => setShowRejectModal(false)}
+        onSubmit={handleSubmitRejection}
+      />
     </>
   );
 }
