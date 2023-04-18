@@ -23,7 +23,7 @@ import { prisma } from '@/db'
 // create an order and put in database
 // ??? ask Oddrun and Navaneeth about how creating a new Order into database will work
 export default async function handler(req: NextApiRequest,res: NextApiResponse) {
-    if(req.method == 'GET'){
+    if(req.method == 'POST'){
         const{netID} =req.body
          const user = await prisma.user.findUnique({
              where:{
