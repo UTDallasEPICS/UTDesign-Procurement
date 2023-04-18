@@ -21,6 +21,7 @@ export default async function handler(
 
     res.status(200).json(response)
   } catch (error) {
-    res.status(500).json({ message: 'Internal Server Error', error: error })
+    if (error instanceof Error)
+      res.status(500).json({ message: error.message, error: error })
   }
 }

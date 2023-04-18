@@ -199,21 +199,21 @@ enum Status {
 }
 
 model Process {
-  processID               Int           @id @default(autoincrement())
-  status                  Status        @default(UNDER_REVIEW)
+  processID               Int            @id @default(autoincrement())
+  status                  Status         @default(UNDER_REVIEW)
   mentorProcessed         DateTime?
   mentorProcessedComments String?
   adminProcessed          DateTime?
   adminProcessedComments  String?
   // RELATIONSHIPS HERE ::
-  mentor                  User?         @relation("Mentor", fields: [mentorID], references: [userID])
+  mentor                  User?          @relation("Mentor", fields: [mentorID], references: [userID])
   mentorID                Int?
-  admin                   User?         @relation("Admin", fields: [adminID], references: [userID])
+  admin                   User?          @relation("Admin", fields: [adminID], references: [userID])
   adminID                 Int?
-  request                 Request       @relation(fields: [requestID], references: [requestID])
-  requestID               Int
-  reimbursement           Reimbursement @relation(fields: [reimbursementID], references: [reimbursementID])
-  reimbursementID         Int
+  request                 Request?       @relation(fields: [requestID], references: [requestID])
+  requestID               Int?
+  reimbursement           Reimbursement? @relation(fields: [reimbursementID], references: [reimbursementID])
+  reimbursementID         Int?
 }
 
 model Department {
