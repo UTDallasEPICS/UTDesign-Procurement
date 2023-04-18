@@ -15,7 +15,7 @@ import { prisma } from '@/db'
 /// create multiple items with the url, connect those items with the requestID of request that was just created -- done
 /// put those items in the database -- done
 
-/// if there is a RequestUpload, put in database
+/// if there is a RequestUpload, put in database -- done
 /// if there is OtherExpense, put in database
 
 /// create a new process and put in database

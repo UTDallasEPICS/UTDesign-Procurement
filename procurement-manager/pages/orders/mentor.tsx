@@ -1,28 +1,32 @@
-import React, { useState } from 'react';
-import { Container, Row, Col, Button, Collapse } from 'react-bootstrap';
-import TopBarComponent from './TopBarComponent';
-import RequestCard from './RequestCard';
-import ProjectHeader from './ProjectHeader';
-import RejectionModal from './RejectionModal';
+import React, { useState } from 'react'
+import { Container, Row, Col, Button, Collapse } from 'react-bootstrap'
+import TopBarComponent from '../../components/TopBarComponent'
+import RequestCard from '../../components/RequestCard'
+import ProjectHeader from '../../components/ProjectHeader'
+import RejectionModal from '../../components/RejectionModal'
 
 export default function Mentor() {
-  const [isOpen, setIsOpen] = useState({ project1: true, project2: true });
-  const [showRejectModal, setShowRejectModal] = useState(false);
-  const [rejectedRequestNumber, setRejectedRequestNumber] = useState<number | null>(null);
+  const [isOpen, setIsOpen] = useState({ project1: true, project2: true })
+  const [showRejectModal, setShowRejectModal] = useState(false)
+  const [rejectedRequestNumber, setRejectedRequestNumber] = useState<
+    number | null
+  >(null)
 
   const toggleCollapse = (project: keyof typeof isOpen) => {
-    setIsOpen({ ...isOpen, [project]: !isOpen[project] });
-  };
+    setIsOpen({ ...isOpen, [project]: !isOpen[project] })
+  }
 
   const handleReject = (requestNumber: number) => {
-    setRejectedRequestNumber(requestNumber);
-    setShowRejectModal(true);
-  };
+    setRejectedRequestNumber(requestNumber)
+    setShowRejectModal(true)
+  }
 
   const handleSubmitRejection = (reason: string) => {
-    console.log(`Request #${rejectedRequestNumber} rejected with reason: ${reason}`);
-    setShowRejectModal(false);
-  };
+    console.log(
+      `Request #${rejectedRequestNumber} rejected with reason: ${reason}`
+    )
+    setShowRejectModal(false)
+  }
 
   // Define the cards for each project
   const project1Cards = [
@@ -44,7 +48,7 @@ export default function Mentor() {
       dateNeeded: '4/20/2023',
       orderTotal: 150,
     },
-  ];
+  ]
 
   const project2Cards = [
     {
@@ -59,19 +63,25 @@ export default function Mentor() {
       dateNeeded: '4/18/2023',
       orderTotal: 100,
     },
-  ];
+  ]
 
   // Calculate the total expenses for each project
-  const project1Expenses = project1Cards.reduce((acc, card) => acc + card.orderTotal, 0);
-  const project2Expenses = project2Cards.reduce((acc, card) => acc + card.orderTotal, 0);
+  const project1Expenses = project1Cards.reduce(
+    (acc, card) => acc + card.orderTotal,
+    0
+  )
+  const project2Expenses = project2Cards.reduce(
+    (acc, card) => acc + card.orderTotal,
+    0
+  )
 
   return (
     <>
       <TopBarComponent />
       <Container>
-        <Row className="big-row">
+        <Row className='big-row'>
           <ProjectHeader
-            projectName="Project 1: Diagnostic Capstone"
+            projectName='Project 1: Diagnostic Capstone'
             expenses={project1Expenses}
             available={500 - project1Expenses}
             budgetTotal={500}
@@ -90,9 +100,9 @@ export default function Mentor() {
             </div>
           </Collapse>
         </Row>
-        <Row className="big-row">
+        <Row className='big-row'>
           <ProjectHeader
-            projectName="Project 2: Point of Nerve Conduction"
+            projectName='Project 2: Point of Nerve Conduction'
             expenses={project2Expenses}
             available={1000 - project2Expenses}
             budgetTotal={1000}
@@ -118,5 +128,5 @@ export default function Mentor() {
         onSubmit={handleSubmitRejection}
       />
     </>
-  );
+  )
 }
