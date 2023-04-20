@@ -22,48 +22,47 @@ import { prisma } from '@/db'
 // IF PROCESS IS APPROVED BY ADMIN
 // create an order and put in database
 // ??? ask Oddrun and Navaneeth about how creating a new Order into database will work
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
-  if (req.method == 'POST') {
-    const { netID } = req.body
-    const user = await prisma.user.findUnique({
-      where: {
-        netID: netID,
+
+import { PrismaClient } from '@prisma/client'
+import { NextApiRequest, NextApiResponse } from 'next'
+
+const prisma = new PrismaClient()
+export default async (req: NextApiRequest, res: NextApiResponse) => {
+  if (req.method === 'GET') {
+    // Handle GET request
+    // Fetch all processes from the Prisma model
+    const processes = await prisma.process.findMany()
+    res.status(200).json(processes)
+  } else if (req.method === 'POST') {
+    // Handle POST request
+    const {
+      status,
+      mentorProcessed,
+      mentorProcessedComments,
+      adminProcessed,
+      adminProcessedComments,
+      mentorID,
+      adminID,
+      requestID,
+      reimbursementID,
+    } = req.body
+    // Create a new process in the Prisma model
+    const newProcess = await prisma.process.create({
+      data: {
+        status,
+        mentorProcessed: new Date(mentorProcessed),
+        mentorProcessedComments,
+        adminProcessed: new Date(adminProcessed),
+        adminProcessedComments,
+        mentorID,
+        adminID,
+        requestID,
+        reimbursementID,
       },
     })
-    if (user != null) {
-      if (user.roleID == 1) {
-        //if user is admin
-        const data = await prisma.process.findMany({
-          where: {
-            status: Status.APPROVED,
-          },
-        })
-        res.status(200).json(data)
-      } else if (user.roleID == 2) {
-        //if user is mentor
-        const data = await prisma.process.findMany({
-          where: {
-            status: Status.UNDER_REVIEW,
-          },
-        })
-        res.status(200).json(data)
-      } else if (user.roleID == 3) {
-        //if user is student
-        const data = await prisma.process.findMany({
-          where: {
-            status: Status.REJECTED,
-          },
-        })
-        res.status(200).json(data)
-      }
-    } else {
-      res.status(404).json({ message: 'NetID not found' })
-    }
-    //const response = await prisma.process.findMany()
-    //res.send(response)
-    //res.status(200).json({process :process})
+    res.status(201).json(newProcess)
+  } else {
+    res.status(405).json({ error: 'Method Not Allowed' })
   }
 }
+export { prisma }

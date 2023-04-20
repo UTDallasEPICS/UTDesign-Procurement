@@ -1,6 +1,3 @@
-import { Prisma } from '@prisma/client'
-import { NextApiRequest, NextApiResponse } from 'next'
-import { prisma } from '@/db'
 // POST request
 // get email, first name, last name from SSO,
 // get netID from email
@@ -23,56 +20,43 @@ import { prisma } from '@/db'
  * Type safe for requesting body
  * https://stackoverflow.com/questions/69893369/how-to-add-typescript-types-to-request-body-in-next-js-api-route/70788003#70788003
  */
+// pages/api/users.js
+// pages/api/users.js
+
+import { PrismaClient } from '@prisma/client'
+import { NextApiRequest, NextApiResponse } from 'next'
+
+const prisma = new PrismaClient()
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  await prisma.role.createMany({
-    data: [
-      {
-        role: 'Admin',
-      },
-      {
-        role: 'Mentor',
-      },
-      {
-        role: 'Student',
-      },
-    ],
-  })
-  await prisma.user.create({
-    data: {
-      netID: 'AXT210117',
-      firstName: 'Ananth',
-      lastName: 'Tekkalakota',
-      email: 'axt210117@utdallas.edu',
-      active: true,
-      role: { connect: { roleID: 1 } },
-    },
-  })
-
-  if (req.method == 'GET') {
-    const { Firstname, Lastname, email } = req.body
-    const user = prisma.user.findUnique({
-      where: {
-        //email.slice(0,9)
-        email,
-      },
-    })
-    if (!user) {
-      res.status(404).json({ error: 'User Not Found' })
-      return
-    } else {
-      res.status(200).json({ user: user })
+  if (req.method === 'GET') {
+    try {
+      const users = await prisma.user.findMany()
+      res.status(200).json(users)
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch users' })
     }
+  } else if (req.method === 'POST') {
+    const { firstName, lastName, email, active } = req.body
+    try {
+      const user = await prisma.user.create({
+        data: {
+          firstName,
+          lastName,
+          email,
+          active: true,
+          responsibilities: 'student',
+          deactivationDate: '11/20/23',
+        },
+      })
+      res.status(201).json(user)
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to create user' })
+    }
+  } else {
+    res.status(400).json({ error: 'Invalid method' })
   }
 }
-/*const { body } = req
-  try {
-    if ('role' in body && typeof body.role === 'string') {
-      const role: string = req.body.role
-      res.status(200).json({ givenRole: role })
-    }
-  } catch (error) {}
-}*/
