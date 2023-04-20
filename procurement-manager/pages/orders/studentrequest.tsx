@@ -75,27 +75,34 @@ const StudentRequest = () => {
         </div>
       </div>
       <form className={styles.form} onSubmit={handleSubmit}>
-        <label className={styles.vendor} htmlFor="vendor">
-          Vendor
-        </label>
-        <input
-          className={styles.vendorField}
-          type="text"
-          id="vendor"
-          value={vendor}
-          onChange={handleVendorChange}
-        />
+        <div className={styles.row}>
+  <div>
+    <label className={styles.vendor} htmlFor="vendor">
+      Vendor
+    </label>
+    <input
+      className={styles.vendorField}
+      type="text"
+      id="vendor"
+      value={vendor}
+      onChange={handleVendorChange}
+    />
+  </div>
 
-        <label className={styles.date} htmlFor="date">
-          Date Needed
-        </label>
-        <input
-          className={styles.dateField}
-          type="date"
-          id="date"
-          value={date}
-          onChange={handleDateChange}
-        />
+  <div>
+    <label className={styles.date} htmlFor="date">
+      Date Needed
+    </label>
+    <input
+      className={styles.dateField}
+      type="date"
+      id="date"
+      value={date}
+      onChange={handleDateChange}
+    />
+  </div>
+</div>
+
 
         <label className={styles.partNum} htmlFor="partNumber">
           Part Number
