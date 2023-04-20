@@ -48,6 +48,17 @@
   margin: 0 auto;
 }
 
+.form label {
+  font-size: 14px;
+}
+
+.form input {
+  width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
+  resize: none;
+}
+
 .row {
   display: flex;
   gap: 30px;
@@ -76,7 +87,6 @@
 .vendorField,
 .dateField,
 .expenseField,
-.additionalinfoField,
 .itemdescriptionField,
 .itemlinkField,
 .partnumField,
@@ -91,6 +101,14 @@
   margin-top: 15px;
 }
 
+.additionalinfoField,
+.vendorField,
+.itemdescriptionField,
+.itemlinkField,
+.partnumField {
+  width: 50%;
+}
+
 .submitButton {
   background-color: #154734;
   color: #FFFFFF;
@@ -101,4 +119,16 @@
   border: none;
   cursor: pointer;
   box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+}
+
+.form textarea {
+  width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
+  resize: vertical;
+  min-height: 40px;
+}
+
+.textareaWrapper {
+  flex-basis: 100%;
 }

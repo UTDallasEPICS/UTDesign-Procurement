@@ -8,12 +8,11 @@ const StudentRequest = () => {
   const [quantity, setQuantity] = useState("");
   const [unitCost, setUnitCost] = useState("");
   const [totalCost, setTotalCost] = useState("");
-  const [expenseJustification, setExpenseJustification] = useState("");
-  const [additionalInfo, setAdditionalInfo] = useState("");
   const [itemDescription, setItemDescription] = useState("");
   const [itemLink, setItemLink] = useState("");
+  const [additionalInfo, setAdditionalInfo] = useState("");
 
-  const handleVendorChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleVendorChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
     setVendor(e.target.value);
   };
 
@@ -21,7 +20,7 @@ const StudentRequest = () => {
     setDate(e.target.value);
   };
 
-  const handlePartNumberChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const handlePartNumberChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
     setPartNumber(e.target.value);
   };
 
@@ -37,29 +36,22 @@ const StudentRequest = () => {
     setTotalCost(e.target.value);
   };
 
-   const handleExpenseJustificationChange = (
-    e: ChangeEvent<HTMLTextAreaElement>
-  ) => {
-    setExpenseJustification(e.target.value);
+  const handleItemDescriptionChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
+    setItemDescription(e.target.value);
+  };
+
+  const handleItemLinkChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
+    setItemLink(e.target.value);
   };
 
   const handleAdditionalInfoChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
     setAdditionalInfo(e.target.value);
   };
 
-  const handleItemDescriptionChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setItemDescription(e.target.value);
-  };
-
-  const handleItemLinkChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setItemLink(e.target.value);
-  };
-
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     console.log("Form submitted!");
   };
-
 
   return (
     <div className={styles.container}>
@@ -76,130 +68,138 @@ const StudentRequest = () => {
       </div>
       <form className={styles.form} onSubmit={handleSubmit}>
         <div className={styles.row}>
-  <div>
-    <label className={styles.vendor} htmlFor="vendor">
-      Vendor
-    </label>
-    <input
-      className={styles.vendorField}
-      type="text"
-      id="vendor"
-      value={vendor}
-      onChange={handleVendorChange}
-    />
-  </div>
-
-  <div>
-    <label className={styles.date} htmlFor="date">
-      Date Needed
-    </label>
-    <input
-      className={styles.dateField}
-      type="date"
-      id="date"
-      value={date}
-      onChange={handleDateChange}
-    />
-  </div>
-</div>
-
-
-        <label className={styles.partNum} htmlFor="partNumber">
-          Part Number
-        </label>
-        <input
-          className={styles.partnumField}
-          type="text"
-          id="partNumber"
-          value={partNumber}
-          onChange={handlePartNumberChange}
-        />
-
-        <label className={styles.quantity} htmlFor="quantity">
-          Quantity
-        </label>
-        <input
-          className={styles.quantityField}
-          type="number"
-          id="quantity"
-          value={quantity}
-          onChange={handleQuantityChange}
-        />
-
-        <label className={styles.unitCost} htmlFor="unitCost">
-          Unit Cost
-        </label>
-        <input
-          className={styles.unitcostField}
-          type="number"
-          step="0.01"
-          id="unitCost"
-          value={unitCost}
-          onChange={handleUnitCostChange}
-        />
-
-        <label className={styles.totalCost} htmlFor="totalCost">
-          Total Cost
-        </label>
-        <input
-          className={styles.totalcostField}
-          type="number"
-          step="0.01"
-          id="totalCost"
-          value={totalCost}
-          onChange={handleTotalCostChange}
-        />
-         <label className={styles.expenseJustification} htmlFor="expenseJustification">
-          Expense Justification
-        </label>
-        <textarea
-          className={styles.expenseField}
-          id="expenseJustification"
-          value={expenseJustification}
-          onChange={handleExpenseJustificationChange}
-        ></textarea>
-
-        <label className={styles.additionalInfo} htmlFor="additionalInfo">
-          Additional Information
-        </label>
-        <textarea
-          className={styles.additionalinfoField}
-          id="additionalInfo"
-          value={additionalInfo}
-          onChange={handleAdditionalInfoChange}
-        ></textarea>
-
-        <label className={styles.itemDescription} htmlFor="itemDescription">
-          Item Description
-        </label>
-        <input
-          className={styles.itemdescriptionField}
-          type="text"
-          id="itemDescription"
-          value={itemDescription}
-          onChange={handleItemDescriptionChange}
-        />
-
-        <label className={styles.itemLink} htmlFor="itemLink">
-          Item Link
-        </label>
-        <input
-          className={styles.itemlinkField}
-          type="text"
-          id="itemLink"
-          value={itemLink}
-          onChange={handleItemLinkChange}
-        />
-
-        <label className={styles.supportingDocs} htmlFor="supportingDocs">
-          Supporting Documents
-        </label>
-        <input
-          className={styles.supportingdocsField}
-          type="file"
-          id="supportingDocs"
-        />
-                <button className={styles.submitButton} type="submit">
+          <div>
+            <label className={styles.date} htmlFor="date">
+              Date Needed
+            </label>
+            <input
+              className={styles.dateField}
+              type="date"
+              id="date"
+              value={date}
+              onChange={handleDateChange}
+              required
+            />
+          </div>
+          <div className={styles.textareaWrapper}>
+            <label className={styles.additionalInfo} htmlFor="additionalInfo">
+              Additional Information
+            </label>
+            <textarea
+              className={styles.additionalinfoField}
+              id="additionalInfo"
+              value={additionalInfo}
+              onChange={handleAdditionalInfoChange}
+              required
+            />
+          </div>
+          <div>
+            <label className={styles.quantity} htmlFor="quantity">
+              Quantity
+            </label>
+            <input
+              className={styles.quantityField}
+              type="number"
+              id="quantity"
+              value={quantity}
+              onChange={handleQuantityChange}
+              required
+            />
+          </div>
+        </div>
+                <div className={styles.row}>
+          <div className={styles.textareaWrapper}>
+            <label className={styles.vendor} htmlFor="vendor">
+              Vendor
+            </label>
+            <textarea
+              className={styles.vendorField}
+              id="vendor"
+              value={vendor}
+              onChange={handleVendorChange}
+              required
+            />
+          </div>
+          <div className={styles.textareaWrapper}>
+            <label className={styles.itemDescription} htmlFor="itemDescription">
+              Item Description
+            </label>
+            <textarea
+              className={styles.itemdescriptionField}
+              id="itemDescription"
+              value={itemDescription}
+              onChange={handleItemDescriptionChange}
+              required
+            />
+          </div>
+          <div className={styles.textareaWrapper}>
+            <label className={styles.itemLink} htmlFor="itemLink">
+              Item Link
+            </label>
+            <textarea
+              className={styles.itemlinkField}
+              id="itemLink"
+              value={itemLink}
+              onChange={handleItemLinkChange}
+              required
+            />
+          </div>
+          <div className={styles.textareaWrapper}>
+            <label className={styles.partNum} htmlFor="partNumber">
+              Part Number
+            </label>
+            <textarea
+              className={styles.partnumField}
+              id="partNumber"
+              value={partNumber}
+              onChange={handlePartNumberChange}
+              required
+            />
+          </div>
+        </div>
+        <div className={styles.row}>
+          <div>
+            <label className={styles.unitCost} htmlFor="unitCost">
+              Unit Cost
+            </label>
+            <input
+              className={styles.unitcostField}
+              type="number"
+              step="0.01"
+              id="unitCost"
+              value={unitCost}
+              onChange={handleUnitCostChange}
+              required
+            />
+          </div>
+          <div>
+            <label className={styles.totalCost} htmlFor="totalCost">
+              Total Cost
+            </label>
+            <input
+              className={styles.totalcostField}
+              type="number"
+              step="0.01"
+              id="totalCost"
+              value={totalCost}
+              onChange={handleTotalCostChange}
+              required
+            />
+          </div>
+        </div>
+        <div className={styles.supportingDocs}>
+          <label className={styles.supportingDocsLabel} htmlFor="supportingDocsInput">
+            Supporting Documents
+          </label>
+          <input
+            className={styles.supportingDocsInput}
+            type="file"
+            id="supportingDocsInput"
+            multiple
+            onChange={(e) => console.log(e.target.files)}
+          />
+        </div>
+        <button className={styles.submitButton} type="submit">
           Submit
         </button>
       </form>
