@@ -1,41 +1,131 @@
-import React from 'react';
+import React, { useState, ChangeEvent, FormEvent } from "react";
+import styles from "../../styles/request.module.css";
 
-export default function StudentRequest() {
+const StudentRequest = () => {
+  const [vendor, setVendor] = useState("");
+  const [date, setDate] = useState("");
+  const [partNumber, setPartNumber] = useState("");
+  const [quantity, setQuantity] = useState("");
+  const [unitCost, setUnitCost] = useState("");
+  const [totalCost, setTotalCost] = useState("");
+
+  const handleVendorChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setVendor(e.target.value);
+  };
+
+  const handleDateChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setDate(e.target.value);
+  };
+
+  const handlePartNumberChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setPartNumber(e.target.value);
+  };
+
+  const handleQuantityChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setQuantity(e.target.value);
+  };
+
+  const handleUnitCostChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setUnitCost(e.target.value);
+  };
+
+  const handleTotalCostChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setTotalCost(e.target.value);
+  };
+
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    console.log("Form submitted!");
+  };
+
+
   return (
-    <>
-      <form>
-        <div className="rectangle-1"></div>
-        <div className="request-form">Request Form</div>
-        <div className="budget">Budget:</div>
-        <div className="remaining">Remaining:</div>
-        <div className="vendor">Vendor</div>
-        <input type="text" className="vendor-field" id="vendor-field" name="vendor-field" />
-        <div className="date">Date</div>
-        <input type="text" className="date-field" id="date-field" name="date-field"  />
-        <div className="expense-justification">Expense Justification</div>
-        <input type="text" className="expense-field" id="expense-field" name="expense-field" />
-        <div className="additional-info">Additional Information</div>
-        <input type="text" className="additionalinfo-field" id="additionalinfo-field" name="additionalinfo-field" />
-        <div className="item-description">Item Description</div>
-        <input type="text" className="itemdescription-field" id="itemdescription-field" name="itemdescription-field"/>
-        <div className="item-link">Item Link</div>
-        <input type="text" className="itemlink-field" id="itemlink-field" name="itemdescription-field" />
-        <div className="part-num">Part Number</div>
-        <input type="text" className="partnum-field" id="partnum-field" name="partnum-field" />
-        <div className="quantity">Quantity</div>
-        <input type="text" className="quantity-field" id="quantity-field" name="quantity-field" />
-        <div className="unit-cost">Unit Cost</div>
-        <input type="text" className="unitcost-field" id="unitcost-field" name="unitcost-field"  />
-        <div className="total-cost">Total Cost</div>
-        <input type="text" className="totalcost-field" id="totalcost-field" name="totalcost-field" />
-        <div className="supporting-docs">Supporting Documents</div>
-        <div className="submit-box">
-          <button type="submit" className="btn btn-primary">Submit</button>
-        </div>
-      </form>
-      <div className="add-item">
-        <button type="button" className="btn btn-success">Add Item</button>
+    <div className={styles.container}>
+      <div className={styles.header}>
+        <h1 className={styles.requestForm}>New Purchase Request</h1>
       </div>
-    </>
+      <div className={styles.budgetInfo}>
+        <div className={styles.budget}>
+          Budget: <span>$10,000</span>
+        </div>
+        <div className={styles.remaining}>
+          Remaining: <span>$5,000</span>
+        </div>
+      </div>
+      <form className={styles.form} onSubmit={handleSubmit}>
+        <label className={styles.vendor} htmlFor="vendor">
+          Vendor
+        </label>
+        <input
+          className={styles.vendorField}
+          type="text"
+          id="vendor"
+          value={vendor}
+          onChange={handleVendorChange}
+        />
+
+        <label className={styles.date} htmlFor="date">
+          Date Needed
+        </label>
+        <input
+          className={styles.dateField}
+          type="date"
+          id="date"
+          value={date}
+          onChange={handleDateChange}
+        />
+
+        <label className={styles.partNum} htmlFor="partNumber">
+          Part Number
+        </label>
+        <input
+          className={styles.partnumField}
+          type="text"
+          id="partNumber"
+          value={partNumber}
+          onChange={handlePartNumberChange}
+        />
+
+        <label className={styles.quantity} htmlFor="quantity">
+          Quantity
+        </label>
+        <input
+          className={styles.quantityField}
+          type="number"
+          id="quantity"
+          value={quantity}
+          onChange={handleQuantityChange}
+        />
+
+        <label className={styles.unitCost} htmlFor="unitCost">
+          Unit Cost
+        </label>
+        <input
+          className={styles.unitcostField}
+          type="number"
+          step="0.01"
+          id="unitCost"
+          value={unitCost}
+          onChange={handleUnitCostChange}
+        />
+
+        <label className={styles.totalCost} htmlFor="totalCost">
+          Total Cost
+        </label>
+        <input
+          className={styles.totalcostField}
+          type="number"
+          step="0.01"
+          id="totalCost"
+          value={totalCost}
+          onChange={handleTotalCostChange}
+        />
+                <button className={styles.submitButton} type="submit">
+          Submit
+        </button>
+      </form>
+    </div>
   );
-}
+};
+
+export default StudentRequest;
