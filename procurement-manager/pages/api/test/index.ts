@@ -15,11 +15,11 @@ export default async function handler(
       data: [{ role: 'Admin' }, { role: 'Mentor' }, { role: 'Student' }],
     })
 
-    // create sample user
+    // create sample student
     await prisma.user.create({
       data: {
         netID: 'abc000000',
-        firstName: 'Person',
+        firstName: 'Student',
         lastName: '1',
         email: 'abc000000@utdallas.edu',
         active: true,
@@ -27,39 +27,66 @@ export default async function handler(
       },
     })
 
+    // create sample mentor
+    await prisma.user.create({
+      data: {
+        netID: 'def000000',
+        firstName: 'Mentor',
+        lastName: '1',
+        email: 'def000000@utdallas.edu',
+        active: true,
+        role: { connect: { roleID: 2 } },
+      },
+    })
+
+    // create sample admin
+    await prisma.user.create({
+      data: {
+        netID: 'ghi000000',
+        firstName: 'Admin',
+        lastName: '1',
+        email: 'ghi000000@utdallas.edu',
+        active: true,
+        role: { connect: { roleID: 1 } },
+      },
+    })
+
     // create sample project
     await prisma.project.create({
       data: {
         projectType: 'EPICS',
-        projectNum: 1566,
-        projectTitle: 'Sample Project',
+        projectNum: 1000,
+        projectTitle: 'Sample Project 1',
         startingBudget: 1000.0,
-        sponsorCompany: 'Sample Company',
+        sponsorCompany: 'Sample Company 1',
         activationDate: new Date(),
       },
     })
 
-    // Connect user to a project
+    // Connect student to a project
     await prisma.worksOn.create({
       data: {
-        user: {
-          connect: {
-            netID: 'abc000000',
-          },
-        },
-        project: {
-          connect: {
-            projectNum: 1566,
-          },
-        },
+        user: { connect: { netID: 'abc000000' } },
+        project: { connect: { projectNum: 1000 } },
+      },
+    })
+
+    // Connect mentor to a project
+    await prisma.worksOn.create({
+      data: {
+        user: { connect: { netID: 'def000000' } },
+        project: { connect: { projectNum: 1000 } },
       },
     })
 
     // Create a sample vendor
-    await prisma.vendor.create({
-      data: {
-        vendorName: 'Sample Vendor',
-      },
+    await prisma.vendor.createMany({
+      data: [
+        { vendorName: 'Sample Vendor 1' },
+        { vendorName: 'Sample Vendor 2' },
+        { vendorName: 'Sample Vendor 3' },
+      ],
+      skipDuplicates: true,
     })
 
     res.status(200).json({ message: 'Responded Successfully!' })
