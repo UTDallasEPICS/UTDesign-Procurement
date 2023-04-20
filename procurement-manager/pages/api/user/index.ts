@@ -52,7 +52,7 @@ export default async function handler(
         role : {connect: {roleID: 1}}
       }})
 
-  if(req.method == 'GET'){
+  if(req.method == 'POST'){
     const{Firstname, Lastname, email } = req.body;
     const user = prisma.user.findUnique({
       where:{
