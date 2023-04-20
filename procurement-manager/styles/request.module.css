@@ -48,6 +48,11 @@
   margin: 0 auto;
 }
 
+.row {
+  display: flex;
+  gap: 30px;
+}
+
 .vendor,
 .date,
 .expenseJustification,
