@@ -23,10 +23,8 @@
 // pages/api/users.js
 // pages/api/users.js
 
-import { PrismaClient } from '@prisma/client'
 import { NextApiRequest, NextApiResponse } from 'next'
-
-const prisma = new PrismaClient()
+import { prisma } from '@/db'
 
 export default async function handler(
   req: NextApiRequest,
@@ -40,16 +38,21 @@ export default async function handler(
       res.status(500).json({ error: 'Failed to fetch users' })
     }
   } else if (req.method === 'POST') {
-    const { firstName, lastName, email, active } = req.body
+    const { firstName, lastName, email, responsibilities, roleID } = req.body
     try {
       const user = await prisma.user.create({
         data: {
           firstName,
           lastName,
           email,
+          netID: email.split('@')[0], // gets netID from email
           active: true,
-          responsibilities: 'student',
-          deactivationDate: '11/20/23',
+          responsibilities,
+          role: {
+            connect: {
+              roleID: roleID,
+            },
+          },
         },
       })
       res.status(201).json(user)

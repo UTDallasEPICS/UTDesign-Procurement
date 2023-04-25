@@ -3,6 +3,7 @@ import styles from '@/styles/Login.module.scss'
 import { Dropdown, DropdownButton, Container, Row, Col } from 'react-bootstrap'
 import axios from 'axios'
 import { useRouter } from 'next/router'
+import { User } from '@prisma/client'
 
 export default function Login() {
   const [roleLoggedIn, setRoleLoggedIn] = useState('No user is logged in')
@@ -13,19 +14,22 @@ export default function Login() {
 
     // type safe
     if ('id' in e.target && typeof e.target.id === 'string') {
-      const role: string = e.target.id
+      const roleID: number = parseInt(e.target.id)
 
       try {
+        console.log('roleID :: ', roleID)
         // POST request to our user API
-        const { data, status } = await axios.post('/api/user', {
-          role: role,
+        const response = await axios.post('/api/user/fakeauth', {
+          roleID: roleID,
         })
-        console.log('response status: ', status)
-        console.log('response data: ', data)
-        setRoleLoggedIn(`${data.givenRole} is logged in`)
-
-        if (role === 'mentor') {
-          router.push('/orders/mentor')
+        console.log('response :: ', response.data)
+        if (response.status === 200) {
+          const user: User = response.data.user
+          console.log('user :: ', user)
+          setRoleLoggedIn(`${user.firstName} is logged in`)
+          if (user.roleID === 2) {
+            router.push('/orders/mentor')
+          }
         }
       } catch (error) {
         // Error handling from https://bobbyhadz.com/blog/typescript-http-request-axios#making-http-post-requests-with-axios-in-typescript
@@ -48,13 +52,13 @@ export default function Login() {
             <Col>
               <div className={styles.wrapper}>
                 <DropdownButton id='userDropdown' title='Select User'>
-                  <Dropdown.Item onClick={handleSelect} id='admin'>
+                  <Dropdown.Item onClick={handleSelect} id='1'>
                     Admin
                   </Dropdown.Item>
-                  <Dropdown.Item onClick={handleSelect} id='mentor'>
+                  <Dropdown.Item onClick={handleSelect} id='2'>
                     Mentor
                   </Dropdown.Item>
-                  <Dropdown.Item onClick={handleSelect} id='student'>
+                  <Dropdown.Item onClick={handleSelect} id='3'>
                     Student
                   </Dropdown.Item>
                 </DropdownButton>
