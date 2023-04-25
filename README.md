@@ -26,6 +26,18 @@ You must have the following tools installed:
 - https://www.youtube.com/watch?v=varePWkGi8Y&t
 -  https://www.youtube.com/watch?v=J4pdHM-oG-s&t
 -  https://youtu.be/GgzWFxIiwK4
+
+### Dependenceies setup
+
+To install dependecies, in terminal or VSCode, run  `cd procurement-manager/` to make sure that the terminal is in the procurement-manager folder and run `npm install`
  
    
-  
+## Database Setup
+Downlading and setting up MYsql is required first. MySQL workbench is used then to manually add some data into the tables and can be used to further view changes done to the database
+
+After downloading and installing everything, run `npx i` to download all the packages
+
+The prisma file under the prisma folder had the schemea setup and can be eddited to change the database. Running `npx prisma migrate dev`  intially will set up the database. 
+After making any changes to the database running `npx prisma migrate dev` will update the databse
+- Some more documentation regarding this is provided at https://www.prisma.io/docs/concepts/components/prisma-migrate
+
