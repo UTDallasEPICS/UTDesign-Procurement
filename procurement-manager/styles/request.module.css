@@ -2,25 +2,42 @@
   font-family: "Inter", sans-serif;
   background-color: #ffffff;
   margin: 0;
-  padding: 0;
+  padding: 20px;
+  position: relative;
 }
 
-.header {
-  width: 100%;
-  height: 107px;
+.titleContainer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
   background-color: #154734;
+  padding: 10px;
+  border-radius: 5px;
   display: flex;
   justify-content: center;
-  align-items: center;
+  /* Add this */
+  margin-bottom: 40px;
+}
+
+.titleBackground {
+  background-color: #28a745;
+  padding: 10px;
+  border-radius: 5px;
+}
+
+.boldLabel {
+  font-weight: bold;
 }
 
 .requestForm {
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   font-weight: 700;
   font-size: 64px;
   line-height: 77px;
   text-align: center;
   color: #FFFFFF;
+  margin: 0;
 }
 
 .budgetInfo {
@@ -145,4 +162,14 @@
   border-radius: 4px;
   padding: 20px;
   margin-bottom: 20px;
+}
+
+
+
+.itemRow {
+  margin-bottom: 20px;
+}
+
+.itemLastRow {
+  margin-bottom: 40px;
 }

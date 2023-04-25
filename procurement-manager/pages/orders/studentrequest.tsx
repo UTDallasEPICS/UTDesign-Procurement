@@ -1,234 +1,259 @@
-import React, { useState, ChangeEvent, FormEvent } from "react";
+// Imports at the top
+import React, { useState } from "react";
+import {
+  Container,
+  Row,
+  Col,
+  Form,
+  Button,
+  ListGroup,
+  InputGroup,
+} from "react-bootstrap";
 import styles from "../../styles/request.module.css";
 
-const initialItem = {
-  vendor: "",
-  itemDescription: "",
-  itemLink: "",
-  partNumber: "",
-  quantity: "",
-  unitCost: "",
-  totalCost: "",
-};
-
 const StudentRequest = () => {
+  // State and handlers
   const [date, setDate] = useState("");
   const [additionalInfo, setAdditionalInfo] = useState("");
-  const [items, setItems] = useState([{ ...initialItem }]);
+  const [items, setItems] = useState([
+    {
+      vendor: "",
+      name: "",
+      description: "",
+      link: "",
+      partNumber: "",
+      quantity: "",
+      unitCost: "",
+      totalCost: "",
+    },
+  ]);
+  const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null);
 
-  const handleInputChange = (
-    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-    index: number
-  ) => {
-    const { name, value } = e.target;
-    const updatedItems = items.map((item, i) =>
-      i === index ? { ...item, [name]: value } : item
-    );
-    setItems(updatedItems);
-  };
-
-  const handleDateChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setDate(e.target.value);
   };
 
-  const handleAdditionalInfoChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
+  const handleAdditionalInfoChange = (
+    e: React.ChangeEvent<HTMLTextAreaElement>
+  ) => {
     setAdditionalInfo(e.target.value);
   };
 
   const handleAddItem = () => {
-    setItems([...items, { ...initialItem }]);
+    setItems([
+      ...items,
+      {
+        vendor: "",
+        name: "",
+        description: "",
+        link: "",
+        partNumber: "",
+        quantity: "",
+        unitCost: "",
+        totalCost: "",
+      },
+    ]);
   };
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleItemChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    index: number,
+    field:
+      | "vendor"
+      | "name"
+      | "description"
+      | "link"
+      | "partNumber"
+      | "quantity"
+      | "unitCost"
+      | "totalCost"
+  ) => {
+    const newItems = [...items];
+    newItems[index][field] = e.target.value;
+    setItems(newItems);
+  };
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log("Form submitted!");
+    // Process form data and submit
+    console.log("Submit:", { date, additionalInfo, items, selectedFiles });
   };
-
-  const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null);
-
 
   return (
-    <div className={styles.container}>
-      <div className={styles.header}>
-        <h1 className={styles.requestForm}>Request Form</h1>
-      </div>
-      <div className={styles.budgetInfo}>
-        <div className={styles.budget}>
-          Budget: <span>$10,000</span>
-        </div>
-        <div className={styles.remaining}>
-          Remaining: <span>$5,000</span>
-        </div>
-      </div>
-      <form className={styles.form} onSubmit={handleSubmit}>
-        <div className={styles.row}>
-  <div>
-    <label className={styles.date} htmlFor="date">
-      Date Needed
-    </label>
-    <input
-      className={styles.dateField}
-      type="date"
-      id="date"
-      value={date}
-      onChange={handleDateChange}
-      required
-    />
-  </div>
-  <div className={styles.textareaWrapper}>
-    <label className={styles.additionalInfo} htmlFor="additionalInfo">
-      Additional Information
-    </label>
-    <textarea
-      className={styles.additionalinfoField}
-      id="additionalInfo"
-      value={additionalInfo}
-      onChange={handleAdditionalInfoChange}
-      required
-    />
-  </div>
-</div>
-{items.map((item, index) => (
+  <Container className={styles.container}>
+    <div className={styles.titleContainer}>
+      <h1 className={styles.requestForm}>Request Form</h1>
+    </div>
+    <div className={styles.greenBar}></div>
+    <Row className={"text-center mb-4"}>
+      <Col>
+        <p>
+          <strong>Budget:</strong> <span>$10,000</span>
+        </p>
+      </Col>
+      <Col>
+        <p>
+          <strong>Remaining:</strong> <span>$5,000</span>
+        </p>
+      </Col>
+    </Row>
+    <Form onSubmit={handleSubmit}>
+      <Row>
+        <Col md={4}>
+          <Form.Group controlId="date">
+            <Form.Label><strong>Date Needed</strong></Form.Label>
+            <Form.Control
+              type="date"
+              value={date}
+              onChange={handleDateChange}
+              required
+            />
+          </Form.Group>
+        </Col>
+        <Col md={8}>
+          <Form.Group controlId="additionalInfo">
+            <Form.Label><strong>Additional Information</strong></Form.Label>
+            <Form.Control
+              as="textarea"
+              rows={3}
+              value={additionalInfo}
+              onChange={handleAdditionalInfoChange}
+              required
+            />
+          </Form.Group>
+        </Col>
+      </Row>
+
+ {items.map((item, index) => (
   <div key={index} className={styles.itemSection}>
-    <div className={styles.row}>
-      <div className={styles.textareaWrapper}>
-        <label className={styles.vendor} htmlFor={`vendor${index}`}>
-          Vendor
-        </label>
-        <textarea
-          className={styles.vendorField}
-          id={`vendor${index}`}
-          name="vendor"
-          value={item.vendor}
-          onChange={(e) => handleInputChange(e, index)}
-          required
-        />
-      </div>
-      <div className={styles.textareaWrapper}>
-        <label className={styles.itemDescription} htmlFor={`itemDescription${index}`}>
-          Item Description
-        </label>
-        <textarea
-          className={styles.itemdescriptionField}
-          id={`itemDescription${index}`}
-          name="itemDescription"
-          value={item.itemDescription}
-          onChange={(e) => handleInputChange(e, index)}
-          required
-        />
-      </div>
-      <div className={styles.textareaWrapper}>
-        <label className={styles.itemLink} htmlFor={`itemLink${index}`}>
-          Item Link
-        </label>
-        <textarea
-          className={styles.itemlinkField}
-          id={`itemLink${index}`}
-          name="itemLink"
-          value={item.itemLink}
-          onChange={(e) => handleInputChange(e, index)}
-          required
-        />
-      </div>
-      <div className={styles.textareaWrapper}>
-        <label className={styles.partNum} htmlFor={`partNumber${index}`}>
-          Part Number
-        </label>
-        <textarea
-          className={styles.partnumField}
-          id={`partNumber${index}`}
-          name="partNumber"
-          value={item.partNumber}
-          onChange={(e) => handleInputChange(e, index)}
-          required
-        />
-      </div>
-      <div className={styles.inputWrapper}>
-        <label className={styles.quantity} htmlFor={`quantity${index}`}>
-          Quantity
-        </label>
-        <input
-          className={styles.quantityField}
-          type="number"
-          id={`quantity${index}`}
-          name="quantity"
-          value={item.quantity}
-          onChange={(e) => handleInputChange(e, index)}
-          required
-        />
-      </div>
-    </div>
-    
-    <div className={styles.row}>
-      <div>
-        <label className={styles.unitCost} htmlFor={`unitCost${index}`}>
-          Unit Cost
-        </label>
-        <input
-          className={styles.unitcostField}
-          type="number"
-          step="0.01"
-          id={`unitCost${index}`}
-          name="unitCost"
-          value={item.unitCost}
-          onChange={(e) => handleInputChange(e, index)}
-          required
-        />
-      </div>
-      <div>
-        <label className={styles.totalCost} htmlFor={`totalCost${index}`}>
-          Total Cost
-        </label>
-        <input
-          className={styles.totalcostField}
-          type="number"
-          step="0.01"
-          id={`totalCost${index}`}
-          name="totalCost"
-          value={item.totalCost}
-          onChange={(e) => handleInputChange(e, index)}
-          required
-        />
-      </div>
-    </div>
+    <Row>
+      <Col md={2}>
+        <Form.Group controlId={`item${index}Vendor`}>
+          <Form.Label><strong>Vendor</strong></Form.Label>
+          <Form.Control
+            type="text"
+            value={item.vendor}
+            onChange={(e) =>
+              handleItemChange(e, index, "vendor")
+            }
+            required
+          />
+        </Form.Group>
+      </Col>
+      <Col md={2}>
+        <Form.Group controlId={`item${index}Description`}>
+          <Form.Label><strong>Description</strong></Form.Label>
+          <Form.Control
+            type="text"
+            value={item.description}
+            onChange={(e) =>
+              handleItemChange(e, index, "description")
+            }
+            required
+          />
+        </Form.Group>
+      </Col>
+      <Col md={2}>
+        <Form.Group controlId={`item${index}Link`}>
+          <Form.Label><strong>Item Link</strong></Form.Label>
+          <Form.Control
+            type="text"
+            value={item.link}
+            onChange={(e) =>
+              handleItemChange(e, index, "link")
+            }
+            required
+          />
+        </Form.Group>
+      </Col>
+      <Col md={2}>
+        <Form.Group controlId={`item${index}PartNumber`}>
+          <Form.Label><strong>Part Number</strong></Form.Label>
+          <Form.Control
+            type="text"
+            value={item.partNumber}
+            onChange={(e) =>
+              handleItemChange(e, index, "partNumber")
+            }
+            required
+          />
+        </Form.Group>
+      </Col>
+      <Col md={2}>
+        <Form.Group controlId={`item${index}Quantity`}>
+          <Form.Label><strong>Quantity</strong></Form.Label>
+          <Form.Control
+            type="number"
+            value={item.quantity}
+            onChange={(e) =>
+              handleItemChange(e, index, "quantity")
+            }
+            required
+          />
+               </Form.Group>
+      </Col>
+    </Row>
+    <Row>
+      <Col md={4}>
+        <Form.Group controlId={`item${index}Cost`}>
+          <Form.Label><strong>Unit Cost</strong></Form.Label>
+          <InputGroup>
+            <InputGroup.Text>$</InputGroup.Text>
+            <Form.Control
+              type="number"
+              step="0.01"
+              value={item.cost}
+              onChange={(e) =>
+                handleItemChange(e, index, "cost")
+              }
+              required
+            />
+          </InputGroup>
+        </Form.Group>
+      </Col>
+      <Col md={4}>
+        <Form.Group controlId={`item${index}TotalCost`}>
+          <Form.Label><strong>Total Cost</strong></Form.Label>
+          <InputGroup>
+            <InputGroup.Text>$</InputGroup.Text>
+            <Form.Control
+              type="number"
+              step="0.01"
+              value={item.totalCost}
+              onChange={(e) =>
+                handleItemChange(e, index, "totalCost")
+              }
+              required
+            />
+          </InputGroup>
+        </Form.Group>
+      </Col>
+    </Row>
   </div>
 ))}
 
-<button
-          className={styles.addItemButton}
-          type="button"
-          onClick={handleAddItem}
-        >
-          Add Item
-        </button>
 
-
-        <div className={styles.supportingDocs}>
-          <label className={styles.supportingDocsLabel} htmlFor="supportingDocsInput">
-            Supporting Documents
-          </label>
-          <input
-            className={styles.supportingDocsInput}
+        <Button variant="primary" type="button" onClick={handleAddItem}>
+          Add another item
+        </Button>
+        <Form.Group controlId="fileUpload">
+          <Form.Label><strong>Supporting Documents</strong></Form.Label>
+          <Form.Control
             type="file"
-            id="supportingDocsInput"
             multiple
             onChange={(e) => setSelectedFiles(e.target.files)}
           />
-          {selectedFiles && (
-  <ul className={styles.selectedFilesList}>
-    {Array.from(selectedFiles).map((file, index) => (
-      <li key={index}>{file.name}</li>
-    ))}
-  </ul>
-)}
-
-        </div>
-        <button className={styles.submitButton} type="submit">
+        </Form.Group>
+        <Button variant="success" type="submit">
           Submit
-        </button>
-      </form>
-    </div>
+        </Button>
+      </Form>
+    </Container>
   );
 };
 
 export default StudentRequest;
+
+        
+
+
