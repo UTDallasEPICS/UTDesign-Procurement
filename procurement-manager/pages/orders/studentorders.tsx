@@ -17,7 +17,7 @@ export default function StudentOrders() {
     {
       orderNumber: 1,
       dateRequested: '4/11/2023',
-      orderSubtotal: 170,
+      orderSubTotal: 170,
       shippingCost: 30,
       orderTotal: 200,
       dateOrdered: '4/12/2023',
@@ -26,7 +26,7 @@ export default function StudentOrders() {
     {
       orderNumber: 2,
       dateRequested: '4/16/2023',
-      orderSubtotal: 170,
+      orderSubTotal: 170,
       shippingCost: 30,
       orderTotal: 200,
       dateOrdered: '4/18/2023',
@@ -40,7 +40,7 @@ export default function StudentOrders() {
     {
       orderNumber: 1,
       dateRequested: '4/13/2023',
-      orderSubtotal: 150,
+      orderSubTotal: 150,
       shippingCost: 20,
       orderTotal: 170,
       dateOrdered: '4/14/2023',
@@ -49,7 +49,7 @@ export default function StudentOrders() {
     {
       orderNumber: 2,
       dateRequested: '4/16/2023',
-      orderSubtotal: 170,
+      orderSubTotal: 170,
       shippingCost: 30,
       orderTotal: 200,
       dateOrdered: '4/18/2023',
@@ -62,12 +62,12 @@ export default function StudentOrders() {
   
 
   const project1Expenses = project1Cards.reduce(
-    (acc, card) => acc + (card.shippingCost || 0) + (card.orderSubtotal || 0),
+    (acc, card) => acc + (card.shippingCost || 0) + (card.orderSubTotal || 0),
     0
   );
 
   const project2Expenses = project2Cards.reduce(
-    (acc, card) => acc + (card.shippingCost || 0) + (card.orderSubtotal || 0),
+    (acc, card) => acc + (card.shippingCost || 0) + (card.orderSubTotal || 0),
     0
   );
 

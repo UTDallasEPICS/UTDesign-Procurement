@@ -36,13 +36,7 @@ const RequestCard: React.FC<RequestCardProps> = ({
           <Col>Status: {orderStatus}</Col>
           <Col xs="auto" className="d-flex align-items-center">
             <div className="d-flex align-items-start">
-              <Button
-                variant="success"
-                size="sm"
-                className="mb-2"
-                onClick={() => console.log(`Request #${orderNumber} approved`)}
-              >
-                </Button>
+              
             </div>
           </Col>
         </Row>
