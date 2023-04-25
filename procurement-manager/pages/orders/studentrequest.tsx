@@ -1,51 +1,42 @@
 import React, { useState, ChangeEvent, FormEvent } from "react";
 import styles from "../../styles/request.module.css";
 
-const StudentRequest = () => {
-  const [vendor, setVendor] = useState("");
-  const [date, setDate] = useState("");
-  const [partNumber, setPartNumber] = useState("");
-  const [quantity, setQuantity] = useState("");
-  const [unitCost, setUnitCost] = useState("");
-  const [totalCost, setTotalCost] = useState("");
-  const [itemDescription, setItemDescription] = useState("");
-  const [itemLink, setItemLink] = useState("");
-  const [additionalInfo, setAdditionalInfo] = useState("");
+const initialItem = {
+  vendor: "",
+  itemDescription: "",
+  itemLink: "",
+  partNumber: "",
+  quantity: "",
+  unitCost: "",
+  totalCost: "",
+};
 
-  const handleVendorChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
-    setVendor(e.target.value);
+const StudentRequest = () => {
+  const [date, setDate] = useState("");
+  const [additionalInfo, setAdditionalInfo] = useState("");
+  const [items, setItems] = useState([{ ...initialItem }]);
+
+  const handleInputChange = (
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+    index: number
+  ) => {
+    const { name, value } = e.target;
+    const updatedItems = items.map((item, i) =>
+      i === index ? { ...item, [name]: value } : item
+    );
+    setItems(updatedItems);
   };
 
   const handleDateChange = (e: ChangeEvent<HTMLInputElement>) => {
     setDate(e.target.value);
   };
 
-  const handlePartNumberChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
-    setPartNumber(e.target.value);
-  };
-
-  const handleQuantityChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setQuantity(e.target.value);
-  };
-
-  const handleUnitCostChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setUnitCost(e.target.value);
-  };
-
-  const handleTotalCostChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setTotalCost(e.target.value);
-  };
-
-  const handleItemDescriptionChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
-    setItemDescription(e.target.value);
-  };
-
-  const handleItemLinkChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
-    setItemLink(e.target.value);
-  };
-
   const handleAdditionalInfoChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
     setAdditionalInfo(e.target.value);
+  };
+
+  const handleAddItem = () => {
+    setItems([...items, { ...initialItem }]);
   };
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
@@ -68,125 +59,147 @@ const StudentRequest = () => {
       </div>
       <form className={styles.form} onSubmit={handleSubmit}>
         <div className={styles.row}>
-          <div>
-            <label className={styles.date} htmlFor="date">
-              Date Needed
-            </label>
-            <input
-              className={styles.dateField}
-              type="date"
-              id="date"
-              value={date}
-              onChange={handleDateChange}
-              required
-            />
-          </div>
-          <div className={styles.textareaWrapper}>
-            <label className={styles.additionalInfo} htmlFor="additionalInfo">
-              Additional Information
-            </label>
-            <textarea
-              className={styles.additionalinfoField}
-              id="additionalInfo"
-              value={additionalInfo}
-              onChange={handleAdditionalInfoChange}
-              required
-            />
-          </div>
-          <div>
-            <label className={styles.quantity} htmlFor="quantity">
-              Quantity
-            </label>
-            <input
-              className={styles.quantityField}
-              type="number"
-              id="quantity"
-              value={quantity}
-              onChange={handleQuantityChange}
-              required
-            />
-          </div>
-        </div>
-                <div className={styles.row}>
-          <div className={styles.textareaWrapper}>
-            <label className={styles.vendor} htmlFor="vendor">
-              Vendor
-            </label>
-            <textarea
-              className={styles.vendorField}
-              id="vendor"
-              value={vendor}
-              onChange={handleVendorChange}
-              required
-            />
-          </div>
-          <div className={styles.textareaWrapper}>
-            <label className={styles.itemDescription} htmlFor="itemDescription">
-              Item Description
-            </label>
-            <textarea
-              className={styles.itemdescriptionField}
-              id="itemDescription"
-              value={itemDescription}
-              onChange={handleItemDescriptionChange}
-              required
-            />
-          </div>
-          <div className={styles.textareaWrapper}>
-            <label className={styles.itemLink} htmlFor="itemLink">
-              Item Link
-            </label>
-            <textarea
-              className={styles.itemlinkField}
-              id="itemLink"
-              value={itemLink}
-              onChange={handleItemLinkChange}
-              required
-            />
-          </div>
-          <div className={styles.textareaWrapper}>
-            <label className={styles.partNum} htmlFor="partNumber">
-              Part Number
-            </label>
-            <textarea
-              className={styles.partnumField}
-              id="partNumber"
-              value={partNumber}
-              onChange={handlePartNumberChange}
-              required
-            />
-          </div>
-        </div>
-        <div className={styles.row}>
-          <div>
-            <label className={styles.unitCost} htmlFor="unitCost">
-              Unit Cost
-            </label>
-            <input
-              className={styles.unitcostField}
-              type="number"
-              step="0.01"
-              id="unitCost"
-              value={unitCost}
-              onChange={handleUnitCostChange}
-              required
-            />
-          </div>
-          <div>
-            <label className={styles.totalCost} htmlFor="totalCost">
-              Total Cost
-            </label>
-            <input
-              className={styles.totalcostField}
-              type="number"
-              step="0.01"
-              id="totalCost"
-              value={totalCost}
-              onChange={handleTotalCostChange}
-              required
-            />
-          </div>
-        </div>
+  <div>
+    <label className={styles.date} htmlFor="date">
+      Date Needed
+    </label>
+    <input
+      className={styles.dateField}
+      type="date"
+      id="date"
+      value={date}
+      onChange={handleDateChange}
+      required
+    />
+  </div>
+  <div className={styles.textareaWrapper}>
+    <label className={styles.additionalInfo} htmlFor="additionalInfo">
+      Additional Information
+    </label>
+    <textarea
+      className={styles.additionalinfoField}
+      id="additionalInfo"
+      value={additionalInfo}
+      onChange={handleAdditionalInfoChange}
+      required
+    />
+  </div>
+</div>
+{items.map((item, index) => (
+  <div key={index} className={styles.itemSection}>
+    <div className={styles.row}>
+      <div className={styles.textareaWrapper}>
+        <label className={styles.vendor} htmlFor={`vendor${index}`}>
+          Vendor
+        </label>
+        <textarea
+          className={styles.vendorField}
+          id={`vendor${index}`}
+          name="vendor"
+          value={item.vendor}
+          onChange={(e) => handleInputChange(e, index)}
+          required
+        />
+      </div>
+      <div className={styles.textareaWrapper}>
+        <label className={styles.itemDescription} htmlFor={`itemDescription${index}`}>
+          Item Description
+        </label>
+        <textarea
+          className={styles.itemdescriptionField}
+          id={`itemDescription${index}`}
+          name="itemDescription"
+          value={item.itemDescription}
+          onChange={(e) => handleInputChange(e, index)}
+          required
+        />
+      </div>
+      <div className={styles.textareaWrapper}>
+        <label className={styles.itemLink} htmlFor={`itemLink${index}`}>
+          Item Link
+        </label>
+        <textarea
+          className={styles.itemlinkField}
+          id={`itemLink${index}`}
+          name="itemLink"
+          value={item.itemLink}
+          onChange={(e) => handleInputChange(e, index)}
+          required
+        />
+      </div>
+      <div className={styles.textareaWrapper}>
+        <label className={styles.partNum} htmlFor={`partNumber${index}`}>
+          Part Number
+        </label>
+        <textarea
+          className={styles.partnumField}
+          id={`partNumber${index}`}
+          name="partNumber"
+          value={item.partNumber}
+          onChange={(e) => handleInputChange(e, index)}
+          required
+        />
+      </div>
+      <div className={styles.inputWrapper}>
+        <label className={styles.quantity} htmlFor={`quantity${index}`}>
+          Quantity
+        </label>
+        <input
+          className={styles.quantityField}
+          type="number"
+          id={`quantity${index}`}
+          name="quantity"
+          value={item.quantity}
+          onChange={(e) => handleInputChange(e, index)}
+          required
+        />
+      </div>
+    </div>
+    
+    <div className={styles.row}>
+      <div>
+        <label className={styles.unitCost} htmlFor={`unitCost${index}`}>
+          Unit Cost
+        </label>
+        <input
+          className={styles.unitcostField}
+          type="number"
+          step="0.01"
+          id={`unitCost${index}`}
+          name="unitCost"
+          value={item.unitCost}
+          onChange={(e) => handleInputChange(e, index)}
+          required
+        />
+      </div>
+      <div>
+        <label className={styles.totalCost} htmlFor={`totalCost${index}`}>
+          Total Cost
+        </label>
+        <input
+          className={styles.totalcostField}
+          type="number"
+          step="0.01"
+          id={`totalCost${index}`}
+          name="totalCost"
+          value={item.totalCost}
+          onChange={(e) => handleInputChange(e, index)}
+          required
+        />
+      </div>
+    </div>
+  </div>
+))}
+
+<button
+          className={styles.addItemButton}
+          type="button"
+          onClick={handleAddItem}
+        >
+          Add Item
+        </button>
+
+
         <div className={styles.supportingDocs}>
           <label className={styles.supportingDocsLabel} htmlFor="supportingDocsInput">
             Supporting Documents

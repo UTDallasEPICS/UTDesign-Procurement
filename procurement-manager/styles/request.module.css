@@ -132,3 +132,17 @@
 .textareaWrapper {
   flex-basis: 100%;
 }
+
+.inputWrapper {
+  display: flex;
+  flex-direction: column;
+  margin: 10px;
+  width: 500px;
+}
+
+.itemSection {
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
