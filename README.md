@@ -18,7 +18,7 @@ You must have the following tools installed:
 ## Helpfull videos to get learn
 - Prisma: https://www.youtube.com/watch?v=RebA5J-rlwg
 
--Next.Js:  https://youtu.be/mTz0GXj8NN0
+- Next.Js:  https://youtu.be/mTz0GXj8NN0
 
 ## API's
   
