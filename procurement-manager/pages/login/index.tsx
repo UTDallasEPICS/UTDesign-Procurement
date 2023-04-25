@@ -27,6 +27,9 @@ export default function Login() {
       if (role === 'mentor') {
         router.push('/orders/mentor');
       }
+      if (role === 'student') {
+        router.push('/orders/studentorders');
+      }
     } catch (error) {
       // Error handling from https://bobbyhadz.com/blog/typescript-http-request-axios#making-http-post-requests-with-axios-in-typescript
       if (axios.isAxiosError(error)) {
