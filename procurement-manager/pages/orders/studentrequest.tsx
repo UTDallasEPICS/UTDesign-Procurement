@@ -44,6 +44,9 @@ const StudentRequest = () => {
     console.log("Form submitted!");
   };
 
+  const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null);
+
+
   return (
     <div className={styles.container}>
       <div className={styles.header}>
@@ -209,8 +212,16 @@ const StudentRequest = () => {
             type="file"
             id="supportingDocsInput"
             multiple
-            onChange={(e) => console.log(e.target.files)}
+            onChange={(e) => setSelectedFiles(e.target.files)}
           />
+          {selectedFiles && (
+  <ul className={styles.selectedFilesList}>
+    {Array.from(selectedFiles).map((file, index) => (
+      <li key={index}>{file.name}</li>
+    ))}
+  </ul>
+)}
+
         </div>
         <button className={styles.submitButton} type="submit">
           Submit
