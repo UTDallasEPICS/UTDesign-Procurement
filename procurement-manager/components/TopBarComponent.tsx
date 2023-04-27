@@ -1,20 +1,15 @@
-// TopBarComponent.tsx
 import React from 'react';
 import styles from './TopBarComponent.module.css';
+import Link from 'next/link';
 
 const TopBarComponent: React.FC = () => {
   return (
     <div className={styles.topBar}>
       <div className={styles.headerSection}>
         <h1>UTD Procurement Manager</h1>
-        <span
-          className={styles.logout}
-          onClick={() => {
-            console.log('Logging out...');
-          }}
-        >
-          Log Out
-        </span>
+        <Link href="/login">
+          <span className={styles.logout}>Log Out</span>
+        </Link>
       </div>
       <div className={styles.menuSection}>
         <nav className={styles.navigation}>
