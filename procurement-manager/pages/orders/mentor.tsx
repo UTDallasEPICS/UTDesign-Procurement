@@ -1,19 +1,53 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Container, Row, Col, Button, Collapse } from 'react-bootstrap'
 import TopBarComponent from '../../components/TopBarComponent'
 import RequestCard from '../../components/RequestCard'
 import ProjectHeader from '../../components/ProjectHeader'
 import RejectionModal from '../../components/RejectionModal'
+import { Project } from '@prisma/client'
+import axios from 'axios'
+import { RequestDetails } from '@/lib/types'
 
 export default function Mentor() {
-  const [isOpen, setIsOpen] = useState({ project1: true, project2: true })
+  // state for the different collapse projects
+  const [isOpen, setIsOpen] = useState<boolean[]>([])
+  // state for the modal for rejecting requests
   const [showRejectModal, setShowRejectModal] = useState(false)
+  // state to set the request number for the reject modal to show
   const [rejectedRequestNumber, setRejectedRequestNumber] = useState<
     number | null
   >(null)
+  // state for the requests inside the different projects associated to the user
+  const [projectRequests, setProjectRequests] = useState<RequestDetails[][]>([])
+  // state for the projects associated to the user
+  const [projects, setProjects] = useState<Project[]>([])
 
-  const toggleCollapse = (project: keyof typeof isOpen) => {
-    setIsOpen({ ...isOpen, [project]: !isOpen[project] })
+  useEffect(() => {
+    getMentor()
+  }, [])
+
+  async function getMentor() {
+    const response = await axios.post('/api/request-form/get', {
+      netID: 'def000000',
+    })
+    const [projects, requestsOfMultipleProjects] = await Promise.all([
+      response.data.projects,
+      response.data.requests,
+    ])
+    setProjects(projects)
+    setProjectRequests(requestsOfMultipleProjects)
+    setIsOpen(projects.map(() => true))
+    console.log('isOpen: ', isOpen)
+  }
+
+  const toggleCollapse = (projectIndex: number) => {
+    const newIsOpen = isOpen
+    for (let i = 0; i < isOpen.length; i++) {
+      if (i === projectIndex) {
+        newIsOpen[i] = !newIsOpen[i]
+      }
+    }
+    setIsOpen(newIsOpen)
   }
 
   const handleReject = (requestNumber: number) => {
@@ -79,7 +113,39 @@ export default function Mentor() {
     <>
       <TopBarComponent />
       <Container>
-        <Row className='big-row'>
+        {projects.map((project, projIndex) => {
+          return (
+            <Row className='big-row my-4' key={projIndex}>
+              <ProjectHeader
+                projectName={project.projectTitle}
+                expenses={project.totalExpenses}
+                available={project.startingBudget - project.totalExpenses}
+                budgetTotal={project.startingBudget}
+                onToggleCollapse={() => toggleCollapse(projIndex)}
+                isOpen={isOpen[projIndex]}
+              />
+              <Collapse in={isOpen[projIndex]}>
+                <div>
+                  {projectRequests[projIndex].map((request, reqIndex) => (
+                    <RequestCard
+                      requestNumber={request.requestID}
+                      dateRequested={request.dateSubmitted}
+                      // calculates the subtotal by running a loop for each item in the request to add up the subtoal
+                      orderTotal={request.RequestItem.reduce(
+                        (total, item) => total + item.quantity * item.unitPrice,
+                        0
+                      )}
+                      key={reqIndex}
+                      {...request}
+                      onReject={() => handleReject(request.requestID)}
+                    />
+                  ))}
+                </div>
+              </Collapse>
+            </Row>
+          )
+        })}
+        {/* <Row className='big-row my-4'>
           <ProjectHeader
             projectName='Project 1: Diagnostic Capstone'
             expenses={project1Expenses}
@@ -90,7 +156,7 @@ export default function Mentor() {
           />
           <Collapse in={isOpen.project1}>
             <div>
-              {project1Cards.map((card, index) => (
+              {projectRequests[0].map((card, index) => (
                 <RequestCard
                   key={index}
                   {...card}
@@ -99,8 +165,8 @@ export default function Mentor() {
               ))}
             </div>
           </Collapse>
-        </Row>
-        <Row className='big-row'>
+        </Row> */}
+        {/* <Row className='big-row'>
           <ProjectHeader
             projectName='Project 2: Point of Nerve Conduction'
             expenses={project2Expenses}
@@ -120,7 +186,7 @@ export default function Mentor() {
               ))}
             </div>
           </Collapse>
-        </Row>
+        </Row> */}
       </Container>
       <RejectionModal
         show={showRejectModal}

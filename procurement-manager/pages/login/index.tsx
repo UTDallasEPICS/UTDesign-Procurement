@@ -4,6 +4,7 @@ import { Dropdown, DropdownButton, Container, Row, Col } from 'react-bootstrap'
 import axios from 'axios'
 import { useRouter } from 'next/router'
 import { User } from '@prisma/client'
+// import index as Orders from '@/pages/orders/index'
 
 export default function Login() {
   const [roleLoggedIn, setRoleLoggedIn] = useState('No user is logged in')
@@ -27,6 +28,9 @@ export default function Login() {
           const user: User = response.data.user
           console.log('user :: ', user)
           setRoleLoggedIn(`${user.firstName} is logged in`)
+
+          // router.push('/orders')
+
           if (user.roleID === 2) {
             router.push('/orders/mentor')
           }

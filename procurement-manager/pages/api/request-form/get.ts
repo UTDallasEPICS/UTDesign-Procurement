@@ -3,10 +3,12 @@ import { prisma } from '@/db'
 import {
   OtherExpense,
   Process,
+  Project,
   Request,
   RequestItem,
   Status,
 } from '@prisma/client'
+import { RequestDetails } from '@/lib/types'
 
 export default async function handler(
   req: NextApiRequest,
@@ -29,29 +31,29 @@ export default async function handler(
     }
 
     // this will be the array of Request Forms that will be sent
-    let requestsOfMultipleProjects: (Request & {
-      RequestItem: RequestItem[]
-      OtherExpense: OtherExpense[]
-      Process: Process[]
-    })[][] = []
+    let requestsOfMultipleProjects: RequestDetails[][] = []
+    let listOfProjects: Project[] = []
     // requests given back would be like this [[requests for project 1], [requests for project 2]]
 
     // first find requests associated with a project
     for (const project of user.WorksOn) {
-      const requests = await prisma.request.findMany({
-        where: { projectID: project.projectID },
-        include: {
-          RequestItem: true,
-          Process: true,
-          OtherExpense: true,
-        },
-      })
+      const [requests, theProject] = await Promise.all([
+        prisma.request.findMany({
+          where: { projectID: project.projectID },
+          include: {
+            RequestItem: true,
+            Process: true,
+            OtherExpense: true,
+          },
+        }),
+        prisma.project.findUnique({
+          where: {
+            projectID: project.projectID,
+          },
+        }),
+      ])
 
-      let filteredRequests: (Request & {
-        RequestItem: RequestItem[]
-        OtherExpense: OtherExpense[]
-        Process: Process[]
-      })[]
+      let filteredRequests: RequestDetails[]
 
       // filters the request based on the status and user's roleID
       // admin can see all requests that are APPROVED
@@ -71,22 +73,24 @@ export default async function handler(
         filteredRequests = requests
       }
       requestsOfMultipleProjects.push(filteredRequests)
+
+      // add the project to the list of projects
+      if (!theProject) throw new Error('Could not find the project')
+      listOfProjects.push(theProject)
     }
-    console.log('Requests associated with user: ', requestsOfMultipleProjects)
-    res
-      .status(200)
-      .json({ userRole: user.roleID, requests: requestsOfMultipleProjects })
+    console.debug('Requests associated with user: ', requestsOfMultipleProjects)
+    res.status(200).json({
+      userRole: user.roleID,
+      projects: listOfProjects,
+      requests: requestsOfMultipleProjects,
+    })
   } catch (error) {
     console.log(error)
     if (error instanceof Error)
       res.status(500).json({
-        message: 'Internal Server Error',
-        error: error.message,
-      })
-    else
-      res.status(500).json({
-        message: 'Internal Server Error',
+        message: error.message,
         error: error,
       })
+    else res.status(500).send(error)
   }
 }
