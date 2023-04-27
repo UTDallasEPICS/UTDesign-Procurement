@@ -1,6 +1,7 @@
 // RequestCard.tsx
 import React from 'react';
 import { Row, Col, Card, Button } from 'react-bootstrap';
+import MyTextbox from './textbox';
 
 const RequestCard: React.FC = () => {
   return (
@@ -95,9 +96,9 @@ const RequestCard: React.FC = () => {
               
               <Col><h6>Total</h6> <p>$200</p></Col>
               
-              <Col><h6>Order #</h6></Col>
+              <Col><h6>Order #</h6> <MyTextbox /></Col>
               
-              <Col><h6>Tracking Info</h6></Col>
+              <Col><h6>Tracking</h6>  <MyTextbox /> </Col>
             </Row>
           </Card.Body>
         </Card>
