@@ -1,0 +1,8 @@
+@use 'colors';
+
+.navbar {
+  // background-color: colors.$orange !important;
+  background-color: colors.$darkGreen !important;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+}

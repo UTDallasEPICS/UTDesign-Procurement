@@ -7,6 +7,7 @@ import RejectionModal from '../../components/RejectionModal'
 import { Project } from '@prisma/client'
 import axios from 'axios'
 import { RequestDetails } from '@/lib/types'
+import Head from 'next/head'
 
 export default function Mentor() {
   // state for the different collapse projects
@@ -111,8 +112,7 @@ export default function Mentor() {
 
   return (
     <>
-      <TopBarComponent />
-      <Container>
+      {/* <TopBarComponent /> */}
         {projects.map((project, projIndex) => {
           return (
             <Row className='big-row my-4' key={projIndex}>
@@ -145,49 +145,6 @@ export default function Mentor() {
             </Row>
           )
         })}
-        {/* <Row className='big-row my-4'>
-          <ProjectHeader
-            projectName='Project 1: Diagnostic Capstone'
-            expenses={project1Expenses}
-            available={500 - project1Expenses}
-            budgetTotal={500}
-            onToggleCollapse={() => toggleCollapse('project1')}
-            isOpen={isOpen.project1}
-          />
-          <Collapse in={isOpen.project1}>
-            <div>
-              {projectRequests[0].map((card, index) => (
-                <RequestCard
-                  key={index}
-                  {...card}
-                  onReject={() => handleReject(card.requestNumber)}
-                />
-              ))}
-            </div>
-          </Collapse>
-        </Row> */}
-        {/* <Row className='big-row'>
-          <ProjectHeader
-            projectName='Project 2: Point of Nerve Conduction'
-            expenses={project2Expenses}
-            available={1000 - project2Expenses}
-            budgetTotal={1000}
-            onToggleCollapse={() => toggleCollapse('project2')}
-            isOpen={isOpen.project2}
-          />
-          <Collapse in={isOpen.project2}>
-            <div>
-              {project2Cards.map((card, index) => (
-                <RequestCard
-                  key={index}
-                  {...card}
-                  onReject={() => handleReject(card.requestNumber)}
-                />
-              ))}
-            </div>
-          </Collapse>
-        </Row> */}
-      </Container>
       <RejectionModal
         show={showRejectModal}
         onHide={() => setShowRejectModal(false)}
