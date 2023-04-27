@@ -1,86 +1,40 @@
-import React, { useState } from 'react';
-import styles from '../../styles/request.module.css'
-
-interface Props {
-  onSubmit: (formData: any) => void;
-  budget?: number;
-  remaining?: number;
-}
-
-const RequestForm: React.FC<Props> = ({ onSubmit, budget = 0, remaining = 0 }) => {
-  const [items, setItems] = useState([{ id: 1 }]);
-
-  const handleAddItem = () => {
-    const newId = items[items.length - 1].id + 1;
-    setItems([...items, { id: newId }]);
-  };
-
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    const data = Object.fromEntries(formData.entries());
-    onSubmit(data);
-  };
+import React from 'react';
 
   return (
-    <div>
-      <div className={styles.budget}>
-        <label htmlFor="budget">Budget:</label> ${budget.toFixed(2)}<br />
-        <label htmlFor="remaining">Remaining:</label> ${remaining.toFixed(2)}
+    <>
+      <form>
+        <div className="rectangle-1"></div>
+        <div className="request-form">Request Form</div>
+        <div className="budget">Budget:</div>
+        <div className="remaining">Remaining:</div>
+        <div className="vendor">Vendor</div>
+        <input type="text" className="vendor-field" id="vendor-field" name="vendor-field" />
+        <div className="date">Date</div>
+        <input type="text" className="date-field" id="date-field" name="date-field"  />
+        <div className="expense-justification">Expense Justification</div>
+        <input type="text" className="expense-field" id="expense-field" name="expense-field" />
+        <div className="additional-info">Additional Information</div>
+        <input type="text" className="additionalinfo-field" id="additionalinfo-field" name="additionalinfo-field" />
+        <div className="item-description">Item Description</div>
+        <input type="text" className="itemdescription-field" id="itemdescription-field" name="itemdescription-field"/>
+        <div className="item-link">Item Link</div>
+        <input type="text" className="itemlink-field" id="itemlink-field" name="itemdescription-field" />
+        <div className="part-num">Part Number</div>
+        <input type="text" className="partnum-field" id="partnum-field" name="partnum-field" />
+        <div className="quantity">Quantity</div>
+        <input type="text" className="quantity-field" id="quantity-field" name="quantity-field" />
+        <div className="unit-cost">Unit Cost</div>
+        <input type="text" className="unitcost-field" id="unitcost-field" name="unitcost-field"  />
+        <div className="total-cost">Total Cost</div>
+        <input type="text" className="totalcost-field" id="totalcost-field" name="totalcost-field" />
+        <div className="supporting-docs">Supporting Documents</div>
+        <div className="submit-box">
+          <button type="submit" className="btn btn-primary">Submit</button>
+        </div>
+      </form>
+      <div className="add-item">
+        <button type="button" className="btn btn-success">Add Item</button>
       </div>
-      <h2>Request Form</h2>
-      <form onSubmit={handleSubmit}>
-        <label htmlFor="vendor-name">Vendor Name</label>
-        <input type="text" id="vendor-name" name="vendor-name" required />
-
-        <label htmlFor="date-needed">Date Needed</label>
-        <input type="date" id="date-needed" name="date-needed" required />
-
-        <label htmlFor="expense-justification">Expense Justification</label>
-        <textarea id="expense-justification" name="expense-justification" required />
-
-        <label htmlFor="additional-information">Additional Information</label>
-        <textarea id="additional-information" name="additional-information" />
-
-        {items.map((item) => (
-          <div key={item.id}>
-            <label htmlFor={`item-${item.id}-description`}>Item Description</label>
-            <input type="text" id={`item-${item.id}-description`} name={`item-${item.id}-description`} required />
-
-            <label htmlFor={`item-${item.id}-link`}>Item Link</label>
-            <input type="url" id={`item-${item.id}-link`} name={`item-${item.id}-link`} required />
-
-            <label htmlFor={`item-${item.id}-part-number`}>Part Number</label>
-            <input type="text" id={`item-${item.id}-part-number`} name={`item-${item.id}-part-number`} required />
-
-            <label htmlFor={`item-${item.id}-quantity`}>Quantity</label>
-            <input type="number" id={`item-${item.id}-quantity`} name={`item-${item.id}-quantity`} required />
-
-            <label htmlFor={`item-${item.id}-unit-cost`}>Unit Cost</label>
-            <input type="number" id={`item-${item.id}-unit-cost`} name={`item-${item.id}-unit-cost`} required />
-
-            <label htmlFor={`item-${item.id}-total-cost`}>Total Cost</label>
-            <input type="number" id={`item-${item.id}-total-cost`} name={`item-${item.id}-total-cost`} required />
-
-            <label htmlFor={`item-${item.id}-supporting-documents`}>Supporting Documents</label> 
-            <input type="file" id={`item-${item.id}-supporting-documents`} name={`item-${item.id}-supporting-documents`} multiple />
-            {item.id === items.length && (
-              <button type="button" onClick={handleAddItem}>
-                Add Item
-              </button>
-
-        )}
-      </div>
-    ))}
-
-    <button type="submit">Submit</button>
-  </form>
-</div>
-  )
-    }
-
-    export default RequestForm;
-
-  
-
-  
+    </>
+  );
+}
