@@ -50,6 +50,7 @@ model Project {
   deactivationDate  DateTime?
   additionalInfo    String?
   costCenter        Int?
+  totalExpenses     Int                 @default(0)
   // RELATIONSHIPS HERE ::
   Request           Request[]
   PreviousRecord    PreviousRecord[]

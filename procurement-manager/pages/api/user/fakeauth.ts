@@ -1,6 +1,16 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import { prisma } from '@/db'
 
+/**
+ * This is an async function that handles a POST request, finds a user based on their role ID using
+ * Prisma, and returns a JSON response with the user's information.
+ * @param {NextApiRequest} req - The NextApiRequest object represents the incoming HTTP request in a
+ * Next.js API route. It contains information about the request such as the HTTP method, headers, and
+ * body.
+ * @param {NextApiResponse} res - `res` stands for the Next.js `NextApiResponse` object, which is used
+ * to send the HTTP response to the client. It contains methods such as `status()` to set the HTTP
+ * status code, `json()` to send a JSON response, and `send()` to send a plain text response
+ */
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse

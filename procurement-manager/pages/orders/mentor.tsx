@@ -1,19 +1,57 @@
-import React, { useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { Container, Row, Col, Button, Collapse } from 'react-bootstrap'
 import TopBarComponent from '../../components/TopBarComponent'
 import RequestCard from '../../components/RequestCard'
 import ProjectHeader from '../../components/ProjectHeader'
 import RejectionModal from '../../components/RejectionModal'
+import { Project } from '@prisma/client'
+import axios from 'axios'
+import { RequestDetails } from '@/lib/types'
+import Head from 'next/head'
+import { UserContext } from '../_app'
 
 export default function Mentor() {
-  const [isOpen, setIsOpen] = useState({ project1: true, project2: true })
+  // state for the different collapse projects
+  const [isOpen, setIsOpen] = useState<boolean[]>([])
+  // state for the modal for rejecting requests
   const [showRejectModal, setShowRejectModal] = useState(false)
+  // state to set the request number for the reject modal to show
   const [rejectedRequestNumber, setRejectedRequestNumber] = useState<
     number | null
   >(null)
+  // state for the requests inside the different projects associated to the user
+  const [projectRequests, setProjectRequests] = useState<RequestDetails[][]>([])
+  // state for the projects associated to the user
+  const [projects, setProjects] = useState<Project[]>([])
+  const userContext = useContext(UserContext)
 
-  const toggleCollapse = (project: keyof typeof isOpen) => {
-    setIsOpen({ ...isOpen, [project]: !isOpen[project] })
+  useEffect(() => {
+    getMentor()
+  }, [])
+
+  // Client-side data fetching
+  async function getMentor() {
+    const response = await axios.post('/api/request-form/get', {
+      netID: 'def000000',
+    })
+    const [projects, requestsOfMultipleProjects] = await Promise.all([
+      response.data.projects,
+      response.data.requests,
+    ])
+    setProjects(projects)
+    setProjectRequests(requestsOfMultipleProjects)
+    setIsOpen(projects.map(() => true))
+    console.log('isOpen: ', isOpen)
+  }
+
+  const toggleCollapse = (projectIndex: number) => {
+    const newIsOpen = isOpen
+    for (let i = 0; i < isOpen.length; i++) {
+      if (i === projectIndex) {
+        newIsOpen[i] = !newIsOpen[i]
+      }
+    }
+    setIsOpen(newIsOpen)
   }
 
   const handleReject = (requestNumber: number) => {
@@ -77,51 +115,42 @@ export default function Mentor() {
 
   return (
     <>
-      <TopBarComponent />
-      <Container>
-        <Row className='big-row'>
-          <ProjectHeader
-            projectName='Project 1: Diagnostic Capstone'
-            expenses={project1Expenses}
-            available={500 - project1Expenses}
-            budgetTotal={500}
-            onToggleCollapse={() => toggleCollapse('project1')}
-            isOpen={isOpen.project1}
-          />
-          <Collapse in={isOpen.project1}>
-            <div>
-              {project1Cards.map((card, index) => (
-                <RequestCard
-                  key={index}
-                  {...card}
-                  onReject={() => handleReject(card.requestNumber)}
-                />
-              ))}
-            </div>
-          </Collapse>
-        </Row>
-        <Row className='big-row'>
-          <ProjectHeader
-            projectName='Project 2: Point of Nerve Conduction'
-            expenses={project2Expenses}
-            available={1000 - project2Expenses}
-            budgetTotal={1000}
-            onToggleCollapse={() => toggleCollapse('project2')}
-            isOpen={isOpen.project2}
-          />
-          <Collapse in={isOpen.project2}>
-            <div>
-              {project2Cards.map((card, index) => (
-                <RequestCard
-                  key={index}
-                  {...card}
-                  onReject={() => handleReject(card.requestNumber)}
-                />
-              ))}
-            </div>
-          </Collapse>
-        </Row>
-      </Container>
+      {/* <TopBarComponent /> */}
+      <Row className='my-4'>
+        <h2>Welcome back {userContext?.user?.firstName}</h2>
+      </Row>
+      {projects.map((project, projIndex) => {
+        return (
+          <Row className='big-row my-4' key={projIndex}>
+            <ProjectHeader
+              projectName={project.projectTitle}
+              expenses={project.totalExpenses}
+              available={project.startingBudget - project.totalExpenses}
+              budgetTotal={project.startingBudget}
+              onToggleCollapse={() => toggleCollapse(projIndex)}
+              isOpen={isOpen[projIndex]}
+            />
+            <Collapse in={isOpen[projIndex]}>
+              <div>
+                {projectRequests[projIndex].map((request, reqIndex) => (
+                  <RequestCard
+                    requestNumber={request.requestID}
+                    dateRequested={request.dateSubmitted}
+                    // calculates the subtotal by running a loop for each item in the request to add up the subtoal
+                    orderTotal={request.RequestItem.reduce(
+                      (total, item) => total + item.quantity * item.unitPrice,
+                      0
+                    )}
+                    key={reqIndex}
+                    {...request}
+                    onReject={() => handleReject(request.requestID)}
+                  />
+                ))}
+              </div>
+            </Collapse>
+          </Row>
+        )
+      })}
       <RejectionModal
         show={showRejectModal}
         onHide={() => setShowRejectModal(false)}

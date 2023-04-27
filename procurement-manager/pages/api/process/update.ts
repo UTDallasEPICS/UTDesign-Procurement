@@ -7,6 +7,15 @@ import { prisma } from '@/db'
 //based on the role we update either mentorProcessedCommetns or
 // adminProcessedComments
 
+/**
+ * This is an async function that updates a process based on the user's role and the information
+ * provided in the request body.
+ * @param {NextApiRequest} req - The NextApiRequest object, which contains information about the
+ * incoming HTTP request.
+ * @param {NextApiResponse} res - The `res` parameter is an instance of the `NextApiResponse` class,
+ * which is used to send the HTTP response back to the client. It contains methods such as `status()`
+ * to set the HTTP status code, `json()` to send a JSON response, and `send()` to send a
+ */
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse

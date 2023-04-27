@@ -23,10 +23,13 @@ import { prisma } from '@/db'
 // create an order and put in database
 // ??? ask Oddrun and Navaneeth about how creating a new Order into database will work
 
-import { PrismaClient } from '@prisma/client'
-import { NextApiRequest, NextApiResponse } from 'next'
-
-const prisma = new PrismaClient()
+/* This is a default export of an asynchronous function that handles HTTP requests and responses. It
+checks the method of the request (GET or POST) and performs the appropriate action. If it's a GET
+request, it fetches all processes from the Prisma model and returns them as a JSON response. If it's
+a POST request, it creates a new process in the Prisma model with the data provided in the request
+body and returns the newly created process as a JSON response. If the method is not allowed (e.g.
+PUT or DELETE), it returns a 405 error. The function also exports the `prisma` object for use in
+other modules. */
 export default async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method === 'GET') {
     // Handle GET request

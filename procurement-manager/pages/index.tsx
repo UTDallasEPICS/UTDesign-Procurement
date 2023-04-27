@@ -1,10 +1,23 @@
 import Head from 'next/head'
 import { Inter } from 'next/font/google'
 import styles from '@/styles/Home.module.scss'
+import Login from '@/pages/login/index'
+import { useContext, useEffect } from 'react'
+import { UserContext } from './_app'
+import { useRouter } from 'next/router'
 
 const inter = Inter({ subsets: ['latin'] })
 
 export default function Home() {
+  const userContext = useContext(UserContext)
+  const router = useRouter()
+
+  useEffect(() => {
+    if (userContext?.loggedIn) {
+      router.push('/orders')
+    }
+  })
+
   return (
     <>
       <Head>
@@ -14,7 +27,7 @@ export default function Home() {
         <link rel='icon' href='/favicon.ico' />
       </Head>
 
-      <main>Hello</main>
+      {!userContext?.loggedIn && <Login />}
     </>
   )
 }
