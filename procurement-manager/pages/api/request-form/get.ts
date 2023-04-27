@@ -30,6 +30,32 @@ export default async function handler(
       throw new Error('Could not find that user')
     }
 
+    // Admin just gets every Request that is approved
+    if (user.roleID === 1) {
+      const requests = await prisma.request.findMany({
+        where: {
+          Process: {
+            some: {
+              status: Status.APPROVED,
+            },
+          },
+        },
+        include: {
+          RequestItem: true,
+          Process: true,
+          OtherExpense: true,
+          project: true,
+        },
+      })
+
+      res.status(200).json({
+        userRole: user.roleID,
+        projects: [],
+        requests: [requests],
+      })
+      return
+    }
+
     // this will be the array of Request Forms that will be sent
     let requestsOfMultipleProjects: RequestDetails[][] = []
     let listOfProjects: Project[] = []
