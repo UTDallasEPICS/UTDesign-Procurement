@@ -63,7 +63,7 @@ const ReimbursementCard: React.FC = () => {
               
               <Col><h6>Description</h6> <p>Nail part</p></Col>
               
-              <Col><h6>Receipt Total (w/o sales tax)</h6> <p>$643</p></Col>
+              <Col><h6>Receipt Total</h6> <p>$643</p></Col>
             </Row>
           </Card.Body>
         </Card>

@@ -24,7 +24,7 @@ export default function Mentor() {
         <Row>
           <ProjectHeader
             title="Project 1: Project Name | Capstone, Request"
-            budget="Budget: $100/$500"
+            budget="Budget: $100.00/$500.00"
             isOpen={isOpenProject1}
             toggleCollapse={toggleCollapseProject1}
           />
@@ -40,7 +40,7 @@ export default function Mentor() {
         <Row>
           <ProjectHeader
             title="Project 3: Point of Nerve Conduction Diagnostic | Capstone, Reimbursement"
-            budget="Budget: $100/$500"
+            budget="Budget: $100.00/$500.00"
             isOpen={isOpenProject2}
             toggleCollapse={toggleCollapseProject2}
           />
@@ -57,4 +57,3 @@ export default function Mentor() {
     </>
   );
 }
-

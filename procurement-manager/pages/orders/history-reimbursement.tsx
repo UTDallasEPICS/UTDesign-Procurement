@@ -35,7 +35,7 @@ const ReimbursementCard: React.FC = () => {
               <p>Requested by: Student | student@utdallas.edu</p>
             </Col>
             <Col md="auto">
-              <p>Requested by: Mentor | mentor@utdallas.edu</p>
+              <p>Approved by: Mentor | mentor@utdallas.edu</p>
             </Col>
               
             </Row>
