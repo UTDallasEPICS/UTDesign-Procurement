@@ -1,21 +1,4 @@
-// POST request
-// get email, first name, last name from SSO,
-// get netID from email
 
-// create user - POST
-// only UTDesign users can login, not everyone in UTD can sign in
-/**
- * await prisma.user.create({
- * data: { ... }
- * }
- */
-
-// get / auth user - POST
-/// use SSO to verify username (netID) and password
-/// once SSO gives us like success or something
-//// get the user role
-//// data = token, user role, basic user info
-//// send back data to front end using res
 /**
  * Type safe for requesting body
  * https://stackoverflow.com/questions/69893369/how-to-add-typescript-types-to-request-body-in-next-js-api-route/70788003#70788003
@@ -30,6 +13,8 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
+  /* This code is defining a handler function for a Next.js API route that handles both GET and POST
+  requests. */
   if (req.method === 'GET') {
     try {
       const users = await prisma.user.findMany()
@@ -37,7 +22,12 @@ export default async function handler(
     } catch (error) {
       res.status(500).json({ error: 'Failed to fetch users' })
     }
-  } else if (req.method === 'POST') {
+  } /* This code block is handling a POST request to create a new user. It is extracting the necessary
+  data from the request body (first name, last name, email, responsibilities, and role ID), using
+  that data to create a new user in the database using Prisma's `create` method, and then sending
+  a JSON response with the newly created user data and a status code of 201 (indicating that the
+  request was successful and a new resource was created). */
+  else if (req.method === 'POST') {
     const { firstName, lastName, email, responsibilities, roleID } = req.body
     try {
       const user = await prisma.user.create({
