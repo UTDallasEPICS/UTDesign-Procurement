@@ -29,6 +29,7 @@ export default function Mentor() {
     getMentor()
   }, [])
 
+  // Client-side data fetching
   async function getMentor() {
     const response = await axios.post('/api/request-form/get', {
       netID: 'def000000',
