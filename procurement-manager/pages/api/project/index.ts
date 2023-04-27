@@ -54,8 +54,25 @@ async function createProject(req:any) {
 
     let result;
     if(req.method === 'POST'){
+  //post method as we are getting info
+    const { netID, processID, comment, status } = req.body
+  // first get user's netID ??? from req.body
+    const user = await prisma.user.findUnique({
+    where: {
+      netID: netID,
+    },
+  })
+
+  // check for role -- different roles have different functions
+    if (user) {
+  //user.roleID is admin so update the comment and status given by admin
+    if (user.roleID === 1) {
+    //if user is admin
+
          result = await createProject(req.body);
          res.json({result, message: 'project with ${projectId} created'})
     }
+  }
+  }
 }
   
