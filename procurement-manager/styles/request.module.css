@@ -3,27 +3,29 @@
   background-color: #ffffff;
   margin: 0;
   padding: 20px;
-  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  max-width: 100%;
 }
 
 .titleContainer {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
+  position: relative;
   background-color: #154734;
   padding: 10px;
   border-radius: 5px;
-  display: flex;
-  justify-content: center;
-  /* Add this */
-  margin-bottom: 40px;
+  margin-bottom: 10px;
+  margin-top: -20px;
+  width: 100%;
 }
 
 .titleBackground {
   background-color: #28a745;
   padding: 10px;
   border-radius: 5px;
+  display: flex;
+  justify-content: center;
 }
 
 .boldLabel {
@@ -63,6 +65,9 @@
   gap: 10px;
   width: 80%;
   margin: 0 auto;
+  padding: 15px;
+  background-color: #ffffff;
+  border-radius: 4px;
 }
 
 .form label {
@@ -74,6 +79,12 @@
   box-sizing: border-box;
   overflow-x: hidden;
   resize: none;
+}
+
+.unitcostField input,
+.totalcostField input {
+  height: 100%;
+  vertical-align: top;
 }
 
 .row {
@@ -108,8 +119,6 @@
 .itemlinkField,
 .partnumField,
 .quantityField,
-.unitcostField,
-.totalcostField,
 .supportingdocsField {
   box-sizing: border-box;
   background: #FFFFFF;
@@ -118,58 +127,199 @@
   margin-top: 15px;
 }
 
-.additionalinfoField,
-.vendorField,
-.itemdescriptionField,
-.itemlinkField,
-.partnumField {
+.customInputGroup {
+  width: 100%;
+}
+
+.unitcostField {
+  display: flex;
+  align-items: center;
   width: 50%;
-}
-
-.submitButton {
-  background-color: #154734;
-  color: #FFFFFF;
-  font-size: 32px;
-  font-weight: 600;
-  width: 200px;
-  height: 50px;
   border: none;
-  cursor: pointer;
-  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+  margin-bottom: 0;
 }
 
-.form textarea {
+.totalcostField {
+  display: flex;
+  align-items: center;
+  width: 50%;
+  border: none;
+  margin-bottom: 0;
+}
+
+.dollarSign {
+  position: absolute;
+  top: 50%;
+  left: 12px;
+  transform: translateY(-50%);
+}
+
+.input-group {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  width: 100%;
+}
+
+/* Add this class for input group text styling */
+.input-group-text {
+  display: flex;
+  align-items: center;
+  padding: 0.375rem 0.75rem;
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #495057;
+  text-align: center;
+  white-space: nowrap;
+  background-color: #e9ecef;
+  border: 1px solid #ced4da;
+  border-radius: 0.25rem;
+}
+
+.input-group .form-control {
+  position: relative;
+  flex: 1 1 auto;
+  width: 100%;
+}
+
+.costInputField {
   width: 100%;
   box-sizing: border-box;
   overflow-x: hidden;
-  resize: vertical;
-  min-height: 40px;
+  resize: none;
+  height: 100%;
+  vertical-align: middle;
+  padding-left: 32px;
 }
 
-.textareaWrapper {
-  flex-basis: 100%;
+.input-group-padding {
+  padding-left: 36px;
 }
 
-.inputWrapper {
-  display: flex;
-  flex-direction: column;
-  margin: 10px;
-  width: 500px;
-}
-
-.itemSection {
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  padding: 20px;
-  margin-bottom: 20px;
+.unitCostInput {
+  width: 100%;
+  max-width: 120px;
+  /* Adjust this value to your desired width */
+  padding-left: 32px;
+  /* Add this line to keep the existing padding-left */
 }
 
 
 
-.itemRow {
-  margin-bottom: 20px;
-}
+  .additionalinfoField,
+  .vendorField,
+  .itemdescriptionField,
+  .itemlinkField,
+  .partnumField {
+    width: 50%;
+  }
 
-.itemLastRow {
-  margin-bottom: 40px;
-}
+  .submitButton {
+    background-color: #154734;
+    color: #FFFFFF;
+    font-size: 32px;
+    font-weight: 600;
+    width: 200px;
+    height: 50px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+  }
+
+  .form textarea {
+    width: 100%;
+    box-sizing: border-box;
+    overflow-x: hidden;
+    resize: vertical;
+    min-height: 40px;
+  }
+
+  .textareaWrapper {
+    flex-basis: 100%;
+  }
+
+  .inputWrapper {
+    display: flex;
+    flex-direction: column;
+    margin: 10px;
+    width: 600px;
+  }
+
+    .budgetText,
+    .remainingText {
+      font-family: 'Inter';
+      font-weight: 600;
+      font-size: 24px;
+      line-height: 32px;
+      text-align: center;
+      color: #000000;
+    }
+
+  .itemSection {
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+
+  .itemRow,
+  .itemLastRow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .sequenceNumber {
+    font-family: 'Inter';
+    font-weight: 600;
+    font-size: 32px;
+    line-height: 48px;
+    text-align: left;
+    color: #000000;
+    margin-right: 10px;
+  }
+
+    .sequenceNumberInput {
+      width: 45px;
+    }
+
+  .quantityField {
+    width: 100px;
+  }
+
+  .unitcostField,
+  .totalcostField {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 0;
+  }
+
+  .customInputWidth .inputWidth {
+    min-width: 100px;
+    /* Adjust this value to set the minimum width of the input field */
+    width: calc(100% - 40px);
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    padding: 0.375rem 0.75rem;
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+
+  .inputGroupText {
+    display: flex;
+    align-items: center;
+    padding: 0.375rem 0.75rem;
+  }
+
+  .additionalinfoField {
+    width: 100%;
+  }
+
+  .fullWidthCard {
+    width: 100%;
+    max-width: 100%;
+  }
