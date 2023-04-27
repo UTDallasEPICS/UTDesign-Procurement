@@ -1,5 +1,5 @@
 import React, { useContext } from 'react'
-// import Link from 'next/link'
+import Link from 'next/link'
 import { Navbar, Container, Offcanvas, Nav, Button } from 'react-bootstrap'
 import styles from '@/styles/Navbar.module.scss'
 import { UserContext } from '@/pages/_app'
@@ -10,12 +10,7 @@ export default function NavBar({}: NavbarProps): JSX.Element {
   const userContext = useContext(UserContext)
   return (
     <>
-      <Navbar
-        expand={'lg'}
-        bg='dark'
-        className={`${styles.navbar} mb-3`}
-        fixed='top'
-      >
+      {/* <Navbar expand={'lg'} bg='dark' className={`${styles.navbar} mb-3`}>
         <Container>
           <Navbar.Brand href='#'>UTDesign Procurement Manager</Navbar.Brand>
           <Navbar.Toggle aria-controls={`offcanvasNavbar-expand-lg`} />
@@ -49,28 +44,30 @@ export default function NavBar({}: NavbarProps): JSX.Element {
             </Offcanvas.Body>
           </Navbar.Offcanvas>
         </Container>
-      </Navbar>
+      </Navbar> */}
+      <div className={styles.topBar}>
+        <div className={styles.headerSection}>
+          <Container className={styles.headerSection}>
+            <h4>UTD Procurement Manager</h4>
+            <Link href='/login'>
+              <span className={styles.logout}>Log Out</span>
+            </Link>
+          </Container>
+        </div>
+        <div className={styles.menuSection}>
+          <nav className={styles.navigation}>
+            <a className={styles.navigationLink} href='/login'>
+              ORDERS
+            </a>
+            <a className={styles.navigationLink} href='/order-history'>
+              ORDER HISTORY
+            </a>
+            <a className={styles.navigationLink} href='/project-updates'>
+              PROJECT UPDATES
+            </a>
+          </nav>
+        </div>
+      </div>
     </>
-    // <div className={styles.topBar}>
-    //   <div className={styles.headerSection}>
-    //     <h1>UTD Procurement Manager</h1>
-    //     <Link href='/login'>
-    //       <span className={styles.logout}>Log Out</span>
-    //     </Link>
-    //   </div>
-    //   <div className={styles.menuSection}>
-    //     <nav className={styles.navigation}>
-    //       <a className={styles.navigationLink} href='/login'>
-    //         ORDERS
-    //       </a>
-    //       <a className={styles.navigationLink} href='/order-history'>
-    //         ORDER HISTORY
-    //       </a>
-    //       <a className={styles.navigationLink} href='/project-updates'>
-    //         PROJECT UPDATES
-    //       </a>
-    //     </nav>
-    //   </div>
-    // </div>
   )
 }

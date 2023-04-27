@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { Container, Row, Col, Button, Collapse } from 'react-bootstrap'
 import TopBarComponent from '../../components/TopBarComponent'
 import RequestCard from '../../components/RequestCard'
@@ -8,6 +8,7 @@ import { Project } from '@prisma/client'
 import axios from 'axios'
 import { RequestDetails } from '@/lib/types'
 import Head from 'next/head'
+import { UserContext } from '../_app'
 
 export default function Mentor() {
   // state for the different collapse projects
@@ -22,6 +23,7 @@ export default function Mentor() {
   const [projectRequests, setProjectRequests] = useState<RequestDetails[][]>([])
   // state for the projects associated to the user
   const [projects, setProjects] = useState<Project[]>([])
+  const userContext = useContext(UserContext)
 
   useEffect(() => {
     getMentor()
@@ -113,38 +115,41 @@ export default function Mentor() {
   return (
     <>
       {/* <TopBarComponent /> */}
-        {projects.map((project, projIndex) => {
-          return (
-            <Row className='big-row my-4' key={projIndex}>
-              <ProjectHeader
-                projectName={project.projectTitle}
-                expenses={project.totalExpenses}
-                available={project.startingBudget - project.totalExpenses}
-                budgetTotal={project.startingBudget}
-                onToggleCollapse={() => toggleCollapse(projIndex)}
-                isOpen={isOpen[projIndex]}
-              />
-              <Collapse in={isOpen[projIndex]}>
-                <div>
-                  {projectRequests[projIndex].map((request, reqIndex) => (
-                    <RequestCard
-                      requestNumber={request.requestID}
-                      dateRequested={request.dateSubmitted}
-                      // calculates the subtotal by running a loop for each item in the request to add up the subtoal
-                      orderTotal={request.RequestItem.reduce(
-                        (total, item) => total + item.quantity * item.unitPrice,
-                        0
-                      )}
-                      key={reqIndex}
-                      {...request}
-                      onReject={() => handleReject(request.requestID)}
-                    />
-                  ))}
-                </div>
-              </Collapse>
-            </Row>
-          )
-        })}
+      <Row className='my-4'>
+        <h2>Welcome back {userContext?.user?.firstName}</h2>
+      </Row>
+      {projects.map((project, projIndex) => {
+        return (
+          <Row className='big-row my-4' key={projIndex}>
+            <ProjectHeader
+              projectName={project.projectTitle}
+              expenses={project.totalExpenses}
+              available={project.startingBudget - project.totalExpenses}
+              budgetTotal={project.startingBudget}
+              onToggleCollapse={() => toggleCollapse(projIndex)}
+              isOpen={isOpen[projIndex]}
+            />
+            <Collapse in={isOpen[projIndex]}>
+              <div>
+                {projectRequests[projIndex].map((request, reqIndex) => (
+                  <RequestCard
+                    requestNumber={request.requestID}
+                    dateRequested={request.dateSubmitted}
+                    // calculates the subtotal by running a loop for each item in the request to add up the subtoal
+                    orderTotal={request.RequestItem.reduce(
+                      (total, item) => total + item.quantity * item.unitPrice,
+                      0
+                    )}
+                    key={reqIndex}
+                    {...request}
+                    onReject={() => handleReject(request.requestID)}
+                  />
+                ))}
+              </div>
+            </Collapse>
+          </Row>
+        )
+      })}
       <RejectionModal
         show={showRejectModal}
         onHide={() => setShowRejectModal(false)}
