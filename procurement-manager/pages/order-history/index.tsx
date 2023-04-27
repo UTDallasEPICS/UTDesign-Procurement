@@ -1,5 +1,4 @@
 import React, { useContext, useEffect } from 'react'
-import Mentor from './mentor'
 import Head from 'next/head'
 import { UserContext } from '../_app'
 import { useRouter } from 'next/router'
@@ -13,12 +12,8 @@ export default function index({ title }: { title: string }) {
       router.push('/login')
     }
 
-    console.log('userContext: ', userContext)
-
-    if (userContext?.user?.roleID === 1) {
-      router.push('/orders/admin')
-    } else if (userContext?.user?.roleID === 2) {
-      router.push('/orders/mentor')
+    if (userContext?.user?.roleID === 2) {
+      router.push('/order-history/mentor')
     }
   }, [])
 
@@ -35,7 +30,7 @@ export default function index({ title }: { title: string }) {
 export async function getStaticProps() {
   return {
     props: {
-      title: 'Orders - Procurement Manager',
+      title: 'Order History - Procurement Manager',
       description: 'University of Texas at Dallas',
     },
   }

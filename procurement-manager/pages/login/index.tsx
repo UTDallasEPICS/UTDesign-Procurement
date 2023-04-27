@@ -20,17 +20,15 @@ export default function Login() {
       const roleID: number = parseInt(e.target.id)
 
       try {
-        console.log('roleID :: ', roleID)
         // POST request to our user API
         const response = await axios.post('/api/user/fakeauth', {
           roleID: roleID,
         })
-        console.log('response :: ', response.data)
         if (response.status === 200) {
           const user: User = response.data.user
-          console.log('user :: ', user)
           userContext?.setUser(user)
           userContext?.setLoggedIn(true)
+          sessionStorage.setItem('user', JSON.stringify(user))
           setRoleLoggedIn(`${user.firstName} is logged in`)
 
           router.push('/orders')

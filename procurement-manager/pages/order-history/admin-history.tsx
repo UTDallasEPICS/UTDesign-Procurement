@@ -1,21 +1,21 @@
-import React, { useState } from 'react';
-import { Container, Row, Collapse } from 'react-bootstrap';
-import TopBarComponent from './TopBarComponent';
-import ProjectHeader from './ProjectHeader';
-import ReimbursementCard from './history-reimbursement';
-import RequestCard from './history-request';
+import React, { useState } from 'react'
+import { Container, Row, Collapse } from 'react-bootstrap'
+import TopBarComponent from '@/components/TopBarComponent'
+import ProjectHeader from '@/components/ProjectHeader'
+import ReimbursementCard from './history-reimbursement'
+import RequestCard from './history-request'
 
 export default function Mentor() {
-  const [isOpenProject1, setIsOpenProject1] = useState(true);
-  const [isOpenProject2, setIsOpenProject2] = useState(true);
+  const [isOpenProject1, setIsOpenProject1] = useState(true)
+  const [isOpenProject2, setIsOpenProject2] = useState(true)
 
   const toggleCollapseProject1 = () => {
-    setIsOpenProject1(!isOpenProject1);
-  };
+    setIsOpenProject1(!isOpenProject1)
+  }
 
   const toggleCollapseProject2 = () => {
-    setIsOpenProject2(!isOpenProject2);
-  };
+    setIsOpenProject2(!isOpenProject2)
+  }
 
   return (
     <>
@@ -23,8 +23,8 @@ export default function Mentor() {
       <Container>
         <Row>
           <ProjectHeader
-            title="Project 1: Project Name | Capstone, Request"
-            budget="Budget: $100/$500"
+            title='Project 1: Project Name | Capstone, Request'
+            budget='Budget: $100/$500'
             isOpen={isOpenProject1}
             toggleCollapse={toggleCollapseProject1}
           />
@@ -39,8 +39,8 @@ export default function Mentor() {
         </Row>
         <Row>
           <ProjectHeader
-            title="Project 3: Point of Nerve Conduction Diagnostic | Capstone, Reimbursement"
-            budget="Budget: $100/$500"
+            title='Project 3: Point of Nerve Conduction Diagnostic | Capstone, Reimbursement'
+            budget='Budget: $100/$500'
             isOpen={isOpenProject2}
             toggleCollapse={toggleCollapseProject2}
           />
@@ -55,5 +55,5 @@ export default function Mentor() {
         </Row>
       </Container>
     </>
-  );
+  )
 }

@@ -3,7 +3,13 @@ import 'bootstrap/dist/css/bootstrap.min.css'
 import type { AppProps } from 'next/app'
 import { SSRProvider } from 'react-bootstrap'
 import Layout from '@/components/Layout'
-import { Dispatch, SetStateAction, createContext, useState } from 'react'
+import {
+  Dispatch,
+  SetStateAction,
+  createContext,
+  useEffect,
+  useState,
+} from 'react'
 import { User } from '@prisma/client'
 // import '@/styles/request.css'
 
@@ -22,6 +28,14 @@ export const UserContext = createContext<{
 export default function App({ Component, pageProps }: AppProps) {
   const [user, setUser] = useState<User>()
   const [loggedIn, setLoggedIn] = useState<boolean>(false)
+
+  useEffect(() => {
+    if (sessionStorage.getItem('user')) {
+      setUser(JSON.parse(sessionStorage.getItem('user')!))
+      setLoggedIn(true)
+      console.log('user is logged in')
+    }
+  }, [])
 
   const UserContextValues = {
     user,

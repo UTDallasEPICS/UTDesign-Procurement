@@ -10,7 +10,7 @@ export default function NavBar({}: NavbarProps): JSX.Element {
   const userContext = useContext(UserContext)
   return (
     <>
-      {/* <Navbar expand={'lg'} bg='dark' className={`${styles.navbar} mb-3`}>
+      <Navbar expand={'lg'} bg='dark' className={`${styles.navbar} mb-3`}>
         <Container>
           <Navbar.Brand href='#'>UTDesign Procurement Manager</Navbar.Brand>
           <Navbar.Toggle aria-controls={`offcanvasNavbar-expand-lg`} />
@@ -35,6 +35,7 @@ export default function NavBar({}: NavbarProps): JSX.Element {
                   onClick={() => {
                     if (userContext?.loggedIn) {
                       userContext?.setLoggedIn(false)
+                      sessionStorage.removeItem('user')
                     }
                   }}
                 >
@@ -44,8 +45,8 @@ export default function NavBar({}: NavbarProps): JSX.Element {
             </Offcanvas.Body>
           </Navbar.Offcanvas>
         </Container>
-      </Navbar> */}
-      <div className={styles.topBar}>
+      </Navbar>
+      {/* <div className={styles.topBar}>
         <div className={styles.headerSection}>
           <Container className={styles.headerSection}>
             <h4>UTD Procurement Manager</h4>
@@ -67,7 +68,7 @@ export default function NavBar({}: NavbarProps): JSX.Element {
             </a>
           </nav>
         </div>
-      </div>
+      </div> */}
     </>
   )
 }
