@@ -122,19 +122,19 @@ const StudentRequest = () => {
       <Row className={"text-center mb-4"}>
         <Col>
           <p>
-            <strong>Budget:</strong> <span>$10,000</span>
+            <strong>Budget:</strong><span>$10,000</span>
           </p>
         </Col>
         <Col>
-  <p>
-    <strong>Remaining:</strong> <span>${remainingBudget}</span>
-  </p>
-</Col>
+          <p>
+            <strong>Remaining:</strong><span>${remainingBudget}</span>
+          </p>
+        </Col>
 
       </Row>
       <Form onSubmit={handleSubmit}>
         <Row>
-          <Col md={4}>
+          <Col md={3}>
             <Form.Group controlId="date">
               <Form.Label>
                 <strong>Date Needed</strong>
@@ -147,7 +147,7 @@ const StudentRequest = () => {
               />
             </Form.Group>
           </Col>
-          <Col md={8}>
+          <Col md={9}>
             <Form.Group controlId="additionalInfo">
               <Form.Label>
                 <strong>Additional Information</strong>
@@ -208,7 +208,7 @@ const StudentRequest = () => {
                   />
                 </Form.Group>
               </Col>
-              <Col md={3}>
+              <Col md={2}>
                 <Form.Group controlId={`item${index}Link`}>
                   <Form.Label>
                     <strong>Item Link</strong>
@@ -253,7 +253,7 @@ const StudentRequest = () => {
                   />
                 </Form.Group>
               </Col>
-              <Col md={1}>
+              <Col md={2}>
                 <Form.Group controlId={`item${index}UnitCost`}>
                   <Form.Label>
                     <strong>Unit Cost</strong>
