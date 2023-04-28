@@ -24,6 +24,45 @@ const StudentRequest = () => {
     },
   ]);
   const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null);
+  
+  const handleTooltip = (index: number, inputId: string, tooltipId: string) => {
+  const inputElement = document.getElementById(inputId) as HTMLInputElement;
+  const tooltipElement = document.getElementById(tooltipId) as HTMLElement;
+
+  if (inputElement && tooltipElement) {
+    inputElement.addEventListener("input", () => {
+      tooltipElement.textContent = inputElement.value;
+    });
+
+    return () => {
+      inputElement.removeEventListener("input", () => {
+        tooltipElement.textContent = inputElement.value;
+      });
+    };
+  }
+};
+
+
+useEffect(() => {
+  items.forEach((_, index) => {
+    handleTooltip(index, `item${index}Vendor`, `vendorTooltip${index}`);
+    handleTooltip(index, `item${index}Description`, `descriptionTooltip${index}`);
+    handleTooltip(index, `item${index}Link`, `linkTooltip${index}`);
+    handleTooltip(index, `item${index}PartNumber`, `partNumberTooltip${index}`);
+  });
+}, [items]);
+
+
+const handleUnitCostBlur = (
+  e: React.FocusEvent<HTMLInputElement>,
+  index: number
+) => {
+  const newItems = [...items];
+  newItems[index].unitCost = parseFloat(e.target.value).toFixed(4);
+  setItems(newItems);
+};
+
+
 
   useEffect(() => {
   setRemainingBudget(5000 - calculateTotalCost());
@@ -39,6 +78,8 @@ const StudentRequest = () => {
   ) => {
     setAdditionalInfo(e.target.value);
   };
+
+  
 
   const calculateTotalCost = () => {
   let totalCost = 0;
@@ -183,14 +224,16 @@ const StudentRequest = () => {
                   <Form.Label>
                     <strong>Vendor</strong>
                   </Form.Label>
-                  <Form.Control
-                    type="text"
-                    value={item.vendor}
-                    onChange={(e) =>
-                      handleItemChange(e, index, "vendor")
-                    }
-                    required
-                  />
+                  <div className={styles.tooltip}>
+  <Form.Control
+    type="text"
+    value={item.vendor}
+    onChange={(e) => handleItemChange(e, index, "vendor")}
+    required
+  />
+  <span className={styles.tooltiptext} id={`vendorTooltip${index}`}>Tooltip text</span>
+</div>
+
                 </Form.Group>
               </Col>
               <Col md={2}>
@@ -198,14 +241,18 @@ const StudentRequest = () => {
                   <Form.Label>
                     <strong>Description</strong>
                   </Form.Label>
-                  <Form.Control
-                    type="text"
-                    value={item.description}
-                    onChange={(e) =>
-                      handleItemChange(e, index, "description")
-                    }
-                    required
-                  />
+                  <div className={styles.tooltip}>
+  <Form.Control
+    type="text"
+    value={item.description}
+    onChange={(e) =>
+      handleItemChange(e, index, "description")
+    }
+    required
+  />
+  <span className={styles.tooltiptext} id={`descriptionTooltip${index}`}>Tooltip text</span>
+</div>
+
                 </Form.Group>
               </Col>
               <Col md={2}>
@@ -213,14 +260,16 @@ const StudentRequest = () => {
                   <Form.Label>
                     <strong>Item Link</strong>
                   </Form.Label>
-                  <Form.Control
-                    type="text"
-                    value={item.link}
-                    onChange={(e) =>
-                      handleItemChange(e, index, "link")
-                    }
-                    required
-                  />
+                  <div className={styles.tooltip}>
+  <Form.Control
+    type="text"
+    value={item.link}
+    onChange={(e) => handleItemChange(e, index, "link")}
+    required
+  />
+  <span className={styles.tooltiptext} id={`linkTooltip${index}`}>Tooltip text</span>
+</div>
+
                 </Form.Group>
               </Col>
               <Col md={2}>
@@ -228,14 +277,16 @@ const StudentRequest = () => {
                   <Form.Label>
                     <strong>Part Number</strong>
                   </Form.Label>
-                  <Form.Control
-                    type="text"
-                    value={item.partNumber}
-                    onChange={(e) =>
-                      handleItemChange(e, index, "partNumber")
-                    }
-                    required
-                  />
+                  <div className={styles.tooltip}>
+  <Form.Control
+    type="text"
+    value={item.partNumber}
+    onChange={(e) => handleItemChange(e, index, "partNumber")}
+    required
+  />
+  <span className={styles.tooltiptext} id={`partNumberTooltip${index}`}>Tooltip text</span>
+</div>
+
                 </Form.Group>
               </Col>
               <Col md={1}>
@@ -244,13 +295,14 @@ const StudentRequest = () => {
                     <strong>Qty.</strong>
                   </Form.Label>
                   <Form.Control
-                    type="number"
-                    value={item.quantity}
-                    onChange={(e) =>
-                      handleItemChange(e, index, "quantity")
-                    }
-                    required
-                  />
+  type="text"
+  pattern="\d+"
+  value={item.quantity}
+  onChange={(e) => handleItemChange(e, index, "quantity")}
+  className={styles.quantityNumberInput}
+  required
+/>
+
                 </Form.Group>
               </Col>
               <Col md={2}>
@@ -261,13 +313,25 @@ const StudentRequest = () => {
                   <InputGroup className={`${styles.unitcostField} ${styles.customInputGroup}`}>
   <InputGroup.Text className={styles.inputGroupText}>$</InputGroup.Text>
   <Form.Control
-    type="number"
-    step="0.01"
-    value={item.unitCost}
-    onChange={(e) => handleItemChange(e, index, "unitCost")}
-    className={`${styles.costInputField}`}
-    required
-  />
+  type="number"
+  step="0.0001"
+  min="0"
+  value={item.unitCost}
+  onChange={(e) => {
+  const unitCostValue = e.target.value;
+  const regex = /^\d+(\.\d{0,4})?$/;
+  if (regex.test(unitCostValue) || unitCostValue === '') {
+    handleItemChange(e, index, "unitCost");
+  }
+}}
+
+  onBlur={(e) => handleUnitCostBlur(e as React.FocusEvent<HTMLInputElement>, index)}
+
+  className={`${styles.costInputField}`}
+  required
+/>
+
+
 </InputGroup>
 
                 </Form.Group>

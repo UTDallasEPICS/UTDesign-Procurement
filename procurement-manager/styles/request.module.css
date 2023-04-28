@@ -271,6 +271,10 @@
       width: 45px;
     }
 
+    .quantityNumberInput {
+      width: 70px;
+    }
+
   .quantityField {
     width: 100px;
   }
@@ -309,3 +313,37 @@
     width: 100%;
     max-width: 100%;
   }
+
+    .tooltip {
+      position: relative;
+      display: inline-block;
+    }
+  
+     .tooltiptext {
+       visibility: hidden;
+       width: 250px;
+       background-color: #555;
+       color: #fff;
+       text-align: left;
+       padding: 8px;
+       border-radius: 6px;
+       position: absolute;
+       z-index: 1;
+       bottom: 100%;
+       left: 50%;
+       margin-left: -125px;
+       opacity: 0;
+       transition: opacity 0.3s;
+      max-width: 300px;
+        white-space: pre-wrap;
+        /* Breaks long words onto new lines */
+        word-wrap: break-word;
+        /* Allows words to break if they're too long for the tooltip */
+     }
+
+     
+  
+     .tooltip:hover .tooltiptext {
+       visibility: visible;
+       opacity: 1;
+     }
