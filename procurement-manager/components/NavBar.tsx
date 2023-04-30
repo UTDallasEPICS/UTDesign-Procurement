@@ -10,41 +10,43 @@ export default function NavBar({}: NavbarProps): JSX.Element {
   const userContext = useContext(UserContext)
   return (
     <>
-      <Navbar expand={'lg'} bg='dark' className={`${styles.navbar} mb-3`}>
-        <Container>
-          <Navbar.Brand href='#'>UTDesign Procurement Manager</Navbar.Brand>
-          <Navbar.Toggle aria-controls={`offcanvasNavbar-expand-lg`} />
-          <Navbar.Offcanvas
-            id={`offcanvasNavbar-expand-lg`}
-            aria-labelledby={`offcanvasNavbarLabel-expand-lg`}
-            placement='end'
-          >
-            <Offcanvas.Header closeButton>
-              <Offcanvas.Title id={`offcanvasNavbarLabel-expand-lg`}>
-                UTDesign Procurement Manager
-              </Offcanvas.Title>
-            </Offcanvas.Header>
-            <Offcanvas.Body>
-              <Nav className='justify-content-end flex-grow-1'>
-                <Nav.Link href='/orders'>Orders</Nav.Link>
-                <Nav.Link href='/order-history'>Order History</Nav.Link>
-                <Nav.Link href='/project-updates'>Project Updates</Nav.Link>
-                <Button
-                  variant='outline-secondary'
-                  href='/login'
-                  onClick={() => {
-                    if (userContext?.loggedIn) {
-                      userContext?.setLoggedIn(false)
-                      sessionStorage.removeItem('user')
-                    }
-                  }}
-                >
-                  {userContext?.loggedIn ? 'Log Out' : 'Log In'}
-                </Button>
-              </Nav>
-            </Offcanvas.Body>
-          </Navbar.Offcanvas>
-        </Container>
+      <Navbar expand={'lg'} variant='dark' className={`${styles.navbar} mb-3`}>
+        {/* <Container> */}
+        <Navbar.Brand href='#' className='mx-4'>
+          UTDesign Procurement Manager
+        </Navbar.Brand>
+        <Navbar.Toggle aria-controls={`offcanvasNavbar-expand-lg`} />
+        <Navbar.Offcanvas
+          id={`offcanvasNavbar-expand-lg`}
+          aria-labelledby={`offcanvasNavbarLabel-expand-lg`}
+          placement='end'
+        >
+          <Offcanvas.Header closeButton>
+            <Offcanvas.Title id={`offcanvasNavbarLabel-expand-lg`}>
+              UTDesign Procurement Manager
+            </Offcanvas.Title>
+          </Offcanvas.Header>
+          <Offcanvas.Body className='mx-4'>
+            <Nav className='justify-content-end flex-grow-1'>
+              <Nav.Link href='/orders'>Orders</Nav.Link>
+              <Nav.Link href='/order-history'>Order History</Nav.Link>
+              <Nav.Link href='/project-updates'>Project Updates</Nav.Link>
+              <Button
+                variant='secondary'
+                href='/login'
+                onClick={() => {
+                  if (userContext?.loggedIn) {
+                    userContext?.setLoggedIn(false)
+                    sessionStorage.removeItem('user')
+                  }
+                }}
+              >
+                {userContext?.loggedIn ? 'Log Out' : 'Log In'}
+              </Button>
+            </Nav>
+          </Offcanvas.Body>
+        </Navbar.Offcanvas>
+        {/* </Container> */}
       </Navbar>
       {/* <div className={styles.topBar}>
         <div className={styles.headerSection}>

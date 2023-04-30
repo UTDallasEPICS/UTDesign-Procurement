@@ -102,7 +102,7 @@ model RequestItem {
   url         String
   partNumber  String
   quantity    Int
-  unitPrice   Decimal?
+  unitPrice   Decimal
   // RELATIONSHIPS HERE ::
   request     Request        @relation(fields: [requestID], references: [requestID])
   requestID   Int
@@ -227,6 +227,7 @@ model Department {
 model Vendor {
   vendorID          Int                 @id @default(autoincrement())
   vendorName        String
+  vendorCategory    String?
   RequestItem       RequestItem[]
   ReimbursementItem ReimbursementItem[]
 }

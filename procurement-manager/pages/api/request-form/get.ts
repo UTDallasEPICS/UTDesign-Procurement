@@ -30,36 +30,42 @@ export default async function handler(
       throw new Error('Could not find that user')
     }
 
-    // Admin just gets every Request that is approved
-    if (user.roleID === 1) {
-      const requests = await prisma.request.findMany({
-        where: {
-          Process: {
-            some: {
-              status: Status.APPROVED,
-            },
-          },
-        },
-        include: {
-          RequestItem: true,
-          Process: true,
-          OtherExpense: true,
-          project: true,
-        },
-      })
-
-      res.status(200).json({
-        userRole: user.roleID,
-        projects: [],
-        requests: [requests],
-      })
-      return
-    }
-
     // this will be the array of Request Forms that will be sent
     let requestsOfMultipleProjects: RequestDetails[][] = []
     let listOfProjects: Project[] = []
     // requests given back would be like this [[requests for project 1], [requests for project 2]]
+
+    // Admin just gets every Request that is approved
+    if (user.roleID === 1) {
+      const allProjects = await prisma.project.findMany()
+      for (const project of allProjects) {
+        const requests: RequestDetails[] = await prisma.request.findMany({
+          where: {
+            projectID: project.projectID,
+            Process: {
+              some: {
+                status: Status.APPROVED,
+              },
+            },
+          },
+          include: {
+            RequestItem: true,
+            Process: true,
+            OtherExpense: true,
+            project: true,
+          },
+        })
+
+        requestsOfMultipleProjects.push(requests)
+      }
+
+      res.status(200).json({
+        userRole: user.roleID,
+        projects: allProjects,
+        requests: requestsOfMultipleProjects,
+      })
+      return
+    }
 
     // first find requests associated with a project
     for (const project of user.WorksOn) {
@@ -70,6 +76,7 @@ export default async function handler(
             RequestItem: true,
             Process: true,
             OtherExpense: true,
+            project: true,
           },
         }),
         prisma.project.findUnique({

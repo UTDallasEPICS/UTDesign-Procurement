@@ -22,7 +22,7 @@ export default async function handler(
 ) {
   if (req.method == 'POST') {
     //post method as we are getting info
-    const { netID, processID, comment, status } = req.body
+    const { netID, processID, comment, status, requestID } = req.body
     // first get user's netID ??? from req.body
     const user = await prisma.user.findUnique({
       where: {
@@ -62,9 +62,13 @@ export default async function handler(
           .update({
             where: { processID: processID },
             data: {
+              mentorID: user.userID,
               mentorProcessedComments: comment,
               status: status,
               mentorProcessed: new Date(),
+            },
+            include: {
+              request: true,
             },
           })
           .catch((err) => {
@@ -73,6 +77,21 @@ export default async function handler(
               .status(500)
               .json({ message: 'Something went wrong', error: err })
           })
+
+        // if approved also update the dateApproved field for the request
+        if (status === Status.APPROVED) {
+          const updateRequest = await prisma.request
+            .update({
+              where: { requestID: requestID },
+              data: { dateApproved: new Date() },
+            })
+            .catch((err) => {
+              res
+                .status(500)
+                .json({ message: 'Something went wrong', error: err })
+            })
+        }
+
         res.status(200).json({
           message: `Process ${processID} was updated successfully`,
           update: updateC,

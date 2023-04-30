@@ -33,7 +33,6 @@ export default function App({ Component, pageProps }: AppProps) {
     if (sessionStorage.getItem('user')) {
       setUser(JSON.parse(sessionStorage.getItem('user')!))
       setLoggedIn(true)
-      console.log('user is logged in')
     }
   }, [])
 

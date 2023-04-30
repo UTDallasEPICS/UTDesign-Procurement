@@ -3,6 +3,7 @@ import Mentor from './mentor'
 import Head from 'next/head'
 import { UserContext } from '../_app'
 import { useRouter } from 'next/router'
+import { Row, Spinner } from 'react-bootstrap'
 
 export default function index({ title }: { title: string }) {
   const userContext = useContext(UserContext)
@@ -27,7 +28,11 @@ export default function index({ title }: { title: string }) {
       <Head>
         <title>{title}</title>
       </Head>
-      Not ready yet
+      <Row className='w-100 d-flex justify-content-center'>
+        <Spinner animation='border' role='status'>
+          <span className='visually-hidden'>Loading...</span>
+        </Spinner>
+      </Row>
     </>
   )
 }
