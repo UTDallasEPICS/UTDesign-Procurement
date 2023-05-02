@@ -62,6 +62,15 @@ const handleUnitCostBlur = (
   setItems(newItems);
 };
 
+const handleDeleteItem = (index: number) => {
+  const newItems = items.filter((_, i) => i !== index);
+  newItems.forEach((item, i) => {
+    item.sequence = i + 1;
+  });
+  setItems(newItems);
+};
+
+
 
 
 
@@ -360,6 +369,20 @@ const handleUnitCostBlur = (
 </InputGroup>
 
                 </Form.Group>
+                <Col md={1} className="d-flex align-items-end">
+  {items.length>1 && (<Button
+    variant="danger"
+    size="sm"
+    type="button"
+    onClick={() => handleDeleteItem(index)}
+    className={styles.deleteButton}
+    disabled={items.length === 1}
+  >
+    Delete
+  </Button>)}
+  
+</Col>
+
               </Col>
             </Row>
           </div>

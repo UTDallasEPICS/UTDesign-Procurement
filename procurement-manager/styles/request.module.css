@@ -354,3 +354,7 @@
           -webkit-appearance: none;
           margin: 0;
         }
+
+                .deleteButton {
+                  margin-bottom: 10px;
+                }
