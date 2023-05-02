@@ -131,21 +131,7 @@
   width: 100%;
 }
 
-.unitcostField {
-  display: flex;
-  align-items: center;
-  width: 50%;
-  border: none;
-  margin-bottom: 0;
-}
 
-.totalcostField {
-  display: flex;
-  align-items: center;
-  width: 50%;
-  border: none;
-  margin-bottom: 0;
-}
 
 .dollarSign {
   position: absolute;
@@ -185,26 +171,18 @@
 }
 
 .costInputField {
-  width: 100%;
+  width: 150%;
   box-sizing: border-box;
-  overflow-x: hidden;
+  overflow-x: visible;
   resize: none;
   height: 100%;
   vertical-align: middle;
-  padding-left: 32px;
 }
 
 .input-group-padding {
   padding-left: 36px;
 }
 
-.unitCostInput {
-  width: 100%;
-  max-width: 120px;
-  /* Adjust this value to your desired width */
-  padding-left: 32px;
-  /* Add this line to keep the existing padding-left */
-}
 
 
 
@@ -286,6 +264,10 @@
       width: 45px;
     }
 
+    .quantityNumberInput {
+      width: 70px;
+    }
+
   .quantityField {
     width: 100px;
   }
@@ -296,6 +278,7 @@
     align-items: center;
     width: 100%;
     margin-bottom: 0;
+    overflow-x:visible;
   }
 
   .customInputWidth .inputWidth {
@@ -323,3 +306,51 @@
     width: 100%;
     max-width: 100%;
   }
+
+    .tooltip {
+      position: relative;
+      display: inline-block;
+    }
+  
+     .tooltiptext {
+       visibility: hidden;
+       width: 250px;
+       background-color: #555;
+       color: #fff;
+       text-align: left;
+       padding: 8px;
+       border-radius: 6px;
+       position: absolute;
+       z-index: 1;
+       bottom: 100%;
+       left: 50%;
+       margin-left: -125px;
+       opacity: 0;
+       transition: opacity 0.3s;
+      max-width: 300px;
+        white-space: pre-wrap;
+        /* Breaks long words onto new lines */
+        word-wrap: break-word;
+        /* Allows words to break if they're too long for the tooltip */
+     }
+
+     
+  
+     .tooltip:hover .tooltiptext {
+       visibility: visible;
+       opacity: 1;
+     }
+
+         .unitCostInputGroup {
+           flex-grow: 1.5;
+         }
+    
+         .totalCostInputGroup {
+           flex-grow: 2.5;
+         }
+
+        .hideArrows::-webkit-inner-spin-button,
+        .hideArrows::-webkit-outer-spin-button {
+          -webkit-appearance: none;
+          margin: 0;
+        }
