@@ -23,7 +23,7 @@ export default function Mentor() {
       {/* <Container> */}
       <Row>
         <ProjectHeader
-          title='Project 1: Project Name | Capstone, Request'
+          projectName='Project 1: Point of Nerve Conduction Diagnostic | Capstone, Request'
           budget='Budget: $100/$500'
           isOpen={isOpenProject1}
           toggleCollapse={toggleCollapseProject1}

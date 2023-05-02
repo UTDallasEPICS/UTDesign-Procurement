@@ -21,11 +21,11 @@ export default function NavBar({}: NavbarProps): JSX.Element {
           >
             <Offcanvas.Header closeButton>
               <Offcanvas.Title id={`offcanvasNavbarLabel-expand-lg`}>
-                UTDesign Procurement Manager
+                UTDesign Procurement Manager 
               </Offcanvas.Title>
             </Offcanvas.Header>
             <Offcanvas.Body>
-              <Nav className='justify-content-end flex-grow-1'>
+            <Nav className='justify-content-end flex-grow-1' style={{color: 'white'}}>
                 <Nav.Link href='/orders'>Orders</Nav.Link>
                 <Nav.Link href='/order-history'>Order History</Nav.Link>
                 <Nav.Link href='/project-updates'>Project Updates</Nav.Link>

@@ -3,7 +3,7 @@ import React from 'react';
 import { Row, Col, Card, Button } from 'react-bootstrap';
 import MyTextbox from './textbox';
 
-const RequestCard: React.FC = () => {
+const RequestCard (){
   return (
     <Row className="mb-4">
       <Col>
@@ -12,7 +12,7 @@ const RequestCard: React.FC = () => {
             <Row className="smaller-row">
               <Col>
                 <h6>Request #</h6>
-                <p>3</p>
+                <p>{requestNumber}</p>
               </Col>
               <Col>
                 <h6>Date Requested</h6>
