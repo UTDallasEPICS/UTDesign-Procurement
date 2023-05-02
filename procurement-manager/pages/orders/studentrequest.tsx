@@ -168,7 +168,6 @@ const handleUnitCostBlur = (
       <div className={styles.titleContainer}>
         <h1 className={styles.requestForm}>Request Form</h1>
       </div>
-      <div className={styles.greenBar}></div>
       <Row className={"text-center mb-4"}>
         <Col>
           <p>
