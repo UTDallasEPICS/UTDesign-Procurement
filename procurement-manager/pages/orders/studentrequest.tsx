@@ -233,6 +233,7 @@ const handleDeleteItem = (index: number) => {
                     value={item.sequence}
                     readOnly
                     className={styles.sequenceNumberInput}
+                    disabled
                   />
                 </Form.Group>
               </Col>
@@ -308,19 +309,20 @@ const handleDeleteItem = (index: number) => {
               </Col>
               <Col md={1}>
                 <Form.Group controlId={`item${index}Quantity`}>
-                  <Form.Label>
-                    <strong>Qty.</strong>
-                  </Form.Label>
-                  <Form.Control
-  type="text"
-  pattern="\d+"
-  value={item.quantity}
-  onChange={(e) => handleItemChange(e, index, "quantity")}
-  className={styles.quantityNumberInput}
-  required
-/>
+  <Form.Label>
+    <strong>Qty.</strong>
+  </Form.Label>
+  <Form.Control
+    type="number"
+    min="0"
+    value={item.quantity}
+    onChange={(e) => handleItemChange(e, index, "quantity")}
+    className={`${styles.quantityNumberInput} ${styles.hideArrows}`}
+    required
+  />
+</Form.Group>
 
-                </Form.Group>
+
               </Col>
               <Col md={2}>
                 <Form.Group controlId={`item${index}UnitCost`}>
@@ -336,7 +338,7 @@ const handleDeleteItem = (index: number) => {
   value={item.unitCost}
   onChange={(e) => {
   const unitCostValue = e.target.value;
-  const regex = /^\d+(\.\d{0,4})?$/;
+  const regex = /^(?=.*[0-9])\d*(?:\.\d{0,4})?$/;
   if (regex.test(unitCostValue) || unitCostValue === '') {
     handleItemChange(e, index, "unitCost");
   }
@@ -365,6 +367,7 @@ const handleDeleteItem = (index: number) => {
     value={item.totalCost === "" ? "" : parseFloat(item.totalCost).toFixed(2)}
     readOnly
     className={`${styles.costInputField} ${styles.totalCostInput}`}
+    disabled
   />
 </InputGroup>
 
