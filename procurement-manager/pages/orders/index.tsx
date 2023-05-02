@@ -20,6 +20,8 @@ export default function index({ title }: { title: string }) {
       router.push('/orders/admin')
     } else if (userContext?.user?.roleID === 2) {
       router.push('/orders/mentor')
+    } else if (userContext?.user?.roleID === 3) {
+      router.push('/orders/studentorders')
     }
   }, [])
 
