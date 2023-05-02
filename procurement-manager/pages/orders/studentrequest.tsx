@@ -58,9 +58,10 @@ const handleUnitCostBlur = (
   index: number
 ) => {
   const newItems = [...items];
-  newItems[index].unitCost = parseFloat(e.target.value).toFixed(4);
+  newItems[index].unitCost = e.target.value;
   setItems(newItems);
 };
+
 
 
 
