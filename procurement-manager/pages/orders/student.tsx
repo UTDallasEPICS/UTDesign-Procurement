@@ -1,16 +1,54 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Container, Row, Col, Button, Collapse } from 'react-bootstrap'
-import TopBarStudent from '../../components/TopBarStudent'
 import OrderCard from '../../components/OrderCard'
 import ProjectHeader from '../../components/ProjectHeader'
+import { useSession } from 'next-auth/react'
+import { Project, User } from '@prisma/client'
+import { RequestDetails } from '@/lib/types'
+import axios from 'axios'
 
 export default function Student() {
-  const [isOpen, setIsOpen] = useState({ project1: true, project2: true })
+  // const [isOpen, setIsOpen] = useState({ project1: true, project2: true })
+  const { data: session } = useSession()
+  const user = session?.user as User
+  const [isOpen, setIsOpen] = useState<boolean[]>([])
+  // state for the requests inside the different projects associated to the user
+  const [projectRequests, setProjectRequests] = useState<RequestDetails[][]>([])
+  // state for the projects associated to the user
+  const [projects, setProjects] = useState<Project[]>([])
 
-  type ProjectType = 'project1' | 'project2'
+  // type ProjectType = 'project1' | 'project2'
 
-  const toggleCollapse = (project: ProjectType) => {
-    setIsOpen({ ...isOpen, [project]: !isOpen[project] })
+  // const toggleCollapse = (project: ProjectType) => {
+  //   setIsOpen({ ...isOpen, [project]: !isOpen[project] })
+  // }
+
+  useEffect(() => {
+    getStudent()
+  }, [])
+
+  // Client-side data fetching
+  async function getStudent() {
+    const response = await axios.post('/api/request-form/get', {
+      netID: user.netID,
+    })
+    const [projects, requestsOfMultipleProjects] = await Promise.all([
+      response.data.projects,
+      response.data.requests,
+    ])
+    setProjects(projects)
+    setProjectRequests(requestsOfMultipleProjects)
+    setIsOpen(projects.map(() => true))
+  }
+
+  const toggleCollapse = (projectIndex: number) => {
+    const newIsOpen = isOpen
+    for (let i = 0; i < isOpen.length; i++) {
+      if (i === projectIndex) {
+        newIsOpen[i] = !newIsOpen[i]
+      }
+      setIsOpen(newIsOpen)
+    }
   }
 
   const project1Cards = [
@@ -67,8 +105,46 @@ export default function Student() {
 
   return (
     <>
-      {/* <TopBarStudent /> */}
-      <Container>
+      <h1>Welcome back {user && user.firstName}</h1>
+      {projects.map((project, projIndex) => {
+        return (
+          <Row className='big-row my-4' key={projIndex}>
+            <ProjectHeader
+              projectName={project.projectTitle}
+              expenses={project.totalExpenses}
+              available={project.startingBudget - project.totalExpenses}
+              budgetTotal={project.startingBudget}
+              onToggleCollapse={() => toggleCollapse(projIndex)}
+              isOpen={isOpen[projIndex]}
+            />
+            <Collapse in={isOpen[projIndex]}>
+              <div className='w-100'>
+                {projectRequests[projIndex].map((request, reqIndex) => {
+                  return (
+                    // <h1 key={reqIndex}>Hi</h1>
+                    <OrderCard
+                      key={reqIndex}
+                      orderNumber={request.requestID}
+                      dateRequested={request.dateSubmitted}
+                      orderSubTotal={request.RequestItem.reduce(
+                        (total, item) => total + item.quantity * item.unitPrice,
+                        0
+                      )}
+                      shippingCost={0}
+                      orderTotal={request.RequestItem.reduce(
+                        (total, item) => total + item.quantity * item.unitPrice,
+                        0
+                      )}
+                      orderStatus={request.Process[0].status}
+                    />
+                  )
+                })}
+              </div>
+            </Collapse>
+          </Row>
+        )
+      })}
+      {/* <Container>
         <Row className='big-row'>
           <ProjectHeader
             projectName='Project 1: Diagnostic Capstone'
@@ -103,7 +179,7 @@ export default function Student() {
             </div>
           </Collapse>
         </Row>
-      </Container>
+      </Container> */}
     </>
   )
 }

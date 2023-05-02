@@ -1,16 +1,16 @@
 import React, { useContext, useEffect, useState } from 'react'
 import { Container, Row, Col, Button, Collapse } from 'react-bootstrap'
-import TopBarComponent from '../../components/TopBarComponent'
 import RequestCard from '../../components/RequestCard'
 import ProjectHeader from '../../components/ProjectHeader'
 import RejectionModal from '../../components/RejectionModal'
-import { Project } from '@prisma/client'
+import { Project, User } from '@prisma/client'
 import axios from 'axios'
 import { RequestDetails } from '@/lib/types'
-import Head from 'next/head'
-import { UserContext } from '../_app'
+import { useSession } from 'next-auth/react'
 
 export default function Mentor() {
+  const { data: session } = useSession()
+  const user = session?.user as User
   // state for the different collapse projects
   const [isOpen, setIsOpen] = useState<boolean[]>([])
   // state for the modal for rejecting requests
@@ -23,7 +23,6 @@ export default function Mentor() {
   const [projectRequests, setProjectRequests] = useState<RequestDetails[][]>([])
   // state for the projects associated to the user
   const [projects, setProjects] = useState<Project[]>([])
-  const userContext = useContext(UserContext)
 
   useEffect(() => {
     getMentor()
@@ -41,7 +40,6 @@ export default function Mentor() {
     setProjects(projects)
     setProjectRequests(requestsOfMultipleProjects)
     setIsOpen(projects.map(() => true))
-    console.log('isOpen: ', isOpen)
   }
 
   const toggleCollapse = (projectIndex: number) => {
@@ -115,9 +113,8 @@ export default function Mentor() {
 
   return (
     <>
-      {/* <TopBarComponent /> */}
       <Row className='my-4'>
-        <h2>Welcome back {userContext?.user?.firstName}</h2>
+        <h2>Welcome back {user && user.firstName}</h2>
       </Row>
       {projects.map((project, projIndex) => {
         return (

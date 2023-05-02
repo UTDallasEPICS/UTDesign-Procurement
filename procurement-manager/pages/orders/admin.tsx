@@ -6,9 +6,10 @@ import ProjectHeader from '@/components/ProjectHeader'
 import ReimbursementCard from '@/components/AdminReimbursementCard'
 import { prisma } from '@/db'
 import { RequestDetails } from '@/lib/types'
-import { Project, Status } from '@prisma/client'
+import { Project, Status, User } from '@prisma/client'
 import { Request } from '@prisma/client'
 import { Decimal } from '@prisma/client/runtime'
+import { useSession } from 'next-auth/react'
 
 export async function getServerSideProps() {
   const projects = await prisma.project.findMany()
@@ -53,13 +54,17 @@ interface AdminProps {
 export default function Admin({ requests, projects }: AdminProps): JSX.Element {
   // const [isOpenProject1, setIsOpenProject1] = useState(true)
   // const [isOpenProject2, setIsOpenProject2] = useState(true)
+  const { data: session } = useSession()
+  const user = session?.user as User
   const [isOpen, setIsOpen] = useState<boolean[]>([])
 
   useEffect(() => {
     setIsOpen(projects.map(() => true))
   }, [])
 
-  function findAvailableBudget(startingBudget: Decimal, expenses: Decimal) {}
+  // function findAvailableBudget(startingBudget: Decimal, expenses: Decimal) {
+  //   return startingBudget.toNumber() - expenses.toNumber()
+  // }
 
   // const toggleCollapseProject1 = () => {
   //   setIsOpenProject1(!isOpenProject1)
@@ -81,11 +86,7 @@ export default function Admin({ requests, projects }: AdminProps): JSX.Element {
 
   return (
     <>
-      {/* <TopBarComponent /> */}
-      {/* <Container> */}
-      {/* {requests.map((request) => {
-        return <h1>{request}</h1>
-      })} */}
+      <h1>Welcome back {user && user.firstName}</h1>
       {/* Creates the ProjectHeader  */}
       {projects.map((project, projIndex) => {
         return (
@@ -93,10 +94,7 @@ export default function Admin({ requests, projects }: AdminProps): JSX.Element {
             <ProjectHeader
               projectName={project.projectTitle}
               expenses={project.totalExpenses}
-              available={findAvailableBudget(
-                project.startingBudget,
-                project.totalExpenses
-              )}
+              available={project.startingBudget - project.totalExpenses}
               // available={(project.startingBudget as number) - project.totalExpenses}
               budgetTotal={project.startingBudget}
               onToggleCollapse={() => {
@@ -110,7 +108,15 @@ export default function Admin({ requests, projects }: AdminProps): JSX.Element {
               <div>
                 {requests[projIndex].length > 0 ? (
                   requests[projIndex].map((request, reqIndex) => {
-                    return <AdminRequestCard key={reqIndex} details={request} />
+                    return (
+                      <AdminRequestCard
+                        key={reqIndex}
+                        details={request}
+                        onReject={function (): void {
+                          throw new Error('Function not implemented.')
+                        }}
+                      />
+                    )
                   })
                 ) : (
                   <h1>No requests for this project</h1>

@@ -4,8 +4,8 @@ import { Col, Button, Row } from 'react-bootstrap'
 
 interface ProjectHeaderProps {
   projectName: string
-  expenses: number
-  available: number
+  expenses: Decimal
+  available: Decimal
   budgetTotal: Decimal
   onToggleCollapse: () => void
   isOpen: boolean
