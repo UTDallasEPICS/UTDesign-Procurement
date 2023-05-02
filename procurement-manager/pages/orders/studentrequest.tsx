@@ -336,7 +336,7 @@ const handleUnitCostBlur = (
 
   onBlur={(e) => handleUnitCostBlur(e as React.FocusEvent<HTMLInputElement>, index)}
 
-  className={`${styles.costInputField} ${styles.unitCostInput}`}
+  className={`${styles.costInputField} ${styles.unitCostInput} ${styles.hideArrows}`}
   required
 />
 

@@ -348,3 +348,9 @@
          .totalCostInputGroup {
            flex-grow: 2.5;
          }
+
+        .hideArrows::-webkit-inner-spin-button,
+        .hideArrows::-webkit-outer-spin-button {
+          -webkit-appearance: none;
+          margin: 0;
+        }
