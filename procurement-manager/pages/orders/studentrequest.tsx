@@ -149,10 +149,18 @@ const handleUnitCostBlur = (
   };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    // Process form data and submit
-    console.log("Submit:", { date, additionalInfo, items, selectedFiles });
-  };
+  e.preventDefault();
+
+  // Check if the remaining budget is negative
+  if (remainingBudget < 0) {
+    alert("Your remaining budget cannot be negative. Please review your items.");
+    return;
+  }
+
+  // Process form data and submit
+  console.log("Submit:", { date, additionalInfo, items, selectedFiles });
+};
+
 
   return (
     <Container className={styles.container}>
@@ -272,10 +280,10 @@ const handleUnitCostBlur = (
 
                 </Form.Group>
               </Col>
-              <Col md={2}>
+              <Col md={1}>
                 <Form.Group controlId={`item${index}PartNumber`}>
                   <Form.Label>
-                    <strong>Part Number</strong>
+                    <strong>Part #</strong>
                   </Form.Label>
                   <div className={styles.tooltip}>
   <Form.Control
@@ -327,7 +335,7 @@ const handleUnitCostBlur = (
 
   onBlur={(e) => handleUnitCostBlur(e as React.FocusEvent<HTMLInputElement>, index)}
 
-  className={`${styles.costInputField}`}
+  className={`${styles.costInputField} ${styles.unitCostInput}`}
   required
 />
 
@@ -336,7 +344,7 @@ const handleUnitCostBlur = (
 
                 </Form.Group>
               </Col>
-              <Col md={1}>
+              <Col md={2}>
                 <Form.Group controlId={`item${index}TotalCost`}>
                   <Form.Label>
                     <strong>Total</strong>
@@ -347,7 +355,7 @@ const handleUnitCostBlur = (
     type="text"
     value={item.totalCost === "" ? "" : parseFloat(item.totalCost).toFixed(2)}
     readOnly
-    className={`${styles.costInputField}`}
+    className={`${styles.costInputField} ${styles.totalCostInput}`}
   />
 </InputGroup>
 

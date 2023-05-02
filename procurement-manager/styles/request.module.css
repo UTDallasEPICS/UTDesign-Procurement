@@ -183,13 +183,6 @@
   padding-left: 36px;
 }
 
-.unitCostInput {
-  width: 100%;
-  max-width: 120px;
-  /* Adjust this value to your desired width */
-  padding-left: 32px;
-  /* Add this line to keep the existing padding-left */
-}
 
 
 
@@ -347,3 +340,11 @@
        visibility: visible;
        opacity: 1;
      }
+
+         .unitCostInputGroup {
+           flex-grow: 1.5;
+         }
+    
+         .totalCostInputGroup {
+           flex-grow: 2.5;
+         }
