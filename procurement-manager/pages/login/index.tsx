@@ -1,17 +1,14 @@
 import React, { MouseEvent, useContext, useRef, useState } from 'react'
 import styles from '@/styles/Login.module.scss'
 import { Dropdown, DropdownButton, Container, Row, Col } from 'react-bootstrap'
-import axios from 'axios'
+// import axios from 'axios'
 import { useRouter } from 'next/router'
 import { User } from '@prisma/client'
-import { UserContext } from '../_app'
+import { signIn } from 'next-auth/react'
+import axios from 'axios'
 // import index as Orders from '@/pages/orders/index'
 
 export default function Login() {
-  const [roleLoggedIn, setRoleLoggedIn] = useState('No user is logged in')
-  const router = useRouter()
-  const userContext = useContext(UserContext)
-
   async function handleSelect(e: MouseEvent) {
     e.preventDefault()
 
@@ -20,23 +17,11 @@ export default function Login() {
       const roleID: number = parseInt(e.target.id)
 
       try {
-        // POST request to our user API
-        const response = await axios.post('/api/user/fakeauth', {
+        const result = await signIn('credentials', {
           roleID: roleID,
+          redirect: true,
+          callbackUrl: '/orders',
         })
-        if (response.status === 200) {
-          const user: User = response.data.user
-          userContext?.setUser(user)
-          userContext?.setLoggedIn(true)
-          sessionStorage.setItem('user', JSON.stringify(user))
-          setRoleLoggedIn(`${user.firstName} is logged in`)
-
-          router.push('/orders')
-
-          // if (user.roleID === 2) {
-          //   router.push('/orders/mentor')
-          // }
-        }
       } catch (error) {
         // Error handling from https://bobbyhadz.com/blog/typescript-http-request-axios#making-http-post-requests-with-axios-in-typescript
         if (axios.isAxiosError(error)) {

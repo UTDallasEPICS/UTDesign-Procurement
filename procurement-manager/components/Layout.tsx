@@ -1,9 +1,10 @@
-import React from 'react'
+import { ReactNode } from 'react'
 import NavBar from './NavBar'
 import { Container } from 'react-bootstrap'
+import { SessionProvider } from 'next-auth/react'
 
 interface LayoutProps {
-  children: React.ReactNode
+  children: ReactNode
 }
 
 export default function Layout({ children }: LayoutProps): JSX.Element {

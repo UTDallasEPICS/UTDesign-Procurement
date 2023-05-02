@@ -1,17 +1,17 @@
-import React, { useState } from 'react';
-import { Container, Row, Col, Button, Collapse } from 'react-bootstrap';
-import TopBarStudent from '../../components/TopBarStudent';
-import OrderCard from "../../components/OrderCard"
-import ProjectHeader from '../../components/ProjectHeader';
+import React, { useState } from 'react'
+import { Container, Row, Col, Button, Collapse } from 'react-bootstrap'
+import TopBarStudent from '../../components/TopBarStudent'
+import OrderCard from '../../components/OrderCard'
+import ProjectHeader from '../../components/ProjectHeader'
 
-export default function StudentOrders() {
-  const [isOpen, setIsOpen] = useState({ project1: true, project2: true });
+export default function Student() {
+  const [isOpen, setIsOpen] = useState({ project1: true, project2: true })
 
-  type ProjectType = 'project1' | 'project2';
+  type ProjectType = 'project1' | 'project2'
 
   const toggleCollapse = (project: ProjectType) => {
-    setIsOpen({ ...isOpen, [project]: !isOpen[project] });
-  };
+    setIsOpen({ ...isOpen, [project]: !isOpen[project] })
+  }
 
   const project1Cards = [
     {
@@ -32,10 +32,8 @@ export default function StudentOrders() {
       dateOrdered: '4/18/2023',
       orderStatus: 'Pending',
     },
-    
-  ];
-  
-  
+  ]
+
   const project2Cards = [
     {
       orderNumber: 1,
@@ -55,25 +53,21 @@ export default function StudentOrders() {
       dateOrdered: '4/18/2023',
       orderStatus: 'Pending',
     },
-  ];
-  
-  
-  
-  
+  ]
 
   const project1Expenses = project1Cards.reduce(
     (acc, card) => acc + (card.shippingCost || 0) + (card.orderSubTotal || 0),
     0
-  );
+  )
 
   const project2Expenses = project2Cards.reduce(
     (acc, card) => acc + (card.shippingCost || 0) + (card.orderSubTotal || 0),
     0
-  );
+  )
 
   return (
     <>
-      <TopBarStudent />
+      {/* <TopBarStudent /> */}
       <Container>
         <Row className='big-row'>
           <ProjectHeader
@@ -85,12 +79,12 @@ export default function StudentOrders() {
             isOpen={isOpen.project1}
           />
           <Collapse in={isOpen.project1}>
-  <div className='w-100'>
-    {project1Cards.map((card, index) => (
-      <OrderCard key={index} {...card} />
-    ))}
-  </div>
-</Collapse>
+            <div className='w-100'>
+              {project1Cards.map((card, index) => (
+                <OrderCard key={index} {...card} />
+              ))}
+            </div>
+          </Collapse>
         </Row>
         <Row className='big-row'>
           <ProjectHeader
@@ -102,14 +96,14 @@ export default function StudentOrders() {
             isOpen={isOpen.project2}
           />
           <Collapse in={isOpen.project2}>
-  <div className='w-100'>
-    {project2Cards.map((card, index) => (
-      <OrderCard key={index} {...card} />
-    ))}
-  </div>
-</Collapse>
+            <div className='w-100'>
+              {project2Cards.map((card, index) => (
+                <OrderCard key={index} {...card} />
+              ))}
+            </div>
+          </Collapse>
         </Row>
       </Container>
     </>
-  );
+  )
 }

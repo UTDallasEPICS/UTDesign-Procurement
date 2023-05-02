@@ -1,3 +1,7 @@
+/**
+ * This file might not be needed anymore because I am using NextAuth for fake` authentication.
+ */
+
 import { NextApiRequest, NextApiResponse } from 'next'
 import { prisma } from '@/db'
 
@@ -24,7 +28,6 @@ export default async function handler(
     const user = await prisma.user.findFirst({
       where: { roleID: roleID },
     })
-    console.log(`\n`, user)
     if (!user) throw new Error('Could not find that user')
     else res.status(200).json({ message: 'User found', user })
   } catch (error) {

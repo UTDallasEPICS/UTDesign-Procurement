@@ -68,4 +68,3 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     res.status(405).json({ error: 'Method Not Allowed' })
   }
 }
-export { prisma }

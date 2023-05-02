@@ -1,17 +1,16 @@
-import React, { useContext } from 'react'
-import Link from 'next/link'
-import { Navbar, Container, Offcanvas, Nav, Button } from 'react-bootstrap'
+import { Navbar, Offcanvas, Nav, Button } from 'react-bootstrap'
 import styles from '@/styles/Navbar.module.scss'
-import { UserContext } from '@/pages/_app'
+import { signIn, signOut, useSession } from 'next-auth/react'
+import { User } from '@prisma/client'
 
 interface NavbarProps {}
 
 export default function NavBar({}: NavbarProps): JSX.Element {
-  const userContext = useContext(UserContext)
+  const { data: session } = useSession()
+  const user = session?.user as User
   return (
     <>
       <Navbar expand={'lg'} variant='dark' className={`${styles.navbar} mb-3`}>
-        {/* <Container> */}
         <Navbar.Brand href='#' className='mx-4'>
           UTDesign Procurement Manager
         </Navbar.Brand>
@@ -28,49 +27,52 @@ export default function NavBar({}: NavbarProps): JSX.Element {
           </Offcanvas.Header>
           <Offcanvas.Body className='mx-4'>
             <Nav className='justify-content-end flex-grow-1'>
-              <Nav.Link href='/orders'>Orders</Nav.Link>
-              <Nav.Link href='/order-history'>Order History</Nav.Link>
-              <Nav.Link href='/project-updates'>Project Updates</Nav.Link>
-              <Button
-                variant='secondary'
-                href='/login'
-                onClick={() => {
-                  if (userContext?.loggedIn) {
-                    userContext?.setLoggedIn(false)
-                    sessionStorage.removeItem('user')
-                  }
-                }}
-              >
-                {userContext?.loggedIn ? 'Log Out' : 'Log In'}
-              </Button>
+              {user ? (
+                <>
+                  {/* Links everyone can see */}
+                  <Nav.Link href='/orders' className='mx-2'>
+                    Orders
+                  </Nav.Link>
+                  <Nav.Link href='/order-history' className='mx-2'>
+                    Order History
+                  </Nav.Link>
+
+                  {/* Links seen by Admin and Mentor */}
+                  {(user.roleID === 1 || user.roleID === 2) && (
+                    <>
+                      <Nav.Link href='/project-updates' className='mx-2'>
+                        Project Updates
+                      </Nav.Link>
+                    </>
+                  )}
+
+                  {/* Links seen by Student */}
+                  {user.roleID === 3 && (
+                    <>
+                      <Nav.Link href='/request-form' className='mx-2'>
+                        Request Form
+                      </Nav.Link>
+                      <Nav.Link href='#reimbursement-form' className='mx-2'>
+                        Reimbursement Form
+                      </Nav.Link>
+                    </>
+                  )}
+
+                  <Button variant='secondary' onClick={() => signOut()}>
+                    Log Out
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button variant='secondary' onClick={() => signIn()}>
+                    Log In
+                  </Button>
+                </>
+              )}
             </Nav>
           </Offcanvas.Body>
         </Navbar.Offcanvas>
-        {/* </Container> */}
       </Navbar>
-      {/* <div className={styles.topBar}>
-        <div className={styles.headerSection}>
-          <Container className={styles.headerSection}>
-            <h4>UTD Procurement Manager</h4>
-            <Link href='/login'>
-              <span className={styles.logout}>Log Out</span>
-            </Link>
-          </Container>
-        </div>
-        <div className={styles.menuSection}>
-          <nav className={styles.navigation}>
-            <a className={styles.navigationLink} href='/login'>
-              ORDERS
-            </a>
-            <a className={styles.navigationLink} href='/order-history'>
-              ORDER HISTORY
-            </a>
-            <a className={styles.navigationLink} href='/project-updates'>
-              PROJECT UPDATES
-            </a>
-          </nav>
-        </div>
-      </div> */}
     </>
   )
 }

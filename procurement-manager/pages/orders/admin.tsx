@@ -8,6 +8,7 @@ import { prisma } from '@/db'
 import { RequestDetails } from '@/lib/types'
 import { Project, Status } from '@prisma/client'
 import { Request } from '@prisma/client'
+import { Decimal } from '@prisma/client/runtime'
 
 export async function getServerSideProps() {
   const projects = await prisma.project.findMany()
@@ -58,6 +59,8 @@ export default function Admin({ requests, projects }: AdminProps): JSX.Element {
     setIsOpen(projects.map(() => true))
   }, [])
 
+  function findAvailableBudget(startingBudget: Decimal, expenses: Decimal) {}
+
   // const toggleCollapseProject1 = () => {
   //   setIsOpenProject1(!isOpenProject1)
   // }
@@ -83,19 +86,26 @@ export default function Admin({ requests, projects }: AdminProps): JSX.Element {
       {/* {requests.map((request) => {
         return <h1>{request}</h1>
       })} */}
+      {/* Creates the ProjectHeader  */}
       {projects.map((project, projIndex) => {
         return (
           <Row key={projIndex}>
             <ProjectHeader
               projectName={project.projectTitle}
               expenses={project.totalExpenses}
-              available={project.startingBudget - project.totalExpenses}
+              available={findAvailableBudget(
+                project.startingBudget,
+                project.totalExpenses
+              )}
+              // available={(project.startingBudget as number) - project.totalExpenses}
               budgetTotal={project.startingBudget}
               onToggleCollapse={() => {
                 toggleCollapse(projIndex)
               }}
               isOpen={isOpen[projIndex]}
             />
+            {/* Details of the request forms modeled into cards */}
+            {/* These are the request forms associated to its project */}
             <Collapse in={isOpen[projIndex]}>
               <div>
                 {requests[projIndex].length > 0 ? (
