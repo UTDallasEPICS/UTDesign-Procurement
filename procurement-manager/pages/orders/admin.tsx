@@ -119,7 +119,7 @@ export default function Admin({ requests, projects }: AdminProps): JSX.Element {
                     )
                   })
                 ) : (
-                  <h1>No requests for this project</h1>
+                  <p className='my-4'>There are no requests in this project.</p>
                 )}
               </div>
             </Collapse>

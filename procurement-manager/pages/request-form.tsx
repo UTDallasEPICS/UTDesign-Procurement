@@ -1,12 +1,27 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Container, Row, Col, Button, InputGroup } from 'react-bootstrap'
 import Form from 'react-bootstrap/Form'
 import 'bootstrap/dist/css/bootstrap.min.css'
 
 import styles from '@/styles/request.module.css'
+import { useSession } from 'next-auth/react'
+import { Prisma, Project, RequestItem, User } from '@prisma/client'
 import axios from 'axios'
+import { getServerSession } from 'next-auth'
+import { authOptions } from './api/auth/[...nextauth]'
+import { useRouter } from 'next/router'
+
+export async function getServerSideProps(context: any) {
+  return {
+    props: {
+      session: await getServerSession(context.req, context.res, authOptions),
+    },
+  }
+}
 
 const StudentRequest = () => {
+  const { data: session } = useSession()
+  const user = session?.user as User
   // State and handlers
   const [date, setDate] = useState('')
   const [additionalInfo, setAdditionalInfo] = useState('')
@@ -24,6 +39,9 @@ const StudentRequest = () => {
     },
   ])
   const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null)
+  const [projects, setProjects] = useState<Project[]>([])
+  const [selectedProject, setSelectedProject] = useState(0)
+  const router = useRouter()
 
   const handleTooltip = (index: number, inputId: string, tooltipId: string) => {
     const inputElement = document.getElementById(inputId) as HTMLInputElement
@@ -41,6 +59,23 @@ const StudentRequest = () => {
       }
     }
   }
+
+  async function getProjects() {
+    try {
+      const res = await axios.post('/api/project/get', {
+        netID: user.netID,
+      })
+      setProjects(res.data.projects)
+      setSelectedProject(projects[0].projectNum)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  // get projects
+  useEffect(() => {
+    getProjects()
+  }, [])
 
   useEffect(() => {
     items.forEach((_, index) => {
@@ -68,14 +103,26 @@ const StudentRequest = () => {
     setItems(newItems)
   }
 
+  // This function is called when delete button for an item is clicked
+  const handleDeleteItem = (index: number) => {
+    // get the array without the item to be deleted
+    const newItems = items.filter((_, i) => i !== index)
+    // update the item sequence #s
+    newItems.forEach((item, i) => {
+      item.sequence = i + 1
+    })
+    setItems(newItems)
+  }
+
+  // Dynamically update the budget remaining
   useEffect(() => {
-    setRemainingBudget(5000 - calculateTotalCost())
+    setRemainingBudget(10000 - calculateTotalCost())
   }, [items])
 
+  // Input handling
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setDate(e.target.value)
   }
-
   const handleAdditionalInfoChange = (
     e: React.ChangeEvent<HTMLTextAreaElement>
   ) => {
@@ -146,7 +193,6 @@ const StudentRequest = () => {
     setItems(newItems)
   }
 
-  // Submitting the request form with our api to update the database
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
 
@@ -158,16 +204,44 @@ const StudentRequest = () => {
       return
     }
 
+    // clean out the items to send to API
+    const itemsToSend = items.map((item) => {
+      return {
+        description: item.description,
+        url: item.link,
+        partNumber: item.partNumber,
+        quantity: parseInt(item.quantity),
+        unitPrice: parseFloat(item.unitCost),
+        vendorID: parseInt(item.vendor),
+      }
+    })
+
     // Process form data and submit
-    console.log('Submit:', { date, additionalInfo, items, selectedFiles })
+    console.info('Submitted Form ::', {
+      date,
+      additionalInfo,
+      itemsToSend,
+      selectedFiles,
+      selectedProject: selectedProject,
+      user: user.email,
+    })
 
     try {
       const newRequest = await axios.post('/api/request-form', {
         dateNeeded: date,
-        additionalInfo,
-        // projectNum:
+        projectNum: selectedProject,
+        studentEmail: user.email,
+        items: itemsToSend,
+        additionalInfo: additionalInfo,
       })
-    } catch (error) {}
+      if (newRequest.status === 200) {
+        alert('Request Successfully Submitted')
+        // router.push('/orders')
+        console.log('results :: ', newRequest.data)
+      }
+    } catch (error) {
+      console.log(error)
+    }
   }
 
   return (
@@ -190,7 +264,8 @@ const StudentRequest = () => {
         </Col>
       </Row>
       <Form onSubmit={handleSubmit}>
-        <Row>
+        {/* DATE NEEDED */}
+        <Row className='my-4'>
           <Col md={3}>
             <Form.Group controlId='date'>
               <Form.Label>
@@ -204,25 +279,51 @@ const StudentRequest = () => {
               />
             </Form.Group>
           </Col>
-          <Col md={9}>
+
+          {/* ADDITIONAL INFO */}
+          <Col md={7}>
             <Form.Group controlId='additionalInfo'>
               <Form.Label>
                 <strong>Additional Information</strong>
               </Form.Label>
               <Form.Control
                 as='textarea'
-                rows={3}
+                rows={1}
                 value={additionalInfo}
                 onChange={handleAdditionalInfoChange}
                 required
               />
             </Form.Group>
           </Col>
+
+          {/* SELECTION OF PROJECTS */}
+          <Col md={2}>
+            <Form.Group>
+              <Form.Label>
+                <strong>Project: </strong>
+              </Form.Label>
+              <Form.Select
+                onChange={(e) => {
+                  setSelectedProject(parseInt(e.target.value))
+                  console.log('selectedProject = ', selectedProject)
+                }}
+              >
+                {projects.map((project, projIndex) => {
+                  return (
+                    <option key={projIndex} value={project.projectNum}>
+                      {project.projectTitle}
+                    </option>
+                  )
+                })}
+              </Form.Select>
+            </Form.Group>
+          </Col>
         </Row>
 
         {items.map((item, index) => (
-          <div key={index} className={`${styles.itemSection} my-4`}>
+          <div key={index} className={`${styles.itemSection} my-2`}>
             <Row>
+              {/* SEQUENCE NUMBER */}
               <Col md={1}>
                 <Form.Group controlId={`item${index}Sequence`}>
                   <Form.Label>
@@ -237,6 +338,8 @@ const StudentRequest = () => {
                   />
                 </Form.Group>
               </Col>
+
+              {/* VENDOR */}
               <Col md={1}>
                 <Form.Group controlId={`item${index}Vendor`}>
                   <Form.Label>
@@ -258,6 +361,8 @@ const StudentRequest = () => {
                   </div>
                 </Form.Group>
               </Col>
+
+              {/* ITEM DESCRIPTION */}
               <Col md={2}>
                 <Form.Group controlId={`item${index}Description`}>
                   <Form.Label>
@@ -281,6 +386,8 @@ const StudentRequest = () => {
                   </div>
                 </Form.Group>
               </Col>
+
+              {/* ITEM URL */}
               <Col md={2}>
                 <Form.Group controlId={`item${index}Link`}>
                   <Form.Label>
@@ -302,6 +409,8 @@ const StudentRequest = () => {
                   </div>
                 </Form.Group>
               </Col>
+
+              {/* PART NUMBER */}
               <Col md={1}>
                 <Form.Group controlId={`item${index}PartNumber`}>
                   <Form.Label>
@@ -323,21 +432,25 @@ const StudentRequest = () => {
                   </div>
                 </Form.Group>
               </Col>
+
+              {/* QUANTITY */}
               <Col md={1}>
                 <Form.Group controlId={`item${index}Quantity`}>
                   <Form.Label>
                     <strong>Qty.</strong>
                   </Form.Label>
                   <Form.Control
-                    type='text'
-                    pattern='\d+'
+                    type='number'
+                    min='0'
                     value={item.quantity}
                     onChange={(e) => handleItemChange(e, index, 'quantity')}
-                    className={styles.quantityNumberInput}
+                    className={`${styles.quantityNumberInput} ${styles.hideArrows}`}
                     required
                   />
                 </Form.Group>
               </Col>
+
+              {/* UNIT COST */}
               <Col md={2}>
                 <Form.Group controlId={`item${index}UnitCost`}>
                   <Form.Label>
@@ -356,7 +469,7 @@ const StudentRequest = () => {
                       value={item.unitCost}
                       onChange={(e) => {
                         const unitCostValue = e.target.value
-                        const regex = /^\d+(\.\d{0,4})?$/
+                        const regex = /^(?=.*[0-9])\d*(?:\.\d{0,4})?$/
                         if (regex.test(unitCostValue) || unitCostValue === '') {
                           handleItemChange(e, index, 'unitCost')
                         }
@@ -373,6 +486,8 @@ const StudentRequest = () => {
                   </InputGroup>
                 </Form.Group>
               </Col>
+
+              {/* TOTAL COST */}
               <Col md={2}>
                 <Form.Group controlId={`item${index}TotalCost`}>
                   <Form.Label>
@@ -397,29 +512,53 @@ const StudentRequest = () => {
                     />
                   </InputGroup>
                 </Form.Group>
+                <Col md={1} className='d-flex align-items-end mt-2'>
+                  {items.length > 1 && (
+                    <Button
+                      variant='danger'
+                      size='sm'
+                      type='button'
+                      onClick={() => handleDeleteItem(index)}
+                      className={styles.deleteButton}
+                      disabled={items.length === 1}
+                    >
+                      Delete
+                    </Button>
+                  )}
+                </Col>
               </Col>
             </Row>
           </div>
         ))}
 
-        <Button variant='primary' type='button' onClick={handleAddItem}>
-          Add another item
-        </Button>
-        <Form.Group controlId='fileUpload'>
-          <Form.Label>
-            <strong>Supporting Documents</strong>
-          </Form.Label>
-          <Form.Control
-            type='file'
-            multiple
-            onChange={(e) =>
-              setSelectedFiles((e.target as HTMLInputElement).files)
-            }
-          />
-        </Form.Group>
-        <Button variant='success' type='submit'>
-          Submit
-        </Button>
+        <Row className='my-4'>
+          <Col xs={12} md={4}>
+            <Button variant='primary' type='button' onClick={handleAddItem}>
+              Add another item
+            </Button>
+          </Col>
+        </Row>
+
+        <Row className='my-4'>
+          <Form.Group controlId='fileUpload'>
+            <Form.Label>
+              <strong>Supporting Documents</strong>
+            </Form.Label>
+            <Form.Control
+              type='file'
+              multiple
+              onChange={(e) =>
+                setSelectedFiles((e.target as HTMLInputElement).files)
+              }
+            />
+          </Form.Group>
+        </Row>
+
+        <Row className='my-4'>
+          <Button variant='success' type='submit'>
+            Submit
+          </Button>
+        </Row>
       </Form>
     </Container>
   )

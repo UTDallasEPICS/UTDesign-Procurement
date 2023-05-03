@@ -119,26 +119,32 @@ export default function Student() {
             />
             <Collapse in={isOpen[projIndex]}>
               <div className='w-100'>
-                {projectRequests[projIndex].map((request, reqIndex) => {
-                  return (
-                    // <h1 key={reqIndex}>Hi</h1>
-                    <OrderCard
-                      key={reqIndex}
-                      orderNumber={request.requestID}
-                      dateRequested={request.dateSubmitted}
-                      orderSubTotal={request.RequestItem.reduce(
-                        (total, item) => total + item.quantity * item.unitPrice,
-                        0
-                      )}
-                      shippingCost={0}
-                      orderTotal={request.RequestItem.reduce(
-                        (total, item) => total + item.quantity * item.unitPrice,
-                        0
-                      )}
-                      orderStatus={request.Process[0].status}
-                    />
-                  )
-                })}
+                {projectRequests[projIndex].length > 0 ? (
+                  projectRequests[projIndex].map((request, reqIndex) => {
+                    return (
+                      // <h1 key={reqIndex}>Hi</h1>
+                      <OrderCard
+                        key={reqIndex}
+                        orderNumber={request.requestID}
+                        dateRequested={request.dateSubmitted}
+                        orderSubTotal={request.RequestItem.reduce(
+                          (total, item) =>
+                            total + item.quantity * item.unitPrice,
+                          0
+                        )}
+                        shippingCost={0}
+                        orderTotal={request.RequestItem.reduce(
+                          (total, item) =>
+                            total + item.quantity * item.unitPrice,
+                          0
+                        )}
+                        orderStatus={request.Process[0].status}
+                      />
+                    )
+                  })
+                ) : (
+                  <p className='my-4'>There are no requests in this project.</p>
+                )}
               </div>
             </Collapse>
           </Row>
