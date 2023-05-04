@@ -2,6 +2,8 @@ import React from 'react';
 import styles from './TopBarComponent.module.css';
 import Link from 'next/link';
 
+
+
 const TopBarStudent: React.FC = () => {
   return (
     <div className={styles.topBar}>
@@ -31,4 +33,5 @@ const TopBarStudent: React.FC = () => {
   );
 };
 
-export default TopBarStudent;
+
+export default TopBarStudent; 

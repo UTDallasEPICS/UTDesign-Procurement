@@ -4,6 +4,7 @@ import TopBarStudent from '../../components/TopBarStudent';
 import OrderCard from "../../components/OrderCard"
 import ProjectHeader from '../../components/ProjectHeader';
 
+
 export default function StudentOrders() {
   const [isOpen, setIsOpen] = useState({ project1: true, project2: true });
 
@@ -13,6 +14,7 @@ export default function StudentOrders() {
     setIsOpen({ ...isOpen, [project]: !isOpen[project] });
   };
 
+  //define the elements of each card
   const project1Cards = [
     {
       orderNumber: 1,
@@ -60,7 +62,7 @@ export default function StudentOrders() {
   
   
   
-
+//calculate the the total cost by adding the shipping cost and subtotal for each card
   const project1Expenses = project1Cards.reduce(
     (acc, card) => acc + (card.shippingCost || 0) + (card.orderSubTotal || 0),
     0
@@ -70,7 +72,7 @@ export default function StudentOrders() {
     (acc, card) => acc + (card.shippingCost || 0) + (card.orderSubTotal || 0),
     0
   );
-
+//calculate the expenses and available balances for each project after an order is added
   return (
     <>
       <TopBarStudent />

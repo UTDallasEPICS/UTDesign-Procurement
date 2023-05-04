@@ -11,13 +11,12 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    /* Change from flex-start to space-between */
     padding: 0 20px;
     box-sizing: border-box;
     color: white;
     font-weight: bold;
     position: relative;
-    /* Add this line to set the position property */
+  
 }
 
 .menuSection {

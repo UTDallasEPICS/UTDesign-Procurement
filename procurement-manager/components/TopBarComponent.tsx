@@ -28,4 +28,4 @@ const TopBarComponent: React.FC = () => {
   );
 };
 
-export default TopBarComponent;
+export default TopBarComponent; 

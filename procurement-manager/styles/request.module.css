@@ -92,25 +92,24 @@
   gap: 30px;
 }
 
-.vendor,
-.date,
-.expenseJustification,
-.additionalInfo,
-.itemDescription,
-.itemLink,
-.partNum,
-.quantity,
-.unitCost,
-.totalCost,
-.supportingDocs {
-  font-family: 'Inter';
-  font-weight: 600;
-  font-size: 32px;
-  line-height: 48px;
-  text-align: left;
-  color: #000000;
-  margin-bottom: -15px;
+.vendorField,
+.dateField,
+.expenseField,
+.itemdescriptionField,
+.itemlinkField,
+.partnumField,
+.quantityField,
+.supportingdocsField,
+.additionalinfoField {
+  box-sizing: border-box;
+  background: #FFFFFF;
+  border: 1.5px solid #000000;
+  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+  margin-top: 15px;
+  min-height: 40px;
+  resize: vertical;
 }
+
 
 .vendorField,
 .dateField,
@@ -125,6 +124,7 @@
   border: 1.5px solid #000000;
   box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
   margin-top: 15px;
+  resize: vertical;
 }
 
 .customInputGroup {
@@ -134,7 +134,7 @@
 .unitcostField {
   display: flex;
   align-items: center;
-  width: 50%;
+  width: 100%;
   border: none;
   margin-bottom: 0;
 }
@@ -142,7 +142,7 @@
 .totalcostField {
   display: flex;
   align-items: center;
-  width: 50%;
+  width: 100%;
   border: none;
   margin-bottom: 0;
 }
@@ -202,7 +202,7 @@
   width: 100%;
   max-width: 120px;
   /* Adjust this value to your desired width */
-  padding-left: 32px;
+  /*padding-left: 32px;*/
   /* Add this line to keep the existing padding-left */
 }
 
@@ -234,7 +234,10 @@
     overflow-x: hidden;
     resize: vertical;
     min-height: 40px;
-  }
+  
+    }
+    
+  
 
   .textareaWrapper {
     flex-basis: 100%;
