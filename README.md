@@ -41,3 +41,5 @@ The prisma file under the prisma folder had the schemea setup and can be eddited
 After making any changes to the database running `npx prisma migrate dev` will update the databse
 - Some more documentation regarding this is provided at https://www.prisma.io/docs/concepts/components/prisma-migrate
 
+## Future Todo list
+
