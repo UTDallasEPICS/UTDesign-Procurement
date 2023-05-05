@@ -105,7 +105,9 @@ export default function Student() {
 
   return (
     <>
-      <h1>Welcome back {user && user.firstName}</h1>
+      <Row className='my-4'>
+        <h1>Welcome back {user && user.firstName}</h1>
+      </Row>
       {projects.map((project, projIndex) => {
         return (
           <Row className='big-row my-4' key={projIndex}>

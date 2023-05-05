@@ -1,12 +1,12 @@
-import { Decimal } from '@prisma/client/runtime'
+import { Prisma } from '@prisma/client'
 import React from 'react'
 import { Col, Button, Row } from 'react-bootstrap'
 
 interface ProjectHeaderProps {
   projectName: string
-  expenses: Decimal
-  available: Decimal
-  budgetTotal: Decimal
+  expenses: Prisma.Decimal
+  available: Prisma.Decimal
+  budgetTotal: Prisma.Decimal
   onToggleCollapse: () => void
   isOpen: boolean
 }
@@ -31,7 +31,7 @@ const ProjectHeader: React.FC<ProjectHeaderProps> = ({
       </Col>
       <Col md={2}>
         <p style={{ fontSize: '1.5rem' }}>
-          <strong>Available:</strong> $<>{available}</>
+          <strong>Available:</strong> $<>{available.toString()}</>
         </p>
       </Col>
       <Col md={2}>

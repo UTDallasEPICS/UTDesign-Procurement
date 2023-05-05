@@ -259,7 +259,350 @@ export default async function handler(
         vendorName: 'Office Depot',
         vendorCategory: 'Cables/Wires',
       }, //end of electronics
+
       //start of mechanical
+      {
+        vendorName: '3BG Supply',
+        vendorCategory:
+          'bearings, bushings, gears, idlers, tensioners, pulleys, sheaves, sprockets, electric motors, seals, machine guards, transmission belts ',
+      },
+      {
+        vendorName: '80/20 Inc.',
+        vendorCategory:
+          'aluminum framing system. Not compatible with Unistrut components. Sold locally by Shepherd Controls ',
+      },
+      {
+        vendorName: 'Apex Magnets ',
+        vendorCategory: 'magnets and magnetic products',
+      },
+      {
+        vendorName: 'Applied Magnets',
+        vendorCategory:
+          'magnets and magnetic products, wind turbine generators and blades',
+      },
+      {
+        vendorName: 'ASCO',
+        vendorCategory: 'electrically operated (solenoid) valves',
+      },
+      {
+        vendorName: 'Berg',
+        vendorCategory:
+          'precision mechanical parts such as gears, cams, sprockets, pulleys, belts, roller chains, bearings, lead screws',
+      },
+      {
+        vendorName: 'Bimba',
+        vendorCategory:
+          'pneumatic, hydraulic, and electric actuators, air preparation, and motion control products',
+      },
+      {
+        vendorName: 'ChillX Chillers',
+        vendorCategory:
+          'temperature/humidity controllers, pumps, exchangers, immersion coils/wort chillers, electronic valves, manifolds',
+      },
+      {
+        vendorName: 'Cold & Colder',
+        vendorCategory: 'peltiers, water pumps, water block, silicone tubing',
+      },
+      {
+        vendorName: 'Compressed Air Systems',
+        vendorCategory:
+          'compressors, tanks, generators, chillers, vacuums, air tools, monitors, lubricants, filters, accessories',
+      },
+      {
+        vendorName: 'Control Specialties',
+        vendorCategory:
+          'steam/air/water/vacuum motors, automation, parts, filtration, regulators, pumps, process equipment, rotary joints and unions',
+      },
+      {
+        vendorName: 'EFDYN',
+        vendorCategory:
+          'industrial motion management, design, manufacture, and distribute a wide array of linear, rotary deceleration and control technologies',
+      },
+      {
+        vendorName: 'FLW',
+        vendorCategory:
+          'measurement/control/calibration products, hoods, meters, transducers, thermometers, recorders, environmental chambers',
+      },
+      {
+        vendorName: 'Hartfiel Automation',
+        vendorCategory:
+          'conveyors, controls, sensors, aluminum extrusion, robotics, cable/cord sets, industrial vacuum/networking/PC/vision',
+      },
+      {
+        vendorName: 'Home Depot',
+        vendorCategory:
+          'Mechanical items - can be picked up at store by students',
+      },
+      {
+        vendorName: 'Lowe’s',
+        vendorCategory:
+          'Mechanical items - can be picked up at store by students',
+      },
+      {
+        vendorName: 'McMaster-Carr',
+        vendorCategory:
+          'abrading/polishing, building/grounds, electrical/lighting, fabricating, fastening/joining, filtering, flow/level control, furniture/storage, hand tools, hardware, heating/cooling, lubricating, material handling, measuring/inspecting, office supplies/signs, pipe, tubing, hose/fittings, plumbing/janitorial, power transmission, pressure/temperature control, pulling/lifting, raw materials, safety supplies, sawing/cutting, sealing, shipping, suspending',
+      },
+      {
+        vendorName: 'Midwest Motion Products',
+        vendorCategory:
+          'design, manufacturing and distribution of standard and custom motion control equipment',
+      },
+      {
+        vendorName: 'OpenBuilds Part Store',
+        vendorCategory:
+          'machine bundles, materials, rails/actuators, Gantry carts, hardware, software, electronics, components, tools',
+      },
+      {
+        vendorName: 'Parker',
+        vendorCategory:
+          'components/Systems for control of motion and fluid flow such as pneumatic actuators, fittings, valves, pumps, seals',
+      },
+      {
+        vendorName: 'Progressive Automations',
+        vendorCategory:
+          'actuators, actuator parts, lifts, control systems, PLC controls, mounting brackets, power supplies, wiring and connectors ',
+      },
+      {
+        vendorName: 'Ryan Herco Flow Solutions',
+        vendorCategory:
+          'tubing, pipe, hose, valves, pumps, and other fluid handling components. Good selection of plastic components',
+      },
+      {
+        vendorName: 'shopPOPdisplays',
+        vendorCategory:
+          'boxes, pedestals, risers, signage, holders, mirrors, bins, shelves, racks, grid walls, office supplies, organizers, fixtures, accessories',
+      },
+      {
+        vendorName: 'Swagelok',
+        vendorCategory:
+          'tube/hose/pipe components and fittings. Sold locally by Texas Valve and Fitting ',
+      },
+      {
+        vendorName: 'Technical Glass Products, Inc.',
+        vendorCategory:
+          'quartz labware, rods, tubing, plates, discs, slides, cover slips, joints, semiconductor ware',
+      },
+      {
+        vendorName: 'Teknic',
+        vendorCategory:
+          'servo motors, all-in-one servos, integrated controllers, servo drives, power supplies',
+      },
+      {
+        vendorName: 'Timken',
+        vendorCategory:
+          'bearings, seals, power transmission products, motion control systems',
+      },
+      {
+        vendorName: 'TNUTZ',
+        vendorCategory: 'alternative supplier for 80/20 compatible components',
+      },
+      {
+        vendorName: 'Unist',
+        vendorCategory:
+          'framing system available in multiple materials. Not compatible with 80/20 components',
+      },
+      {
+        vendorName: 'Versa Valves',
+        vendorCategory: 'actuated valves for pneumatics and hydraulics',
+      },
+      {
+        vendorName: 'VXB Ball Bearings',
+        vendorCategory:
+          'ball bearings, wheels and casters, tools, lubricants, seals, washers, bearings, timing belts/pulleys, nuts and bolts',
+      }, //end of mechanical
+      //start of medical
+      {
+        vendorName: 'ADW Diabetes',
+        vendorCategory:
+          'monitors, tests, lancets, catheters, CPAPs, feeding, feet, home medical equipment, incontinence, ostomy, pharmacy, respiratory',
+      },
+      {
+        vendorName: 'AED',
+        vendorCategory:
+          'automated external defibrillators and AED accessories ',
+      },
+      {
+        vendorName: 'Beckman Coulter',
+        vendorCategory:
+          'automation systems, chemistry, tools, microbiology, protein chemistry, urinalysis',
+      },
+      {
+        vendorName: 'Cole-Parmer',
+        vendorCategory:
+          'temperature measurement and control, electrochemistry, laboratory/industrial fluid products, instrumentation, equipment, supplies',
+      },
+      {
+        vendorName: 'Eppendorf',
+        vendorCategory:
+          'pipettes, dispensers, centrifuges, mixers, spectrometers, DNA amplification, freezers, fermenters, bioreactors, CO2 incubators, shakers',
+      },
+      {
+        vendorName: 'Fisher Scientific',
+        vendorCategory:
+          'balances, scales, centrifuges, chromatography, chemicals, instruments, storage, pipettes, syringes, gloves, glasses, cleaning, tubes',
+      },
+      {
+        vendorName: 'Medline',
+        vendorCategory: 'manufacturer and distributor of healthcare products',
+      },
+      {
+        vendorName: 'Shop Anatomical',
+        vendorCategory:
+          'human and animal anatomy models and charts, simulators',
+      }, //end of medical
+      //start of raw materials
+      {
+        vendorName: 'Brick In The Yard',
+        vendorCategory: 'molding, casting, and special effects supplies ',
+      },
+      {
+        vendorName: 'Ellsworth Adhesives',
+        vendorCategory:
+          'adhesives, sealants, lubricants, coatings, encapsulants, tapes, soldering products, dispensing equipment',
+      },
+      {
+        vendorName: 'ePlastics',
+        vendorCategory: 'various types and shapes of plastics',
+      },
+      {
+        vendorName: 'Home Depot',
+        vendorCategory: 'can be picked up at store by students',
+      },
+      {
+        vendorName: 'Lowe’s For Pros',
+        vendorCategory: 'can be picked up at store by students',
+      },
+      {
+        vendorName: 'Metal Supermarkets',
+        vendorCategory:
+          'local supplier of small quantity metals. Products available on a walk-in basis. Call (972) 422-5167 for quotation',
+      },
+      {
+        vendorName: 'Precision Grinding, Inc.',
+        vendorCategory:
+          'custom steel fabrication, plasma cutting and plate burning, stress relieving, annealing, grinding, CNC milling & turning',
+      },
+      {
+        vendorName: 'Professional Plastics',
+        vendorCategory: 'various types and shapes of plastic',
+      },
+      {
+        vendorName: 'Regal Plastics',
+        vendorCategory:
+          'plastic materials/sheets/film/rods/tubes, acrylic/plexiglass, Polygal, custom fabrication',
+      },
+      {
+        vendorName: 'Reynolds Advanced Materials',
+        vendorCategory:
+          'materials and composites for making molds, casts, and skin effects',
+      },
+      {
+        vendorName: 'Trident',
+        vendorCategory: 'common and hard to find metals',
+      }, //end of raw materials
+      //start machine and fab
+      {
+        vendorName: 'Bates Machine & Mfg.',
+        vendorCategory: 'full-service CNC machine shop',
+      },
+      {
+        vendorName: 'eMachineShop',
+        vendorCategory:
+          'traditional metalworking capabilities, waterjet cutting, wire EDM, and plastic injection molding',
+      },
+      {
+        vendorName: 'Heavy Metal',
+        vendorCategory: 'general machine shop',
+      },
+      {
+        vendorName: 'MIINC',
+        vendorCategory: 'piping, welding, and general mechanical fabrication',
+      },
+      {
+        vendorName: 'Proto Labs, Inc.',
+        vendorCategory: 'Digital Manufacturing',
+      },
+      {
+        vendorName: 'Texas Pro Fab',
+        vendorCategory: 'sheet metal fabricator',
+      },
+      {
+        vendorName: 'Texas Tool & Die',
+        vendorCategory: 'machining, welding, and metal fabrication',
+      },
+      {
+        vendorName: 'Xometry',
+        vendorCategory:
+          'CNC machining/milling/turning, sheet metal fabrication and cutting, injection molding',
+      }, //end of machine and fab
+      //start of 3d printing
+      //services
+      {
+        vendorName: '3D Dallas Printing',
+        vendorCategory: '3D printing services',
+      },
+      {
+        vendorName: 'GoEngineer',
+        vendorCategory: '3D printing services',
+      },
+      {
+        vendorName: 'HUBS',
+        vendorCategory: '3D printing services',
+      },
+      {
+        vendorName: 'Shapeways',
+        vendorCategory: '3D printing services',
+      },
+      {
+        vendorName: 'Stratasys',
+        vendorCategory: '3D printing services',
+      },
+      {
+        vendorName: 'Xometry',
+        vendorCategory: '3D printing services',
+      },
+      //Materials
+      {
+        vendorName: 'MatterHackers ',
+        vendorCategory: '3D printing materials',
+      },
+      {
+        vendorName: 'MonoPrice',
+        vendorCategory: '3D printing materials',
+      }, //end of 3d printing
+      //start of local retail
+      {
+        vendorName: 'Home Depot',
+        vendorCategory: 'can be picked up at store by students',
+      },
+      {
+        vendorName: 'Lowe’s For Pros',
+        vendorCategory: 'can be picked up at store by students',
+      },
+      {
+        vendorName: 'Micro Center',
+        vendorCategory: 'must be purchased at the store by UTDesign admin',
+      }, //end of local retail
+      //start of not allowed
+      // {
+      //   vendorName: 'Amazon',
+      //   vendorCategory:
+      //     'not allowed if one of the preferred vendors carry the item',
+      // },
+      // {
+      //   vendorName: 'eBay',
+      //   vendorCategory: 'not allowed',
+      // },
+      // {
+      //   vendorName: 'Johnson Plastics',
+      //   vendorCategory: 'not allowed',
+      // },
+      // {
+      //   vendorName:
+      //     'Any auction site (e.g., Craigslist) or international vendor',
+      //   vendorCategory: 'not allowed',
+      // },
     ],
   })
   try {

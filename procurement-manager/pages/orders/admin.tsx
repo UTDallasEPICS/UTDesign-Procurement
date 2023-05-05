@@ -1,20 +1,27 @@
-import React, { useContext, useEffect, useState } from 'react'
-import { Container, Row, Collapse } from 'react-bootstrap'
-import TopBarComponent from '@/components/TopBarComponent'
+import React, { useEffect, useState } from 'react'
+import { Row, Collapse } from 'react-bootstrap'
 import AdminRequestCard from '@/components/AdminRequestCard'
 import ProjectHeader from '@/components/ProjectHeader'
 import ReimbursementCard from '@/components/AdminReimbursementCard'
 import { prisma } from '@/db'
 import { RequestDetails } from '@/lib/types'
-import { Project, Status, User } from '@prisma/client'
-import { Request } from '@prisma/client'
-import { Decimal } from '@prisma/client/runtime'
-import { useSession } from 'next-auth/react'
+import { Prisma, Project, Status, User } from '@prisma/client'
+import RejectionModal from '@/components/RejectionModal'
+import axios from 'axios'
+import { Session, getServerSession } from 'next-auth'
+import { authOptions } from '../api/auth/[...nextauth]'
 
-export async function getServerSideProps() {
+export async function getServerSideProps(context: any) {
+  const session = await getServerSession(context.req, context.res, authOptions)
+  const user = session?.user as User
+
+  // projects and requests are loaded from the server-side first (I wanted it try it out)
+  // These will be passed to a state so if we need to fetch again, we can just update the state
   const projects = await prisma.project.findMany()
   const requestOfMultipleProjects: RequestDetails[][] = []
 
+  // Next.js recommends that instead of calling from '/api/request-form/get', just perform the query here
+  // to reduce the number of API calls and improve performance because getServerSideProps can do server-side code
   for (const project of projects) {
     const requests = await prisma.request.findMany({
       where: {
@@ -40,39 +47,90 @@ export async function getServerSideProps() {
   return {
     // needed to stringify the object first to avoid non-serializable error
     props: {
-      requests: JSON.parse(JSON.stringify(requestOfMultipleProjects)),
-      projects: JSON.parse(JSON.stringify(projects)),
+      session: session,
+      user: user,
+      reqs: JSON.parse(JSON.stringify(requestOfMultipleProjects)),
+      projs: JSON.parse(JSON.stringify(projects)),
     },
   }
 }
 
 interface AdminProps {
-  requests: RequestDetails[][]
-  projects: Project[]
+  session: Session | null
+  user: User
+  reqs: RequestDetails[][]
+  projs: Project[]
 }
 
-export default function Admin({ requests, projects }: AdminProps): JSX.Element {
-  // const [isOpenProject1, setIsOpenProject1] = useState(true)
-  // const [isOpenProject2, setIsOpenProject2] = useState(true)
-  const { data: session } = useSession()
-  const user = session?.user as User
+export default function Admin({
+  session,
+  user,
+  reqs,
+  projs,
+}: AdminProps): JSX.Element {
   const [isOpen, setIsOpen] = useState<boolean[]>([])
+  // state for the modal for rejecting requests
+  const [showRejectModal, setShowRejectModal] = useState(false)
+  // state to set the request number for the reject modal to show
+  const [selectedRequestID, setSelectedRequestID] = useState<number | null>(
+    null
+  )
+  const [projects, setProjects] = useState<Project[]>(projs)
+  const [projectRequests, setProjectRequests] =
+    useState<RequestDetails[][]>(reqs)
 
   useEffect(() => {
     setIsOpen(projects.map(() => true))
   }, [])
 
-  // function findAvailableBudget(startingBudget: Decimal, expenses: Decimal) {
-  //   return startingBudget.toNumber() - expenses.toNumber()
-  // }
+  // Client-side data fetching, but can be done with getServerSideProps
+  async function getAdmin() {
+    const response = await axios.post('/api/request-form/get', {
+      netID: user.netID,
+    })
+    const [projects, requestsOfMultipleProjects] = await Promise.all([
+      response.data.projects,
+      response.data.requests,
+    ])
+    setProjects(projects)
+    setProjectRequests(requestsOfMultipleProjects)
+    setIsOpen(projects.map(() => true))
+  }
 
-  // const toggleCollapseProject1 = () => {
-  //   setIsOpenProject1(!isOpenProject1)
-  // }
+  /**
+   * This function is called after the mentor clicks the reject button on a request.
+   * @param requestID - The requestID of the request being rejected.
+   */
+  const handleReject = (requestID: number) => {
+    setSelectedRequestID(requestID)
+    setShowRejectModal(true)
+  }
 
-  // const toggleCollapseProject2 = () => {
-  //   setIsOpenProject2(!isOpenProject2)
-  // }
+  /**
+   * This function is called after the mentor submits the rejection reason through the RejectionModal.
+   * @param reason - The reason for rejecting the request.
+   */
+  const handleSubmitRejection = async (reason: string) => {
+    setShowRejectModal(false)
+    try {
+      const response = await axios.post('/api/process/update', {
+        netID: user.netID,
+        requestID: selectedRequestID,
+        mentorProcessedComments: reason,
+        status: Status.REJECTED,
+      })
+
+      // Updates the page if the request was successfully rejected so the rejected request should not be seen
+      if (response.status === 200) {
+        getAdmin()
+      }
+    } catch (error) {
+      if (error instanceof Error) console.log(error.message)
+      else if (axios.isAxiosError(error))
+        console.log(error.message, error.status)
+      else console.log(error)
+    }
+  }
 
   function toggleCollapse(projectIndex: number) {
     const newIsOpen = isOpen
@@ -86,7 +144,9 @@ export default function Admin({ requests, projects }: AdminProps): JSX.Element {
 
   return (
     <>
-      <h1>Welcome back {user && user.firstName}</h1>
+      <Row className='my-4'>
+        <h1>Welcome back {user && user.firstName}</h1>
+      </Row>
       {/* Creates the ProjectHeader  */}
       {projects.map((project, projIndex) => {
         return (
@@ -94,8 +154,10 @@ export default function Admin({ requests, projects }: AdminProps): JSX.Element {
             <ProjectHeader
               projectName={project.projectTitle}
               expenses={project.totalExpenses}
-              available={project.startingBudget - project.totalExpenses}
-              // available={(project.startingBudget as number) - project.totalExpenses}
+              available={Prisma.Decimal.sub(
+                project.startingBudget,
+                project.totalExpenses
+              )}
               budgetTotal={project.startingBudget}
               onToggleCollapse={() => {
                 toggleCollapse(projIndex)
@@ -106,15 +168,13 @@ export default function Admin({ requests, projects }: AdminProps): JSX.Element {
             {/* These are the request forms associated to its project */}
             <Collapse in={isOpen[projIndex]}>
               <div>
-                {requests[projIndex].length > 0 ? (
-                  requests[projIndex].map((request, reqIndex) => {
+                {projectRequests[projIndex].length > 0 ? (
+                  projectRequests[projIndex].map((request, reqIndex) => {
                     return (
                       <AdminRequestCard
                         key={reqIndex}
                         details={request}
-                        onReject={function (): void {
-                          throw new Error('Function not implemented.')
-                        }}
+                        onReject={() => handleReject(request.requestID)}
                       />
                     )
                   })
@@ -126,41 +186,15 @@ export default function Admin({ requests, projects }: AdminProps): JSX.Element {
           </Row>
         )
       })}
+
+      <RejectionModal
+        show={showRejectModal}
+        onHide={() => setShowRejectModal(false)}
+        onSubmit={handleSubmitRejection}
+      />
+
+      {/* AN EXAMPLE OF REIMBURSEMENT CARDS */}
       {/* <Row>
-        <ProjectHeader
-          title='Project 1: Project Name | Capstone, Request'
-          budget='Budget: $100/$500'
-          isOpen={isOpenProject1}
-          toggleCollapse={toggleCollapseProject1}
-        />
-        <Collapse in={isOpenProject1}>
-          <div>
-            <Row>
-              <AdminRequestCard
-                requestNumber={0}
-                dateRequested={undefined}
-                dateNeeded={undefined}
-                orderTotal={0}
-                status={'UNDER_REVIEW'}
-                onReject={function (): void {
-                  throw new Error('Function not implemented.')
-                }}
-              />
-              <AdminRequestCard
-                requestNumber={0}
-                dateRequested={undefined}
-                dateNeeded={undefined}
-                orderTotal={0}
-                status={'UNDER_REVIEW'}
-                onReject={function (): void {
-                  throw new Error('Function not implemented.')
-                }}
-              />
-            </Row>
-          </div>
-        </Collapse>
-      </Row>
-      <Row>
         <ProjectHeader
           projectName='Project 3: Point of Nerve Conduction Diagnostic | Capstone, Reimbursement'
           // budget='Budget: $100/$500'
@@ -181,7 +215,6 @@ export default function Admin({ requests, projects }: AdminProps): JSX.Element {
           </div>
         </Collapse>
       </Row> */}
-      {/* </Container> */}
     </>
   )
 }

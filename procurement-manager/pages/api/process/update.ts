@@ -20,104 +20,85 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  if (req.method == 'POST') {
-    //post method as we are getting info
-    const { netID, processID, comment, status, requestID } = req.body
-    // first get user's netID ??? from req.body
-    const user = await prisma.user.findUnique({
-      where: {
-        netID: netID,
-      },
-    })
-
-    // check for role -- different roles have different functions
-    if (user) {
-      //user.roleID is admin so update the comment and status given by admin
-      if (user.roleID === 1) {
-        //if user is admin
-        const updateC = await prisma.process
-          .update({
-            where: { processID: processID },
-            data: {
-              adminProcessedComments: comment,
-              status: status,
-              adminProcessed: new Date(),
-            },
-          })
-          .catch((err) => {
-            console.log(err)
-            res
-              .status(500)
-              .json({ message: 'Something went wrong', error: err })
-          })
-        res.status(200).json({
-          message: `Process ${processID} was updated successfully`,
-          update: updateC,
-        })
-      }
-      //user.roleID is mentor so update the the comment and status given by mentor
-      else if (user.roleID === 2) {
-        //if user is mentor
-        const updateC = await prisma.process
-          .update({
-            where: { processID: processID },
-            data: {
-              mentorID: user.userID,
-              mentorProcessedComments: comment,
-              status: status,
-              mentorProcessed: new Date(),
-            },
-            include: {
-              request: true,
-            },
-          })
-          .catch((err) => {
-            console.log(err)
-            res
-              .status(500)
-              .json({ message: 'Something went wrong', error: err })
-          })
-
-        // if approved also update the dateApproved field for the request
-        if (status === Status.APPROVED) {
-          const updateRequest = await prisma.request
-            .update({
-              where: { requestID: requestID },
-              data: { dateApproved: new Date() },
-            })
-            .catch((err) => {
-              res
-                .status(500)
-                .json({ message: 'Something went wrong', error: err })
-            })
-        }
-
-        res.status(200).json({
-          message: `Process ${processID} was updated successfully`,
-          update: updateC,
-        })
-      }
-      //user.roleID is user
-      else if (user.roleID === 3) {
-        // if user is student
-        const updatedProcess = await prisma.process
-          .update({
-            where: { processID: processID },
-            data: {
-              status: status,
-            },
-          })
-          .catch((err) => {
-            console.log(err)
-            res
-              .status(500)
-              .json({ message: 'Something went wrong', error: err })
-          })
-        res.status(200).json({
-          message: `Process ${processID} was updated successfully`,
-          update: updatedProcess,
-        })
-      }
+  try {
+    if (req.method !== 'POST') {
+      throw new Error('Method Not Allowed')
     }
+
+    //post method as we are getting info
+    const { netID, requestID, comment, status } = req.body
+
+    // Finds the user and request based on the netID and requestID provided in the request body
+    const [user, request] = await Promise.all([
+      await prisma.user.findUnique({ where: { netID: netID } }),
+      await prisma.request.findUnique({
+        where: { requestID: requestID },
+        include: { Process: true },
+      }),
+    ])
+
+    if (!user) throw new Error('User not found')
+    if (!request) throw new Error('Request not found')
+
+    // CHECK FOR ROLE -- DIFFERENT ROLES HAVE DIFFERENT PERMISSIONS TO UPDATE THE PROCESS
+    // user.roleID is admin so update the comment and status given by admin
+    if (user.roleID === 1) {
+      const updateC = await prisma.process.update({
+        where: { processID: request.Process[0].processID },
+        data: {
+          adminProcessedComments: comment,
+          status: status,
+          adminProcessed: new Date(),
+        },
+      })
+      res.status(200).json({
+        message: `Process ${request.Process[0].processID} in Request #${requestID} was updated successfully`,
+        update: updateC,
+      })
+    }
+    //user.roleID is mentor so update the the comment and status given by mentor
+    else if (user.roleID === 2) {
+      const updateC = await prisma.process.update({
+        where: { processID: request.Process[0].processID },
+        data: {
+          mentorID: user.userID,
+          mentorProcessedComments: comment,
+          status: status,
+          mentorProcessed: new Date(),
+        },
+        include: {
+          request: true,
+        },
+      })
+
+      // if the given status in req.body is APPROVED also update the dateApproved field for the request
+      if (status === Status.APPROVED) {
+        await prisma.request.update({
+          where: { requestID: requestID },
+          data: { dateApproved: new Date() },
+        })
+      }
+
+      res.status(200).json({
+        message: `Process ${request.Process[0].processID} in Request #${requestID} was updated successfully`,
+        update: updateC,
+      })
+    }
+    //user.roleID is student, so student can reject the status
+    else if (user.roleID === 3) {
+      const updatedProcess = await prisma.process.update({
+        where: { processID: request.Process[0].processID },
+        data: {
+          status: status,
+        },
+      })
+      res.status(200).json({
+        message: `Process ${request.Process[0].processID} was updated successfully`,
+        update: updatedProcess,
+      })
+    }
+  } catch (error) {
+    console.log(error)
+    res.status(500).send(error)
   }
 }

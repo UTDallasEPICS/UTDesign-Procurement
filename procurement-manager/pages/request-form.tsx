@@ -2,30 +2,49 @@ import React, { useState, useEffect, useRef } from 'react'
 import { Container, Row, Col, Button, InputGroup } from 'react-bootstrap'
 import Form from 'react-bootstrap/Form'
 import 'bootstrap/dist/css/bootstrap.min.css'
-
+import { ReactSearchAutocomplete } from 'react-search-autocomplete'
 import styles from '@/styles/request.module.css'
 import { useSession } from 'next-auth/react'
-import { Prisma, Project, RequestItem, User } from '@prisma/client'
+import { Prisma, Project, RequestItem, User, Vendor } from '@prisma/client'
 import axios from 'axios'
-import { getServerSession } from 'next-auth'
+import { Session, getServerSession } from 'next-auth'
 import { authOptions } from './api/auth/[...nextauth]'
 import { useRouter } from 'next/router'
+import { Decimal } from '@prisma/client/runtime'
 
 export async function getServerSideProps(context: any) {
+  const session = await getServerSession(context.req, context.res, authOptions)
+  const user = session?.user as User
+  // const vendors = await axios.get('/api/vendor/get')
+  const vendors: Vendor[] = []
   return {
     props: {
-      session: await getServerSession(context.req, context.res, authOptions),
+      session: session,
+      user: user,
+      vendors: vendors,
     },
   }
 }
 
-const StudentRequest = () => {
-  const { data: session } = useSession()
-  const user = session?.user as User
+interface StudentRequestProps {
+  session: Session | null
+  user: User
+  vendors: Vendor[]
+}
+
+const StudentRequest = ({ session, user, vendors }: StudentRequestProps) => {
   // State and handlers
   const [date, setDate] = useState('')
   const [additionalInfo, setAdditionalInfo] = useState('')
-  const [remainingBudget, setRemainingBudget] = useState(5000)
+  const [remainingBudget, setRemainingBudget] = useState<Prisma.Decimal>(
+    new Prisma.Decimal(3000)
+  )
+  const [startingBudget, setStartingBudget] = useState<Prisma.Decimal>(
+    new Prisma.Decimal(3000)
+  )
+  const [totalExpenses, setTotalExpenses] = useState<Prisma.Decimal>(
+    new Prisma.Decimal(0)
+  )
   const [items, setItems] = useState([
     {
       sequence: 1,
@@ -65,8 +84,17 @@ const StudentRequest = () => {
       const res = await axios.post('/api/project/get', {
         netID: user.netID,
       })
-      setProjects(res.data.projects)
-      setSelectedProject(projects[0].projectNum)
+      const proj: Project[] = await res.data.projects
+      setProjects(proj)
+      setSelectedProject(proj[0].projectNum)
+      findBudget(proj[0].projectNum, proj)
+      setTotalExpenses(proj[0].totalExpenses)
+      setRemainingBudget(
+        Prisma.Decimal.sub(
+          Prisma.Decimal.sub(startingBudget, totalExpenses),
+          calculateTotalCost()
+        )
+      )
     } catch (error) {
       console.log(error)
     }
@@ -77,6 +105,7 @@ const StudentRequest = () => {
     getProjects()
   }, [])
 
+  // Initialize the first RequestItem
   useEffect(() => {
     items.forEach((_, index) => {
       handleTooltip(index, `item${index}Vendor`, `vendorTooltip${index}`)
@@ -116,7 +145,12 @@ const StudentRequest = () => {
 
   // Dynamically update the budget remaining
   useEffect(() => {
-    setRemainingBudget(10000 - calculateTotalCost())
+    setRemainingBudget(
+      Prisma.Decimal.sub(
+        Prisma.Decimal.sub(startingBudget, totalExpenses),
+        calculateTotalCost()
+      )
+    )
   }, [items])
 
   // Input handling
@@ -197,7 +231,7 @@ const StudentRequest = () => {
     e.preventDefault()
 
     // Check if the remaining budget is negative
-    if (remainingBudget < 0) {
+    if (remainingBudget < new Prisma.Decimal(0)) {
       alert(
         'Your remaining budget cannot be negative. Please review your items.'
       )
@@ -236,12 +270,45 @@ const StudentRequest = () => {
       })
       if (newRequest.status === 200) {
         alert('Request Successfully Submitted')
-        // router.push('/orders')
-        console.log('results :: ', newRequest.data)
+        router.push('/orders')
       }
     } catch (error) {
       console.log(error)
     }
+  }
+
+  //start of autocopmlete search functions
+  const handleOnSearch = (string, results) => {
+    console.log(string, results)
+  }
+
+  const handleOnHover = (result) => {
+    console.log(result)
+  }
+
+  const handleOnSelect = (item) => {
+    console.log(item)
+  }
+
+  const handleOnFocus = () => {
+    console.log('Focused')
+  }
+
+  const handleOnClear = () => {
+    console.log('Cleared')
+  }
+
+  //end of autocopmlete funcitons
+
+  function findBudget(projectNum: number, proj: Project[]) {
+    let budget: Prisma.Decimal = new Prisma.Decimal(0)
+    proj.forEach((project) => {
+      if (project.projectNum === projectNum) {
+        budget = project.startingBudget
+      }
+    })
+    setStartingBudget(budget)
+    return budget
   }
 
   return (
@@ -252,18 +319,20 @@ const StudentRequest = () => {
       <Row className={'text-center mb-4'}>
         <Col>
           <p>
-            <strong>Budget:</strong>
-            <span>$10,000</span>
+            <strong>Budget: </strong>
+            <span>
+              ${new Prisma.Decimal(startingBudget).toFixed(4).toString()}
+            </span>
           </p>
         </Col>
         <Col>
           <p>
-            <strong>Remaining:</strong>
-            <span>${remainingBudget}</span>
+            <strong>Remaining: </strong>
+            <span>${remainingBudget.toFixed(4).toString()}</span>
           </p>
         </Col>
       </Row>
-      <Form onSubmit={handleSubmit}>
+      <Form onSubmit={handleSubmit} autoComplete='off'>
         {/* DATE NEEDED */}
         <Row className='my-4'>
           <Col md={3}>
@@ -345,6 +414,17 @@ const StudentRequest = () => {
                   <Form.Label>
                     <strong>Vendor</strong>
                   </Form.Label>
+                  {/* <ReactSearchAutocomplete
+                    items={vendors}
+                    maxResults={15}
+                    onSearch={handleOnSearch}
+                    onHover={handleOnHover}
+                    onSelect={handleOnSelect}
+                    onFocus={handleOnFocus}
+                    onClear={handleOnClear}
+                    fuseOptions={{ keys: ['name', 'description'] }} // Search in the description text as well
+                    styling={{ zIndex: 3 }} // To display it on top of the search box below
+                  /> */}
                   <div className={styles.tooltip}>
                     <Form.Control
                       type='text'

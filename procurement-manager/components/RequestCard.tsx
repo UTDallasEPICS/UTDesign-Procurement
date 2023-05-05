@@ -1,3 +1,4 @@
+import { Prisma } from '@prisma/client'
 import React from 'react'
 import { Card, Button, Col, Row } from 'react-bootstrap'
 
@@ -5,8 +6,9 @@ interface RequestCardProps {
   requestNumber: number
   dateRequested: Date
   dateNeeded: Date
-  orderTotal: number
+  orderTotal: Prisma.Decimal
   onReject: () => void
+  onApprove: () => void
 }
 
 const RequestCard: React.FC<RequestCardProps> = ({
@@ -15,6 +17,7 @@ const RequestCard: React.FC<RequestCardProps> = ({
   dateNeeded,
   orderTotal,
   onReject,
+  onApprove,
 }) => {
   return (
     <Card className='request-card mb-3'>
@@ -59,9 +62,7 @@ const RequestCard: React.FC<RequestCardProps> = ({
                 variant='success'
                 size='sm'
                 className='mb-2'
-                onClick={() =>
-                  console.log(`Request #${requestNumber} approved`)
-                }
+                onClick={onApprove}
               >
                 APPROVE
               </Button>{' '}

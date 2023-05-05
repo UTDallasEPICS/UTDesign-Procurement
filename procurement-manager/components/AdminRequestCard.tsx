@@ -13,23 +13,8 @@ interface AdminRequestCardProps {
 
 const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
   details,
-  // onReject,
+  onReject,
 }) => {
-  const [user, setUser] = useState<User>()
-
-  useEffect(() => {
-    getUser(details.studentID).then((user) => setUser(user))
-  })
-
-  async function getUser(id: number) {
-    try {
-      const response = await axios.get(`/api/user/${id}`)
-      setUser(response.data)
-    } catch (error) {
-      console.log(error.messasge)
-    }
-  }
-
   return (
     <Row className='mb-4'>
       <Col>
@@ -98,18 +83,17 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
               </Col>
               <Col md='auto'>
                 <Button
-                  variant='dark'
-                  // size='md'
+                  variant='danger'
                   style={{ minWidth: '150px', marginRight: '20px' }}
+                  onClick={onReject}
                 >
                   REJECT
                 </Button>{' '}
                 <Button
-                  variant='success'
-                  // size='smdml'
+                  variant='warning'
                   style={{ minWidth: '150px', marginRight: '20px' }}
                 >
-                  APPROVE
+                  Edit
                 </Button>{' '}
               </Col>
             </Row>
@@ -123,9 +107,9 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
             </Row>
 
             {/* List of Items */}
-            {details.RequestItem.map((item) => {
+            {details.RequestItem.map((item, itemIndex) => {
               return (
-                <Row className='mb-2'>
+                <Row className='mb-2' key={itemIndex}>
                   <Col>
                     <h6>Item #</h6>
                     <p>{item.itemID}</p>
@@ -152,7 +136,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
                   </Col>
                   <Col>
                     <h6>Unit Price</h6>
-                    <p>${item.unitPrice}</p>
+                    <p>${item.unitPrice.toString()}</p>
                   </Col>
                   <Col>
                     <h6>Total</h6>
