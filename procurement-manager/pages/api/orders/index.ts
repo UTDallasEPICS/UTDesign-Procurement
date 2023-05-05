@@ -25,9 +25,11 @@ const prisma = new PrismaClient()
  * code, headers, and body of the response.
  */
 export default async function handleOrders(req: NextApiRequest, res: NextApiResponse) {
+    if (req.method === 'GET') {
     const orders = await prisma.order.findMany()
     res.status(200).json(orders)
-  }
+    }
+  //}
 //Define a new API route handler function for handling POST requests to create a new order:
 /* This code defines an API route handler function for handling POST requests to create a new order. It
 first checks if the HTTP method is POST, then extracts the necessary data from the request body
@@ -36,8 +38,8 @@ netID and checks their roleID. If the user is an admin, it extracts additional d
 body (dateOrdered, orderNumber, orderDetails, trackingInfo, shippingCost, requestID, and adminID)
 and creates a new order in the database using the PrismaClient. Finally, it sends a response back to
 the client with the newly created order as JSON data. */
-export default async function handleOrders(req: NextApiRequest, res: NextApiResponse) {
-    if (req.method === 'POST') {
+//export default async function handleOrders(req: NextApiRequest, res: NextApiResponse) {
+    else if (req.method === 'POST') {
 
         //post method as we are getting info
       const { netID, processID, comment, status } = req.body
@@ -69,8 +71,9 @@ export default async function handleOrders(req: NextApiRequest, res: NextApiResp
           trackingInfo,
           shippingCost,
           request: { connect: { requestID } },
-          admin: { connect: { adminID } }
+          admin: { connect: { netID } }
         }
+        
       })
   
       res.status(201).json(newOrder)

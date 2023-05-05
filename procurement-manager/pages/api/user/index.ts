@@ -15,6 +15,11 @@ export default async function handler(
 ) {
   /* This code is defining a handler function for a Next.js API route that handles both GET and POST
   requests. */
+  /* This code block is handling a GET request to retrieve all users from the database using Prisma's
+  `findMany` method. If the request is successful, it sends a JSON response with the user data and a
+  status code of 200 (indicating that the request was successful). If there is an error, it sends a
+  JSON response with an error message and a status code of 500 (indicating that there was a server
+  error). */
   if (req.method === 'GET') {
     try {
       const users = await prisma.user.findMany()
