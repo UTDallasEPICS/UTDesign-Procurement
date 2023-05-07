@@ -18,8 +18,7 @@ import { prisma } from '@/db'
 /// if there is a RequestUpload, put in database -- done
 /// if there is OtherExpense, put in database
 
-/// create a new process and put in database
-activationDate: new Date('08/01/20')
+/// create a new process and put in database -- done
 
 interface Optionals {
   justification: string | undefined
@@ -167,6 +166,8 @@ async function createItem(reqID: number, itemToPut: Item) {
     vendorID,
   } = itemToPut
 
+  console.log('itemToPut', itemToPut)
+
   // If something was uploaded, create a new RequestUpload to database
   let uploadID: number | undefined = undefined
   if (upload) {
@@ -195,14 +196,15 @@ async function createItem(reqID: number, itemToPut: Item) {
         vendor: {
           connect: { vendorID: vendorID },
         },
-        upload: {
-          connect: { uploadID: uploadID },
-        },
+        // This is not working right now
+        // upload: {
+        //   connect: { uploadID: uploadID },
+        // },
       },
     })
     .catch(async (e) => {
       // Deletes the request to show there was an error
-      // await prisma.request.delete({ where: { requestID: reqID } })
+      await prisma.request.delete({ where: { requestID: reqID } })
       // await prisma.requestUpload.delete({ where: { uploadID: uploadID } })
       throw new Error(e)
     })
@@ -222,7 +224,7 @@ async function createProcess(reqID: number) {
       },
     })
     .catch(async (e) => {
-      // await prisma.request.delete({ where: { requestID: reqID } })
+      await prisma.request.delete({ where: { requestID: reqID } })
       throw new Error(e)
     })
   return newProcess

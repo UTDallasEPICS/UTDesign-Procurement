@@ -1,32 +1,73 @@
 import React, { useEffect, useState } from 'react'
 import { Row, Collapse } from 'react-bootstrap'
-import RequestCard from '@/components/RequestCard'
+import AdminRequestCard from '@/components/AdminRequestCard'
 import ProjectHeader from '@/components/ProjectHeader'
-import RejectionModal from '@/components/RejectionModal'
-import { Prisma, Project, Status, User } from '@prisma/client'
-import axios from 'axios'
+import ReimbursementCard from '@/components/AdminReimbursementCard'
+import { prisma } from '@/db'
 import { RequestDetails } from '@/lib/types'
+import { Prisma, Project, Status, User } from '@prisma/client'
+import RejectionModal from '@/components/RejectionModal'
+import axios from 'axios'
 import { Session, getServerSession } from 'next-auth'
 import { authOptions } from '../api/auth/[...nextauth]'
 
 export async function getServerSideProps(context: any) {
   const session = await getServerSession(context.req, context.res, authOptions)
   const user = session?.user as User
+
+  // projects and requests are loaded from the server-side first (I wanted it try it out)
+  // These will be passed to a state so if we need to fetch again, we can just update the state
+  const projects = await prisma.project.findMany()
+  const requestOfMultipleProjects: RequestDetails[][] = []
+
+  // Next.js recommends that instead of calling from '/api/request-form/get', just perform the query here
+  // to reduce the number of API calls and improve performance because getServerSideProps can do server-side code
+  for (const project of projects) {
+    const requests = await prisma.request.findMany({
+      where: {
+        projectID: project.projectID,
+        Process: {
+          some: {
+            status: Status.APPROVED,
+          },
+        },
+      },
+      include: {
+        RequestItem: true,
+        Process: true,
+        OtherExpense: true,
+        project: true,
+      },
+    })
+    requestOfMultipleProjects.push(requests)
+  }
+
+  console.log(projects)
+
   return {
+    // needed to stringify the object first to avoid non-serializable error
     props: {
       session: session,
       user: user,
+      reqs: JSON.parse(JSON.stringify(requestOfMultipleProjects)),
+      projs: JSON.parse(JSON.stringify(projects)),
     },
   }
 }
 
-interface MentorProps {
+interface AdminProps {
   session: Session | null
   user: User
+  reqs: RequestDetails[][]
+  projs: Project[]
 }
 
-export default function Mentor({ session, user }: MentorProps) {
-  // state for the different collapse projects
+export default function Admin({
+  session,
+  user,
+  reqs,
+  projs,
+}: AdminProps): JSX.Element {
   const [isOpen, setIsOpen] = useState<boolean[]>([])
   // state for the modal for rejecting requests
   const [showRejectModal, setShowRejectModal] = useState(false)
@@ -34,17 +75,16 @@ export default function Mentor({ session, user }: MentorProps) {
   const [selectedRequestID, setSelectedRequestID] = useState<number | null>(
     null
   )
-  // state for the requests inside the different projects associated to the user
-  const [projectRequests, setProjectRequests] = useState<RequestDetails[][]>([])
-  // state for the projects associated to the user
-  const [projects, setProjects] = useState<Project[]>([])
+  const [projects, setProjects] = useState<Project[]>(projs)
+  const [projectRequests, setProjectRequests] =
+    useState<RequestDetails[][]>(reqs)
 
   useEffect(() => {
-    getMentor()
+    setIsOpen(projects.map(() => true))
   }, [])
 
   // Client-side data fetching, but can be done with getServerSideProps
-  async function getMentor() {
+  async function getAdmin() {
     const response = await axios.post('/api/request-form/get', {
       netID: user.netID,
     })
@@ -55,16 +95,6 @@ export default function Mentor({ session, user }: MentorProps) {
     setProjects(projects)
     setProjectRequests(requestsOfMultipleProjects)
     setIsOpen(projects.map(() => true))
-  }
-
-  const toggleCollapse = (projectIndex: number) => {
-    const newIsOpen = isOpen
-    for (let i = 0; i < isOpen.length; i++) {
-      if (i === projectIndex) {
-        newIsOpen[i] = !newIsOpen[i]
-      }
-    }
-    setIsOpen(newIsOpen)
   }
 
   /**
@@ -92,7 +122,7 @@ export default function Mentor({ session, user }: MentorProps) {
 
       // Updates the page if the request was successfully rejected so the rejected request should not be seen
       if (response.status === 200) {
-        getMentor()
+        getAdmin()
       }
     } catch (error) {
       if (error instanceof Error) console.log(error.message)
@@ -102,31 +132,14 @@ export default function Mentor({ session, user }: MentorProps) {
     }
   }
 
-  /**
-   * This function is called when the mentor clicks the approve button on a request.
-   * @param requestID - The requestID of the request being approved.
-   */
-  async function handleApprove(requestID: number) {
-    setSelectedRequestID(requestID)
-    try {
-      const res = await axios.post('/api/process/update', {
-        netID: user.netID,
-        requestID: selectedRequestID,
-        comment: 'Approved',
-        status: Status.APPROVED,
-      })
-
-      // Updates the page if the request was successfully approved so the approved request should not be seen
-
-      if (res.status === 200) {
-        getMentor()
+  function toggleCollapse(projectIndex: number) {
+    const newIsOpen = isOpen
+    for (let i = 0; i < isOpen.length; i++) {
+      if (i === projectIndex) {
+        newIsOpen[i] = !newIsOpen[i]
       }
-    } catch (error) {
-      if (error instanceof Error) console.error(error.message)
-      else if (axios.isAxiosError(error))
-        console.error(error.message, error.status)
-      else console.error(error)
     }
+    setIsOpen(newIsOpen)
   }
 
   return (
@@ -134,11 +147,10 @@ export default function Mentor({ session, user }: MentorProps) {
       <Row className='my-4'>
         <h1>Welcome back {user && user.firstName}</h1>
       </Row>
-
-      {/* RENDERS THE PROJECTS ASSOCIATED TO MENTOR */}
+      {/* Creates the ProjectHeader  */}
       {projects.map((project, projIndex) => {
         return (
-          <Row className='big-row my-4' key={projIndex}>
+          <Row key={projIndex}>
             <ProjectHeader
               projectName={project.projectTitle}
               expenses={project.totalExpenses}
@@ -147,28 +159,25 @@ export default function Mentor({ session, user }: MentorProps) {
                 project.totalExpenses
               )}
               budgetTotal={project.startingBudget}
-              onToggleCollapse={() => toggleCollapse(projIndex)}
+              onToggleCollapse={() => {
+                toggleCollapse(projIndex)
+              }}
               isOpen={isOpen[projIndex]}
             />
+            {/* Details of the request forms modeled into cards */}
+            {/* These are the request forms associated to its project */}
             <Collapse in={isOpen[projIndex]}>
               <div>
-                {/* RENDERS THE REQUESTS ASSOCIATED TO THE PROJECT THE MENTOR IS IN */}
                 {projectRequests[projIndex].length > 0 ? (
-                  projectRequests[projIndex].map((request, reqIndex) => (
-                    <RequestCard
-                      requestNumber={request.requestID}
-                      dateRequested={request.dateSubmitted}
-                      // calculates the subtotal by running a loop for each item in the request to add up the subtoal
-                      orderTotal={request.RequestItem.reduce(
-                        (total, item) => total + item.quantity * item.unitPrice,
-                        0
-                      )}
-                      key={reqIndex}
-                      {...request}
-                      onReject={() => handleReject(request.requestID)}
-                      onApprove={() => handleApprove(request.requestID)}
-                    />
-                  ))
+                  projectRequests[projIndex].map((request, reqIndex) => {
+                    return (
+                      <AdminRequestCard
+                        key={reqIndex}
+                        details={request}
+                        onReject={() => handleReject(request.requestID)}
+                      />
+                    )
+                  })
                 ) : (
                   <p className='my-4'>There are no requests in this project.</p>
                 )}
@@ -177,11 +186,35 @@ export default function Mentor({ session, user }: MentorProps) {
           </Row>
         )
       })}
+
       <RejectionModal
         show={showRejectModal}
         onHide={() => setShowRejectModal(false)}
         onSubmit={handleSubmitRejection}
       />
+
+      {/* AN EXAMPLE OF REIMBURSEMENT CARDS */}
+      {/* <Row>
+        <ProjectHeader
+          projectName='Project 3: Point of Nerve Conduction Diagnostic | Capstone, Reimbursement'
+          // budget='Budget: $100/$500'
+          isOpen={isOpenProject2}
+          expenses={0}
+          available={0}
+          budgetTotal={new Decimal()}
+          onToggleCollapse={function (): void {
+            throw new Error('Function not implemented.')
+          }} // toggleCollapse={toggleCollapseProject2}
+        />
+        <Collapse in={isOpenProject2}>
+          <div>
+            <Row>
+              <ReimbursementCard />
+              <ReimbursementCard />
+            </Row>
+          </div>
+        </Collapse>
+      </Row> */}
     </>
   )
 }
