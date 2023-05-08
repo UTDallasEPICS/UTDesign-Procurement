@@ -42,8 +42,6 @@ export async function getServerSideProps(context: any) {
     requestOfMultipleProjects.push(requests)
   }
 
-  console.log(projects)
-
   return {
     // needed to stringify the object first to avoid non-serializable error
     props: {
@@ -68,6 +66,7 @@ export default function Admin({
   reqs,
   projs,
 }: AdminProps): JSX.Element {
+  // state for opening the collapsed cards - an array due to multiple projects
   const [isOpen, setIsOpen] = useState<boolean[]>([])
   // state for the modal for rejecting requests
   const [showRejectModal, setShowRejectModal] = useState(false)
@@ -75,10 +74,13 @@ export default function Admin({
   const [selectedRequestID, setSelectedRequestID] = useState<number | null>(
     null
   )
-  const [projects, setProjects] = useState<Project[]>(projs)
+  // state for the requests inside the different projects associated to the user
   const [projectRequests, setProjectRequests] =
     useState<RequestDetails[][]>(reqs)
+  // state for the projects associated to the user
+  const [projects, setProjects] = useState<Project[]>(projs)
 
+  // Opens all the cards by default
   useEffect(() => {
     setIsOpen(projects.map(() => true))
   }, [])
@@ -132,14 +134,30 @@ export default function Admin({
     }
   }
 
-  function toggleCollapse(projectIndex: number) {
-    const newIsOpen = isOpen
-    for (let i = 0; i < isOpen.length; i++) {
-      if (i === projectIndex) {
-        newIsOpen[i] = !newIsOpen[i]
-      }
-    }
-    setIsOpen(newIsOpen)
+  /**
+   * This was a feature where clicking the hide/show button in ProjectHeader
+   * would instead hide all the requests for the project.
+   * @param projectIndex - The index of the project in the projects array.
+   */
+  const toggleProjectCollapse = (projectIndex: number) => {
+    setIsOpen((prevOpen) => {
+      const newOpen = [...prevOpen]
+      newOpen[projectIndex] = !newOpen[projectIndex]
+      return newOpen
+    })
+  }
+
+  /**
+   * This is the feature where clicking the hide/show button in ProjectHeader
+   * would show the details of each request in the project
+   * @param projectIndex - The index of the project in the projects array.
+   */
+  const toggleCards = (projectIndex: number) => {
+    setIsOpen((prevOpen) => {
+      const newOpen = [...prevOpen]
+      newOpen[projectIndex] = !newOpen[projectIndex]
+      return newOpen
+    })
   }
 
   return (
@@ -160,29 +178,32 @@ export default function Admin({
               )}
               budgetTotal={project.startingBudget}
               onToggleCollapse={() => {
-                toggleCollapse(projIndex)
+                // toggleProjectCollapse(projIndex)
+                toggleCards(projIndex)
               }}
               isOpen={isOpen[projIndex]}
             />
             {/* Details of the request forms modeled into cards */}
             {/* These are the request forms associated to its project */}
-            <Collapse in={isOpen[projIndex]}>
-              <div>
-                {projectRequests[projIndex].length > 0 ? (
-                  projectRequests[projIndex].map((request, reqIndex) => {
-                    return (
-                      <AdminRequestCard
-                        key={reqIndex}
-                        details={request}
-                        onReject={() => handleReject(request.requestID)}
-                      />
-                    )
-                  })
-                ) : (
-                  <p className='my-4'>There are no requests in this project.</p>
-                )}
-              </div>
-            </Collapse>
+            {/* The Collapse below was an old feature that might be used again */}
+            {/* <Collapse in={isOpen[projIndex]}> */}
+            {/* <div> */}
+            {projectRequests[projIndex].length > 0 ? (
+              projectRequests[projIndex].map((request, reqIndex) => {
+                return (
+                  <AdminRequestCard
+                    key={reqIndex}
+                    details={request}
+                    onReject={() => handleReject(request.requestID)}
+                    collapsed={isOpen[projIndex]}
+                  />
+                )
+              })
+            ) : (
+              <p className='my-4'>There are no requests in this project.</p>
+            )}
+            {/* </div> */}
+            {/* </Collapse> */}
           </Row>
         )
       })}

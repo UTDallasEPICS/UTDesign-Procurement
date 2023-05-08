@@ -278,25 +278,25 @@ const StudentRequest = ({ session, user, vendors }: StudentRequestProps) => {
   }
 
   //start of autocopmlete search functions
-  const handleOnSearch = (string, results) => {
-    console.log(string, results)
-  }
+  // const handleOnSearch = (string, results) => {
+  //   console.log(string, results)
+  // }
 
-  const handleOnHover = (result) => {
-    console.log(result)
-  }
+  // const handleOnHover = (result) => {
+  //   console.log(result)
+  // }
 
-  const handleOnSelect = (item) => {
-    console.log(item)
-  }
+  // const handleOnSelect = (item) => {
+  //   console.log(item)
+  // }
 
-  const handleOnFocus = () => {
-    console.log('Focused')
-  }
+  // const handleOnFocus = () => {
+  //   console.log('Focused')
+  // }
 
-  const handleOnClear = () => {
-    console.log('Cleared')
-  }
+  // const handleOnClear = () => {
+  //   console.log('Cleared')
+  // }
 
   //end of autocopmlete funcitons
 

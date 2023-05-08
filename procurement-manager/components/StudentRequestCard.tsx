@@ -10,7 +10,7 @@ interface RequestCardProps {
   orderStatus: string
 }
 
-const RequestCard: React.FC<RequestCardProps> = ({
+const StudentRequestCard: React.FC<RequestCardProps> = ({
   orderNumber,
   dateRequested,
   orderSubTotal,
@@ -28,7 +28,7 @@ const RequestCard: React.FC<RequestCardProps> = ({
           <Col>
             <Card.Title>
               <a href='#' className='text-primary'>
-                Order #{orderNumber}
+                Request #{orderNumber}
               </a>
             </Card.Title>
           </Col>
@@ -56,4 +56,4 @@ const RequestCard: React.FC<RequestCardProps> = ({
   )
 }
 
-export default RequestCard
+export default StudentRequestCard

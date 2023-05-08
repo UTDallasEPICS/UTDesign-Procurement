@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react'
 import { Container, Row, Col, Button, Collapse } from 'react-bootstrap'
-import OrderCard from '../../components/OrderCard'
+import OrderCard from '../../components/StudentRequestCard'
 import ProjectHeader from '../../components/ProjectHeader'
 import { useSession } from 'next-auth/react'
-import { Project, User } from '@prisma/client'
+import { Prisma, Project, User } from '@prisma/client'
 import { RequestDetails } from '@/lib/types'
 import axios from 'axios'
 
@@ -41,67 +41,13 @@ export default function Student() {
     setIsOpen(projects.map(() => true))
   }
 
-  const toggleCollapse = (projectIndex: number) => {
-    const newIsOpen = isOpen
-    for (let i = 0; i < isOpen.length; i++) {
-      if (i === projectIndex) {
-        newIsOpen[i] = !newIsOpen[i]
-      }
-      setIsOpen(newIsOpen)
-    }
+  const toggleProjectCollapse = (projectIndex: number) => {
+    setIsOpen((prevOpen) => {
+      const newOpen = [...prevOpen]
+      newOpen[projectIndex] = !newOpen[projectIndex]
+      return newOpen
+    })
   }
-
-  const project1Cards = [
-    {
-      orderNumber: 1,
-      dateRequested: '4/11/2023',
-      orderSubTotal: 170,
-      shippingCost: 30,
-      orderTotal: 200,
-      dateOrdered: '4/12/2023',
-      orderStatus: 'Completed',
-    },
-    {
-      orderNumber: 2,
-      dateRequested: '4/16/2023',
-      orderSubTotal: 170,
-      shippingCost: 30,
-      orderTotal: 200,
-      dateOrdered: '4/18/2023',
-      orderStatus: 'Pending',
-    },
-  ]
-
-  const project2Cards = [
-    {
-      orderNumber: 1,
-      dateRequested: '4/13/2023',
-      orderSubTotal: 150,
-      shippingCost: 20,
-      orderTotal: 170,
-      dateOrdered: '4/14/2023',
-      orderStatus: 'Shipped',
-    },
-    {
-      orderNumber: 2,
-      dateRequested: '4/16/2023',
-      orderSubTotal: 170,
-      shippingCost: 30,
-      orderTotal: 200,
-      dateOrdered: '4/18/2023',
-      orderStatus: 'Pending',
-    },
-  ]
-
-  const project1Expenses = project1Cards.reduce(
-    (acc, card) => acc + (card.shippingCost || 0) + (card.orderSubTotal || 0),
-    0
-  )
-
-  const project2Expenses = project2Cards.reduce(
-    (acc, card) => acc + (card.shippingCost || 0) + (card.orderSubTotal || 0),
-    0
-  )
 
   return (
     <>
@@ -114,9 +60,12 @@ export default function Student() {
             <ProjectHeader
               projectName={project.projectTitle}
               expenses={project.totalExpenses}
-              available={project.startingBudget - project.totalExpenses}
+              available={Prisma.Decimal.sub(
+                project.startingBudget,
+                project.totalExpenses
+              )}
               budgetTotal={project.startingBudget}
-              onToggleCollapse={() => toggleCollapse(projIndex)}
+              onToggleCollapse={() => toggleProjectCollapse(projIndex)}
               isOpen={isOpen[projIndex]}
             />
             <Collapse in={isOpen[projIndex]}>
@@ -131,13 +80,13 @@ export default function Student() {
                         dateRequested={request.dateSubmitted}
                         orderSubTotal={request.RequestItem.reduce(
                           (total, item) =>
-                            total + item.quantity * item.unitPrice,
+                            total + item.quantity * (item.unitPrice as any),
                           0
                         )}
                         shippingCost={0}
                         orderTotal={request.RequestItem.reduce(
                           (total, item) =>
-                            total + item.quantity * item.unitPrice,
+                            total + item.quantity * (item.unitPrice as any),
                           0
                         )}
                         orderStatus={request.Process[0].status}

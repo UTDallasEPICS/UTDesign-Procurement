@@ -11,7 +11,7 @@ interface RequestCardProps {
   onApprove: () => void
 }
 
-const RequestCard: React.FC<RequestCardProps> = ({
+const MentorRequestCard: React.FC<RequestCardProps> = ({
   requestNumber,
   dateRequested,
   dateNeeded,
@@ -20,7 +20,10 @@ const RequestCard: React.FC<RequestCardProps> = ({
   onApprove,
 }) => {
   return (
-    <Card className='request-card mb-3'>
+    <Card
+      className='request-card mb-3'
+      style={{ backgroundColor: 'rgb(240, 240, 240)' }}
+    >
       <Card.Body>
         <Row>
           <Col>
@@ -82,4 +85,4 @@ const RequestCard: React.FC<RequestCardProps> = ({
   )
 }
 
-export default RequestCard
+export default MentorRequestCard

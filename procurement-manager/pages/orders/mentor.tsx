@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { Row, Collapse } from 'react-bootstrap'
-import RequestCard from '@/components/RequestCard'
+import MentorRequestCard from '@/components/MentorRequestCard'
 import ProjectHeader from '@/components/ProjectHeader'
 import RejectionModal from '@/components/RejectionModal'
 import { Prisma, Project, Status, User } from '@prisma/client'
@@ -26,7 +26,7 @@ interface MentorProps {
 }
 
 export default function Mentor({ session, user }: MentorProps) {
-  // state for the different collapse projects
+  // state for opening the collapsed cards - an array due to multiple projects
   const [isOpen, setIsOpen] = useState<boolean[]>([])
   // state for the modal for rejecting requests
   const [showRejectModal, setShowRejectModal] = useState(false)
@@ -57,14 +57,30 @@ export default function Mentor({ session, user }: MentorProps) {
     setIsOpen(projects.map(() => true))
   }
 
-  const toggleCollapse = (projectIndex: number) => {
-    const newIsOpen = isOpen
-    for (let i = 0; i < isOpen.length; i++) {
-      if (i === projectIndex) {
-        newIsOpen[i] = !newIsOpen[i]
-      }
-    }
-    setIsOpen(newIsOpen)
+  /**
+   * This was a feature where clicking the hide/show button in ProjectHeader
+   * would instead hide all the requests for the project.
+   * @param projectIndex - The index of the project in the projects array.
+   */
+  const toggleProjectCollapse = (projectIndex: number) => {
+    setIsOpen((prevOpen) => {
+      const newOpen = [...prevOpen]
+      newOpen[projectIndex] = !newOpen[projectIndex]
+      return newOpen
+    })
+  }
+
+  /**
+   * This is the feature where clicking the hide/show button in ProjectHeader
+   * would show the details of each request in the project
+   * @param projectIndex - The index of the project in the projects array.
+   */
+  const toggleCards = (projectIndex: number) => {
+    setIsOpen((prevOpen) => {
+      const newOpen = [...prevOpen]
+      newOpen[projectIndex] = !newOpen[projectIndex]
+      return newOpen
+    })
   }
 
   /**
@@ -147,7 +163,7 @@ export default function Mentor({ session, user }: MentorProps) {
                 project.totalExpenses
               )}
               budgetTotal={project.startingBudget}
-              onToggleCollapse={() => toggleCollapse(projIndex)}
+              onToggleCollapse={() => toggleProjectCollapse(projIndex)}
               isOpen={isOpen[projIndex]}
             />
             <Collapse in={isOpen[projIndex]}>
@@ -155,14 +171,19 @@ export default function Mentor({ session, user }: MentorProps) {
                 {/* RENDERS THE REQUESTS ASSOCIATED TO THE PROJECT THE MENTOR IS IN */}
                 {projectRequests[projIndex].length > 0 ? (
                   projectRequests[projIndex].map((request, reqIndex) => (
-                    <RequestCard
+                    <MentorRequestCard
                       requestNumber={request.requestID}
                       dateRequested={request.dateSubmitted}
                       // calculates the subtotal by running a loop for each item in the request to add up the subtoal
-                      orderTotal={request.RequestItem.reduce(
-                        (total, item) => total + item.quantity * item.unitPrice,
-                        0
-                      )}
+                      orderTotal={
+                        new Prisma.Decimal(
+                          request.RequestItem.reduce(
+                            (total, item) =>
+                              total + item.quantity * (item.unitPrice as any),
+                            0
+                          )
+                        )
+                      }
                       key={reqIndex}
                       {...request}
                       onReject={() => handleReject(request.requestID)}
