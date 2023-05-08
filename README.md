@@ -42,4 +42,6 @@ After making any changes to the database running `npx prisma migrate dev` will u
 - Some more documentation regarding this is provided at https://www.prisma.io/docs/concepts/components/prisma-migrate
 
 ## Future Todo list
+APIs to work on: 
+[FULL LIST OF API ENDPOINTS.docx](https://github.com/UTDallasEPICS/UTDesign-Procurement/files/11425891/FULL.LIST.OF.API.ENDPOINTS.docx)
 
