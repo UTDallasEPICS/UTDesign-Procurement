@@ -6,22 +6,32 @@ import { useSession } from 'next-auth/react'
 import { Prisma, Project, User } from '@prisma/client'
 import { RequestDetails } from '@/lib/types'
 import axios from 'axios'
+import { Session, getServerSession } from 'next-auth'
+import { authOptions } from '../api/auth/[...nextauth]'
 
-export default function Student() {
-  // const [isOpen, setIsOpen] = useState({ project1: true, project2: true })
-  const { data: session } = useSession()
+export async function getServerSideProps(context: any) {
+  const session = await getServerSession(context.req, context.res, authOptions)
   const user = session?.user as User
+  return {
+    props: {
+      session: session,
+      user: user,
+    },
+  }
+}
+
+interface StudentProps {
+  session: Session | null
+  user: User
+}
+
+export default function Student({ session, user }: StudentProps) {
+  // state for opening the collapsed cards - an array due to multiple projects
   const [isOpen, setIsOpen] = useState<boolean[]>([])
   // state for the requests inside the different projects associated to the user
   const [projectRequests, setProjectRequests] = useState<RequestDetails[][]>([])
   // state for the projects associated to the user
   const [projects, setProjects] = useState<Project[]>([])
-
-  // type ProjectType = 'project1' | 'project2'
-
-  // const toggleCollapse = (project: ProjectType) => {
-  //   setIsOpen({ ...isOpen, [project]: !isOpen[project] })
-  // }
 
   useEffect(() => {
     getStudent()
@@ -41,7 +51,25 @@ export default function Student() {
     setIsOpen(projects.map(() => true))
   }
 
+  /**
+   * This was a feature where clicking the hide/show button in ProjectHeader
+   * would instead hide all the requests for the project.
+   * @param projectIndex - The index of the project in the projects array.
+   */
   const toggleProjectCollapse = (projectIndex: number) => {
+    setIsOpen((prevOpen) => {
+      const newOpen = [...prevOpen]
+      newOpen[projectIndex] = !newOpen[projectIndex]
+      return newOpen
+    })
+  }
+
+  /**
+   * This is the feature where clicking the hide/show button in ProjectHeader
+   * would show the details of each request in the project
+   * @param projectIndex - The index of the project in the projects array.
+   */
+  const toggleCards = (projectIndex: number) => {
     setIsOpen((prevOpen) => {
       const newOpen = [...prevOpen]
       newOpen[projectIndex] = !newOpen[projectIndex]
@@ -65,39 +93,27 @@ export default function Student() {
                 project.totalExpenses
               )}
               budgetTotal={project.startingBudget}
-              onToggleCollapse={() => toggleProjectCollapse(projIndex)}
+              onToggleCollapse={() => toggleCards(projIndex)}
               isOpen={isOpen[projIndex]}
             />
-            <Collapse in={isOpen[projIndex]}>
-              <div className='w-100'>
-                {projectRequests[projIndex].length > 0 ? (
-                  projectRequests[projIndex].map((request, reqIndex) => {
-                    return (
-                      // <h1 key={reqIndex}>Hi</h1>
-                      <OrderCard
-                        key={reqIndex}
-                        orderNumber={request.requestID}
-                        dateRequested={request.dateSubmitted}
-                        orderSubTotal={request.RequestItem.reduce(
-                          (total, item) =>
-                            total + item.quantity * (item.unitPrice as any),
-                          0
-                        )}
-                        shippingCost={0}
-                        orderTotal={request.RequestItem.reduce(
-                          (total, item) =>
-                            total + item.quantity * (item.unitPrice as any),
-                          0
-                        )}
-                        orderStatus={request.Process[0].status}
-                      />
-                    )
-                  })
-                ) : (
-                  <p className='my-4'>There are no requests in this project.</p>
-                )}
-              </div>
-            </Collapse>
+            {/* <Collapse in={isOpen[projIndex]}>
+              <div className='w-100'> */}
+            {projectRequests[projIndex].length > 0 ? (
+              projectRequests[projIndex].map((request, reqIndex) => {
+                return (
+                  // <h1 key={reqIndex}>Hi</h1>
+                  <OrderCard
+                    key={reqIndex}
+                    details={request}
+                    collapsed={isOpen[projIndex]}
+                  />
+                )
+              })
+            ) : (
+              <p className='my-4'>There are no requests in this project.</p>
+            )}
+            {/* </div>
+            </Collapse> */}
           </Row>
         )
       })}

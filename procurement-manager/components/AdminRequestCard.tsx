@@ -43,6 +43,10 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
     getMentorThatApproved()
   }, [])
 
+  /**
+   * This function provides the data received from our API of the student that requested the order
+   * @returns User object of the student that requested the order
+   */
   async function getStudentThatRequested() {
     try {
       if (!details.Process[0].mentorID) return null
@@ -56,6 +60,10 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
     }
   }
 
+  /**
+   * This function provides the data received from our API of the mentor that approved the order
+   * @returns User object of the mentor that approved the order
+   */
   async function getMentorThatApproved() {
     try {
       if (!details.Process[0].mentorID) return null

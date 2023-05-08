@@ -163,38 +163,31 @@ export default function Mentor({ session, user }: MentorProps) {
                 project.totalExpenses
               )}
               budgetTotal={project.startingBudget}
-              onToggleCollapse={() => toggleProjectCollapse(projIndex)}
+              onToggleCollapse={
+                () => toggleCards(projIndex)
+                // toggleProjectCollapse(projIndex)
+              }
               isOpen={isOpen[projIndex]}
             />
-            <Collapse in={isOpen[projIndex]}>
-              <div>
-                {/* RENDERS THE REQUESTS ASSOCIATED TO THE PROJECT THE MENTOR IS IN */}
-                {projectRequests[projIndex].length > 0 ? (
-                  projectRequests[projIndex].map((request, reqIndex) => (
-                    <MentorRequestCard
-                      requestNumber={request.requestID}
-                      dateRequested={request.dateSubmitted}
-                      // calculates the subtotal by running a loop for each item in the request to add up the subtoal
-                      orderTotal={
-                        new Prisma.Decimal(
-                          request.RequestItem.reduce(
-                            (total, item) =>
-                              total + item.quantity * (item.unitPrice as any),
-                            0
-                          )
-                        )
-                      }
-                      key={reqIndex}
-                      {...request}
-                      onReject={() => handleReject(request.requestID)}
-                      onApprove={() => handleApprove(request.requestID)}
-                    />
-                  ))
-                ) : (
-                  <p className='my-4'>There are no requests in this project.</p>
-                )}
-              </div>
-            </Collapse>
+            {/* <Collapse in={isOpen[projIndex]}>
+              <div> */}
+            {/* RENDERS THE REQUESTS ASSOCIATED TO THE PROJECT THE MENTOR IS IN */}
+            {projectRequests[projIndex].length > 0 ? (
+              projectRequests[projIndex].map((request, reqIndex) => (
+                <MentorRequestCard
+                  details={request}
+                  key={reqIndex}
+                  {...request}
+                  onReject={() => handleReject(request.requestID)}
+                  onApprove={() => handleApprove(request.requestID)}
+                  collapsed={isOpen[projIndex]}
+                />
+              ))
+            ) : (
+              <p className='my-4'>There are no requests in this project.</p>
+            )}
+            {/* </div>
+            </Collapse> */}
           </Row>
         )
       })}
