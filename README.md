@@ -43,4 +43,4 @@ After making any changes to the database running `npx prisma migrate dev` will u
 
 ## Future Todo list
 APIs to work on: 
-[FULL LIST OF API ENDPOINTS.docx](https://github.com/UTDallasEPICS/UTDesign-Procurement/files/11425908/FULL.LIST.OF.API.ENDPOINTS.docx)
+[FULL LIST OF API ENDPOINTS.docx](https://github.com/UTDallasEPICS/UTDesign-Procurement/files/11425914/FULL.LIST.OF.API.ENDPOINTS.docx)
