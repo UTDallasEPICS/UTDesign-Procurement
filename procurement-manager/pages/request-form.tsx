@@ -216,16 +216,16 @@ const StudentRequest = ({ session, user, vendors }: StudentRequestProps) => {
     setItems(newItems)
   }
 
-  const calculateTotalCosts = () => {
-    const newItems = items.map((item) => ({
-      ...item,
-      totalCost:
-        item.quantity && item.unitCost
-          ? (Number(item.quantity) * Number(item.unitCost)).toFixed(2)
-          : '',
-    }))
-    setItems(newItems)
-  }
+  // const calculateTotalCosts = () => {
+  //   const newItems = items.map((item) => ({
+  //     ...item,
+  //     totalCost:
+  //       item.quantity && item.unitCost
+  //         ? (Number(item.quantity) * Number(item.unitCost)).toFixed(2)
+  //         : '',
+  //   }))
+  //   setItems(newItems)
+  // }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()

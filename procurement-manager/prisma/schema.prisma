@@ -81,7 +81,6 @@ model Request {
   dateOrdered    DateTime?
   dateReceived   DateTime?
   dateApproved   DateTime?
-  justification  String? // reason why item(s) is included
   additionalInfo String?
   // RELATIONSHIPS HERE ::
   project        Project        @relation(fields: [projectID], references: [projectID])
@@ -92,6 +91,8 @@ model Request {
   Order          Order[]
   OtherExpense   OtherExpense[]
   Process        Process[]
+  upload         RequestUpload? @relation(fields: [uploadID], references: [uploadID])
+  uploadID       Int?
 }
 
 // A RequestItem is each item field that is being requested to order by students
@@ -104,12 +105,10 @@ model RequestItem {
   quantity    Int
   unitPrice   Decimal
   // RELATIONSHIPS HERE ::
-  request     Request        @relation(fields: [requestID], references: [requestID])
+  request     Request @relation(fields: [requestID], references: [requestID])
   requestID   Int
-  vendor      Vendor         @relation(fields: [vendorID], references: [vendorID])
+  vendor      Vendor  @relation(fields: [vendorID], references: [vendorID])
   vendorID    Int
-  upload      RequestUpload? @relation(fields: [uploadID], references: [uploadID])
-  uploadID    Int?
 }
 
 // An Order happens after Request has been processed (approved and verified by mentor and admin) and admin "orders" the items
@@ -142,11 +141,11 @@ model OtherExpense {
 }
 
 model RequestUpload {
-  uploadID       Int           @id @default(autoincrement())
+  uploadID       Int       @id @default(autoincrement())
   attachmentPath String?
   attachmentName String?
   // RELATIONSHIPS HERE ::
-  RequestItem    RequestItem[]
+  Request        Request[]
 }
 
 // ------------------------------------------------------------//
