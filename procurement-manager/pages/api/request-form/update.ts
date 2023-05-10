@@ -10,9 +10,11 @@ export default async function handler(
   // TODO:: Type safety
   // Right now, if there is anything in the req.body, then it will be updated
   try {
+    const { requestID, requestDetails } = req.body
+    console.log(requestDetails.RequestItem)
     const oldRequestForm = await prisma.request.findUnique({
       where: {
-        requestID: req.body.requestID,
+        requestID: requestID,
       },
     })
     if (!oldRequestForm) throw new Error('Could not find that request form')
@@ -20,7 +22,9 @@ export default async function handler(
       where: {
         requestID: oldRequestForm.requestID,
       },
-      data: req.body,
+      data: {
+        ...requestDetails,
+      },
       // data: {
       //   // Updating Request
       //   dateOrdered: req.body.dateOrdered,

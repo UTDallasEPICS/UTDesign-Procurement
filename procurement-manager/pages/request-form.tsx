@@ -4,13 +4,11 @@ import Form from 'react-bootstrap/Form'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import { ReactSearchAutocomplete } from 'react-search-autocomplete'
 import styles from '@/styles/request.module.css'
-import { useSession } from 'next-auth/react'
 import { Prisma, Project, RequestItem, User, Vendor } from '@prisma/client'
 import axios from 'axios'
 import { Session, getServerSession } from 'next-auth'
 import { authOptions } from './api/auth/[...nextauth]'
 import { useRouter } from 'next/router'
-import { Decimal } from '@prisma/client/runtime'
 
 export async function getServerSideProps(context: any) {
   const session = await getServerSession(context.req, context.res, authOptions)
@@ -62,6 +60,14 @@ const StudentRequest = ({ session, user, vendors }: StudentRequestProps) => {
   const [selectedProject, setSelectedProject] = useState(0)
   const router = useRouter()
 
+  /**
+   * This function handles updating the tooltips whenever the input fields are changed
+   * THIS SHOULD BE IMPROVE SINCE IT IS USING VANILLA JS AND THE DOM, NOT REACT
+   * @param index
+   * @param inputId
+   * @param tooltipId
+   * @returns
+   */
   const handleTooltip = (index: number, inputId: string, tooltipId: string) => {
     const inputElement = document.getElementById(inputId) as HTMLInputElement
     const tooltipElement = document.getElementById(tooltipId) as HTMLElement

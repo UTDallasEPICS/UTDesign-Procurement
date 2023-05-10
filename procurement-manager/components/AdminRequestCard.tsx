@@ -33,6 +33,15 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
   const [mentorThatApproved, setMentorThatApproved] = useState<User>()
   // state for the collapse for request details
   const [collapse, setCollapse] = useState<boolean | undefined>(false)
+  // state for editing the request details
+  const [editable, setEditable] = useState<boolean>(false)
+  // state that contains the values of the input fields in the request card
+  const [inputValues, setInputValues] = useState(
+    // initialized by the details prop
+    details.RequestItem.map((item) => {
+      return { ...item }
+    })
+  )
 
   useEffect(() => {
     setCollapse(collapsed)
@@ -74,6 +83,48 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
       if (axios.isAxiosError(error) || error instanceof Error)
         console.log(error.message)
       else console.log(error)
+    }
+  }
+
+  /**
+   * This function handles changes to inputs whenever user is editing the input fields in the request card
+   * @param e - the onChange event passed by the input field
+   * @param index - the index of the request item the input field is in within the request items array
+   */
+  function handleInputChange(
+    e: React.ChangeEvent<HTMLInputElement>,
+    index: number
+  ) {
+    const { name, value } = e.target
+
+    setInputValues((prev) => {
+      return prev.map((item, i) => {
+        if (i !== index) return item
+        return {
+          ...item,
+          [name]: value,
+        }
+      })
+    })
+  }
+
+  async function handleSave() {
+    setEditable(false)
+    try {
+      const newDetails = {
+        ...details, // copy the details object
+        RequestItem: inputValues, // replace the RequestItem array with the new input values
+      }
+      const response = await axios.post('/api/request-form/update', {
+        requestID: details.requestID,
+        requestDetails: newDetails,
+      })
+
+      if (response.status === 200) console.log(response.data)
+    } catch (error) {
+      if (axios.isAxiosError(error) || error instanceof Error)
+        console.error(error.message)
+      else console.error(error)
     }
   }
 
@@ -170,24 +221,28 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
                   {/* REJECT/EDIT BUTTONS */}
                   <Col xs={12} lg={5}>
                     <Button
+                      className={`${styles.cardBtn} ${styles.rejectBtn}`}
                       variant='danger'
                       style={{ minWidth: '150px', marginRight: '20px' }}
                       onClick={onReject}
                     >
                       Reject
                     </Button>{' '}
-                    <Button
-                      variant='warning'
-                      style={{ minWidth: '150px', marginRight: '20px' }}
-                    >
-                      Edit
-                    </Button>{' '}
+                    {!editable && (
+                      <Button
+                        className={`${styles.editBtn} ${styles.cardBtn}`}
+                        variant='warning'
+                        onClick={(e) => setEditable(true)}
+                      >
+                        Edit
+                      </Button>
+                    )}
                   </Col>
                 </Row>
 
                 <Row className='my-2'>
                   <Form className={styles.requestDetails}>
-                    <fieldset disabled>
+                    <fieldset disabled={!editable}>
                       <Table responsive striped>
                         <thead>
                           <tr>
@@ -204,30 +259,69 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
                           </tr>
                         </thead>
                         <tbody>
-                          {details.RequestItem.map((item, itemIndex) => {
+                          {inputValues.map((item, itemIndex) => {
                             return (
-                              <tr>
+                              <tr key={itemIndex}>
                                 <td>{itemIndex + 1}</td>
                                 <td>
                                   <Form.Control
+                                    name='description'
                                     value={item.description}
-                                  ></Form.Control>
+                                    onChange={(e) =>
+                                      handleInputChange(
+                                        e as React.ChangeEvent<HTMLInputElement>,
+                                        itemIndex
+                                      )
+                                    }
+                                  />
                                 </td>
                                 <td>{item.vendorID}</td>
                                 <td>
-                                  <Form.Control value={item.url}></Form.Control>
+                                  <Form.Control
+                                    name='url'
+                                    value={item.url}
+                                    onChange={(e) =>
+                                      handleInputChange(
+                                        e as React.ChangeEvent<HTMLInputElement>,
+                                        itemIndex
+                                      )
+                                    }
+                                  />
                                 </td>
                                 <td>
                                   <Form.Control
+                                    name='partNumber'
                                     value={item.partNumber}
-                                  ></Form.Control>
-                                </td>
-                                <td>
-                                  <Form.Control value={item.quantity} />
+                                    onChange={(e) =>
+                                      handleInputChange(
+                                        e as React.ChangeEvent<HTMLInputElement>,
+                                        itemIndex
+                                      )
+                                    }
+                                  />
                                 </td>
                                 <td>
                                   <Form.Control
+                                    name='quantity'
+                                    value={item.quantity}
+                                    onChange={(e) =>
+                                      handleInputChange(
+                                        e as React.ChangeEvent<HTMLInputElement>,
+                                        itemIndex
+                                      )
+                                    }
+                                  />
+                                </td>
+                                <td>
+                                  <Form.Control
+                                    name='unitPrice'
                                     value={item.unitPrice.toString()}
+                                    onChange={(e) =>
+                                      handleInputChange(
+                                        e as React.ChangeEvent<HTMLInputElement>,
+                                        itemIndex
+                                      )
+                                    }
                                   />
                                 </td>
                                 <td>
@@ -237,6 +331,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
                                       value={(
                                         item.quantity * (item.unitPrice as any)
                                       ).toFixed(4)}
+                                      disabled
                                     />
                                   </InputGroup>
                                 </td>
@@ -252,6 +347,19 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
                         </tbody>
                       </Table>
                     </fieldset>
+                    <Row>
+                      <Col xs={12} className='d-flex justify-content-end'>
+                        {editable && (
+                          <Button
+                            className={styles.cardBtn}
+                            variant='success'
+                            onClick={(e) => handleSave()}
+                          >
+                            Save
+                          </Button>
+                        )}
+                      </Col>
+                    </Row>
                   </Form>
                 </Row>
               </div>

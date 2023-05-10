@@ -30,6 +30,16 @@ const StudentRequestCard: React.FC<RequestCardProps> = ({
   const [mentorThatApproved, setMentorThatApproved] = useState<User>()
   // state for the collapse for request details
   const [collapse, setCollapse] = useState<boolean | undefined>(false)
+  // state for editing the request details
+  const [editable, setEditable] = useState<boolean>(false)
+  const [resubmit, setResubmit] = useState<boolean>(false)
+  // state that contains the values of the input fields in the request card
+  const [inputValues, setInputValues] = useState(
+    // initialized by the details prop
+    details.RequestItem.map((item) => {
+      return { ...item }
+    })
+  )
 
   useEffect(() => {
     setCollapse(collapsed)
@@ -72,6 +82,36 @@ const StudentRequestCard: React.FC<RequestCardProps> = ({
         console.log(error.message)
       else console.log(error)
     }
+  }
+
+  /**
+   * This function handles changes to inputs whenever user is editing the input fields in the request card
+   * @param e - the onChange event passed by the input field
+   * @param index - the index of the request item the input field is in within the request items array
+   */
+  function handleInputChange(
+    e: React.ChangeEvent<HTMLInputElement>,
+    index: number
+  ) {
+    const { name, value } = e.target
+
+    setInputValues((prev) => {
+      return prev.map((item, i) => {
+        if (i !== index) return item
+        return {
+          ...item,
+          [name]: value,
+        }
+      })
+    })
+  }
+
+  function handleSave() {
+    setEditable(false)
+  }
+
+  function handleResubmit(e: React.ChangeEvent<HTMLInputElement>) {
+    setResubmit(false)
   }
 
   return (
@@ -161,14 +201,25 @@ const StudentRequestCard: React.FC<RequestCardProps> = ({
 
               {details.Process[0].status === Status.REJECTED && (
                 <Col xs={12} lg={5}>
-                  <Button variant='warning'>Edit</Button>
+                  {!editable && (
+                    <Button
+                      className={styles.editBtn}
+                      variant='warning'
+                      onClick={() => setEditable(true)}
+                    >
+                      Edit
+                    </Button>
+                  )}
                 </Col>
               )}
             </Row>
 
             <Row className='my-2'>
-              <Form className={styles.requestDetails}>
-                <fieldset disabled>
+              <Form
+                className={styles.requestDetails}
+                onSubmit={() => handleResubmit}
+              >
+                <fieldset disabled={!editable}>
                   <Table responsive striped>
                     <thead>
                       <tr>
@@ -185,29 +236,70 @@ const StudentRequestCard: React.FC<RequestCardProps> = ({
                       </tr>
                     </thead>
                     <tbody>
-                      {details.RequestItem.map((item, itemIndex) => {
+                      {inputValues.map((item, itemIndex) => {
                         return (
-                          <tr>
+                          <tr key={itemIndex}>
                             <td>{itemIndex + 1}</td>
                             <td>
                               <Form.Control
+                                name='description'
                                 value={item.description}
-                              ></Form.Control>
+                                onChange={(e) =>
+                                  handleInputChange(
+                                    e as React.ChangeEvent<HTMLInputElement>,
+                                    itemIndex
+                                  )
+                                }
+                              />
                             </td>
                             <td>{item.vendorID}</td>
                             <td>
-                              <Form.Control value={item.url}></Form.Control>
+                              <Form.Control
+                                name='url'
+                                value={item.url}
+                                onChange={(e) =>
+                                  handleInputChange(
+                                    e as React.ChangeEvent<HTMLInputElement>,
+                                    itemIndex
+                                  )
+                                }
+                              />
                             </td>
                             <td>
                               <Form.Control
+                                name='partNumber'
                                 value={item.partNumber}
-                              ></Form.Control>
+                                onChange={(e) =>
+                                  handleInputChange(
+                                    e as React.ChangeEvent<HTMLInputElement>,
+                                    itemIndex
+                                  )
+                                }
+                              />
                             </td>
                             <td>
-                              <Form.Control value={item.quantity} />
+                              <Form.Control
+                                name='quantity'
+                                value={item.quantity}
+                                onChange={(e) =>
+                                  handleInputChange(
+                                    e as React.ChangeEvent<HTMLInputElement>,
+                                    itemIndex
+                                  )
+                                }
+                              />
                             </td>
                             <td>
-                              <Form.Control value={item.unitPrice.toString()} />
+                              <Form.Control
+                                name='unitPrice'
+                                value={item.unitPrice.toString()}
+                                onChange={(e) =>
+                                  handleInputChange(
+                                    e as React.ChangeEvent<HTMLInputElement>,
+                                    itemIndex
+                                  )
+                                }
+                              />
                             </td>
                             <td>
                               <InputGroup>
@@ -216,6 +308,7 @@ const StudentRequestCard: React.FC<RequestCardProps> = ({
                                   value={(
                                     item.quantity * (item.unitPrice as any)
                                   ).toFixed(4)}
+                                  disabled
                                 />
                               </InputGroup>
                             </td>
@@ -231,6 +324,16 @@ const StudentRequestCard: React.FC<RequestCardProps> = ({
                     </tbody>
                   </Table>
                 </fieldset>
+                {editable && (
+                  <Button variant='success' onClick={(e) => handleSave()}>
+                    Save
+                  </Button>
+                )}
+                {resubmit && (
+                  <Button variant='success' type='submit'>
+                    Re-submit
+                  </Button>
+                )}
               </Form>
             </Row>
           </div>
