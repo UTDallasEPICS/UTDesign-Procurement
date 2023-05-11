@@ -47,11 +47,6 @@ export const authOptions: NextAuthOptions = {
         const { roleID } = credentials as any
 
         try {
-          // const res = await axios.post('http://localhost:3000/api/auth', {
-          //   roleID: parseInt(roleID),
-          // })
-          // const user = await res.data.user
-          // if (res.status === 200) return user
           const user = await prisma.user.findFirst({
             where: { roleID: parseInt(roleID) },
           })
@@ -69,7 +64,7 @@ export const authOptions: NextAuthOptions = {
 
   session: {
     strategy: 'jwt',
-    maxAge: 2 * 24 * 60 * 60, // 2 days
+    maxAge: 24 * 60 * 60, // 1 day
   },
 
   pages: {
@@ -77,10 +72,7 @@ export const authOptions: NextAuthOptions = {
   },
 
   callbacks: {
-    // async signIn({ user, account, profile, email, credentials }){
-
-    // }
-
+    // Edit the token given to the session by passing the user object with its properties
     async jwt({ token, user }) {
       let res = null
       if (token.email)

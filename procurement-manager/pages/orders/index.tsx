@@ -1,3 +1,7 @@
+/**
+ * This file is a redirector to the Orders Page.
+ */
+
 import Head from 'next/head'
 import { useRouter } from 'next/router'
 import { Row, Spinner } from 'react-bootstrap'
@@ -18,6 +22,7 @@ export default function index({ title }: { title: string }) {
   const { data: session } = useSession()
   const user = session?.user as User
 
+  // Different roles pushes to their respective pages
   if (session) {
     if (user.roleID === 1) router.push('/orders/admin')
     else if (user.roleID === 2) router.push('/orders/mentor')

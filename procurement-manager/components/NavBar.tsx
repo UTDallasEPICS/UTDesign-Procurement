@@ -1,3 +1,7 @@
+/**
+ * This file is the NavBar component for the application.
+ */
+
 import { Navbar, Offcanvas, Nav, Button } from 'react-bootstrap'
 import styles from '@/styles/Navbar.module.scss'
 import { signIn, signOut, useSession } from 'next-auth/react'

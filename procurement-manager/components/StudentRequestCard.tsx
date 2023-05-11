@@ -1,3 +1,7 @@
+/**
+ * This component is a card that displays the details of a request made by a student
+ */
+
 import { RequestDetails } from '@/lib/types'
 import axios from 'axios'
 import { User } from 'next-auth'
@@ -106,10 +110,12 @@ const StudentRequestCard: React.FC<RequestCardProps> = ({
     })
   }
 
+  // TODO :: If the card has a status of REJECTED, then the user can edit the request details and call this function
   function handleSave() {
     setEditable(false)
   }
 
+  // TODO :: After saving??? The student can click on Resubmit and call this function with onSubmit
   function handleResubmit(e: React.ChangeEvent<HTMLInputElement>) {
     setResubmit(false)
   }

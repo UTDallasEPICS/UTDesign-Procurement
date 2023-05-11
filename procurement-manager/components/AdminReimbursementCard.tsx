@@ -1,4 +1,7 @@
-// RequestCard.tsx
+/**
+ * This file was the static version of the Admin Reimbursement Card.
+ */
+
 import React from 'react'
 import { Row, Col, Card, Button } from 'react-bootstrap'
 

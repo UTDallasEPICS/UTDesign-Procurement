@@ -1,3 +1,8 @@
+/**
+ * This is a static version of the Order History Page for the Admin.
+ * May not have been updated to reflect the latest changes of the components that it is using
+ */
+
 import React, { useState } from 'react'
 import { Container, Row, Collapse } from 'react-bootstrap'
 import TopBarComponent from '@/components/TopBarComponent'

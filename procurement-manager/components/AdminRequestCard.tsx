@@ -1,4 +1,6 @@
-// RequestCard.tsx
+/**
+ * This component is the card that the Admin will see in the Orders Page
+ */
 import React, { useEffect, useState } from 'react'
 import { prisma } from '@/db'
 import { RequestDetails } from '@/lib/types'
@@ -43,10 +45,12 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
     })
   )
 
+  // Show cards by default and rerenders everytime collapsed changes
   useEffect(() => {
     setCollapse(collapsed)
   }, [collapsed])
 
+  // Get the student and mentor that requested and approved the order - only runs once
   useEffect(() => {
     getStudentThatRequested()
     getMentorThatApproved()
@@ -108,6 +112,9 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
     })
   }
 
+  /**
+   * This function handles saving the changes made to the request card
+   */
   async function handleSave() {
     setEditable(false)
     try {
@@ -115,6 +122,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
         ...details, // copy the details object
         RequestItem: inputValues, // replace the RequestItem array with the new input values
       }
+      // The API is giving a 500 error when trying to update the request details - sorry it wasn't fixed
       const response = await axios.post('/api/request-form/update', {
         requestID: details.requestID,
         requestDetails: newDetails,
@@ -240,6 +248,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
                   </Col>
                 </Row>
 
+                {/* REQUEST ITEMS */}
                 <Row className='my-2'>
                   <Form className={styles.requestDetails}>
                     <fieldset disabled={!editable}>

@@ -1,5 +1,9 @@
+/**
+ * This is the mentor view in the Orders Page
+ */
+
 import React, { useEffect, useState } from 'react'
-import { Row, Collapse } from 'react-bootstrap'
+import { Row } from 'react-bootstrap'
 import MentorRequestCard from '@/components/MentorRequestCard'
 import ProjectHeader from '@/components/ProjectHeader'
 import RejectionModal from '@/components/RejectionModal'
@@ -43,7 +47,11 @@ export default function Mentor({ session, user }: MentorProps) {
     getMentor()
   }, [])
 
-  // Client-side data fetching, but can be done with getServerSideProps
+  // Client-side data fetching whenever we need to refetch the data and rerender the page but can be done in getServerSideProps
+  /**
+   * This function is called when the page needs to be rerendered with the updated data
+   * This function calls our api that gets all projects associated to the user and their requests with the status of UNDER_REVIEW
+   */
   async function getMentor() {
     const response = await axios.post('/api/request-form/get', {
       netID: user.netID,
@@ -133,7 +141,6 @@ export default function Mentor({ session, user }: MentorProps) {
       })
 
       // Updates the page if the request was successfully approved so the approved request should not be seen
-
       if (res.status === 200) {
         getMentor()
       }

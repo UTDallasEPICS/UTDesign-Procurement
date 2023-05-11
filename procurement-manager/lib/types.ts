@@ -1,3 +1,7 @@
+/**
+ * This file contains all the custom types that are used in the application
+ */
+
 import {
   Request,
   OtherExpense,
@@ -12,4 +16,5 @@ export type RequestDetails = Request & {
   RequestItem: RequestItem[]
   OtherExpense: OtherExpense[]
   Process: Process[]
+  // maybe add the RequestUpload here
 }

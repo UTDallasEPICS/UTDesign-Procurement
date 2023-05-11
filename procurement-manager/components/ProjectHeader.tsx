@@ -1,3 +1,7 @@
+/**
+ * This component is seen in the Orders Page right before the cards. This can be reused in the Orders History Page.
+ */
+
 import { Prisma } from '@prisma/client'
 import React from 'react'
 import { Col, Button, Row } from 'react-bootstrap'

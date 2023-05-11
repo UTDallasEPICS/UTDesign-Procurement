@@ -1,5 +1,9 @@
+/**
+ * This is the Admin View for the Orders Page
+ */
+
 import React, { useEffect, useState } from 'react'
-import { Row, Collapse } from 'react-bootstrap'
+import { Row } from 'react-bootstrap'
 import AdminRequestCard from '@/components/AdminRequestCard'
 import ProjectHeader from '@/components/ProjectHeader'
 import ReimbursementCard from '@/components/AdminReimbursementCard'
@@ -43,10 +47,10 @@ export async function getServerSideProps(context: any) {
   }
 
   return {
-    // needed to stringify the object first to avoid non-serializable error
     props: {
       session: session,
       user: user,
+      // needed to stringify the object first to avoid non-serializable error
       reqs: JSON.parse(JSON.stringify(requestOfMultipleProjects)),
       projs: JSON.parse(JSON.stringify(projects)),
     },
@@ -85,7 +89,11 @@ export default function Admin({
     setIsOpen(projects.map(() => true))
   }, [])
 
-  // Client-side data fetching, but can be done with getServerSideProps
+  // Client-side data fetching whenever we need to refetch the data and rerender the page
+  /**
+   * This function is called when the page needs to be rerendered with the updated data
+   * This function calls our api that gets all the projects and their requests with the status of approved
+   */
   async function getAdmin() {
     const response = await axios.post('/api/request-form/get', {
       netID: user.netID,
@@ -136,7 +144,7 @@ export default function Admin({
 
   /**
    * This was a feature where clicking the hide/show button in ProjectHeader
-   * would instead hide all the requests for the project.
+   * would instead hide all the requests for the project. - May not be needed
    * @param projectIndex - The index of the project in the projects array.
    */
   const toggleProjectCollapse = (projectIndex: number) => {
@@ -214,7 +222,7 @@ export default function Admin({
         onSubmit={handleSubmitRejection}
       />
 
-      {/* AN EXAMPLE OF REIMBURSEMENT CARDS */}
+      {/* AN EXAMPLE OF REIMBURSEMENT CARDS - not updated */}
       {/* <Row>
         <ProjectHeader
           projectName='Project 3: Point of Nerve Conduction Diagnostic | Capstone, Reimbursement'

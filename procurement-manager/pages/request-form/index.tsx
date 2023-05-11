@@ -1,13 +1,17 @@
+/**
+ * This is the Request Form page
+ */
+
 import React, { useState, useEffect, useRef } from 'react'
 import { Container, Row, Col, Button, InputGroup } from 'react-bootstrap'
 import Form from 'react-bootstrap/Form'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import { ReactSearchAutocomplete } from 'react-search-autocomplete'
 import styles from '@/styles/request.module.css'
-import { Prisma, Project, RequestItem, User, Vendor } from '@prisma/client'
+import { Prisma, Project, User, Vendor } from '@prisma/client'
 import axios from 'axios'
 import { Session, getServerSession } from 'next-auth'
-import { authOptions } from './api/auth/[...nextauth]'
+import { authOptions } from '@/pages/api/auth/[...nextauth]'
 import { useRouter } from 'next/router'
 
 export async function getServerSideProps(context: any) {
@@ -178,6 +182,9 @@ const StudentRequest = ({ session, user, vendors }: StudentRequestProps) => {
     return totalCost
   }
 
+  /**
+   * Updates the state of the items array to add a new item
+   */
   const handleAddItem = () => {
     setItems([
       ...items,
@@ -194,6 +201,12 @@ const StudentRequest = ({ session, user, vendors }: StudentRequestProps) => {
     ])
   }
 
+  /**
+   * Whenever an input field is changed, this function updates the state of the items array
+   * @param e
+   * @param index
+   * @param field
+   */
   const handleItemChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
     index: number,
@@ -222,17 +235,11 @@ const StudentRequest = ({ session, user, vendors }: StudentRequestProps) => {
     setItems(newItems)
   }
 
-  // const calculateTotalCosts = () => {
-  //   const newItems = items.map((item) => ({
-  //     ...item,
-  //     totalCost:
-  //       item.quantity && item.unitCost
-  //         ? (Number(item.quantity) * Number(item.unitCost)).toFixed(2)
-  //         : '',
-  //   }))
-  //   setItems(newItems)
-  // }
-
+  /**
+   * This function is what handles submitting the form and calls our API to update the database
+   * @param e
+   * @returns
+   */
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
 
@@ -267,6 +274,7 @@ const StudentRequest = ({ session, user, vendors }: StudentRequestProps) => {
       totalExpenses: Prisma.Decimal.sub(startingBudget, remainingBudget),
     })
 
+    // Call the API
     try {
       const newRequest = await axios.post('/api/request-form', {
         dateNeeded: date,
@@ -277,6 +285,7 @@ const StudentRequest = ({ session, user, vendors }: StudentRequestProps) => {
         totalExpenses: Prisma.Decimal.sub(startingBudget, remainingBudget),
       })
       if (newRequest.status === 200) {
+        // Redirects to the orders page (which will redirect to the student view)
         alert('Request Successfully Submitted')
         router.push('/orders')
       }

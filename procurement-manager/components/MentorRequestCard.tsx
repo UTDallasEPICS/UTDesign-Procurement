@@ -1,3 +1,7 @@
+/**
+ * This component is a card that displays the details of a request that a student has submitted in the Mentor's Orders page
+ */
+
 import { Prisma, User } from '@prisma/client'
 import React, { useEffect, useState } from 'react'
 import { Card, Button, Col, Row, Collapse, Form, Table } from 'react-bootstrap'
@@ -23,10 +27,12 @@ const MentorRequestCard: React.FC<RequestCardProps> = ({
   // state for the collapse for request details
   const [collapse, setCollapse] = useState<boolean | undefined>(false)
 
+  // Show cards by default and rerenders everytime collapsed changes
   useEffect(() => {
     setCollapse(collapsed)
   }, [collapsed])
 
+  // Get the student that requested the order
   useEffect(() => {
     getStudentThatRequested()
     // getMentorThatApproved()

@@ -1,3 +1,9 @@
+/**
+ * This file is a redirector for the Order History Page.
+ * TODO :: This should have a similar code to orders/index.tsx
+ * where it pushes the respective link based on the role of the user to the router
+ */
+
 import React, { useContext, useEffect } from 'react'
 import Head from 'next/head'
 import { useRouter } from 'next/router'

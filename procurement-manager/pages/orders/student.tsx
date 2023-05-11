@@ -1,8 +1,11 @@
+/**
+ * This is the Student view in the Orders Page
+ */
+
 import React, { useEffect, useState } from 'react'
-import { Container, Row, Col, Button, Collapse } from 'react-bootstrap'
+import { Row } from 'react-bootstrap'
 import OrderCard from '../../components/StudentRequestCard'
 import ProjectHeader from '../../components/ProjectHeader'
-import { useSession } from 'next-auth/react'
 import { Prisma, Project, User } from '@prisma/client'
 import { RequestDetails } from '@/lib/types'
 import axios from 'axios'
@@ -37,7 +40,11 @@ export default function Student({ session, user }: StudentProps) {
     getStudent()
   }, [])
 
-  // Client-side data fetching
+  // Client-side data fetching whenever we need to refetch the data and rerender the page but can be done in getServerSideProps
+  /**
+   * This function is called when the page needs to be rerendered with the updated data
+   * This function calls our api that gets all projects associated to the user and their requests
+   */
   async function getStudent() {
     const response = await axios.post('/api/request-form/get', {
       netID: user.netID,
@@ -101,7 +108,6 @@ export default function Student({ session, user }: StudentProps) {
             {projectRequests[projIndex].length > 0 ? (
               projectRequests[projIndex].map((request, reqIndex) => {
                 return (
-                  // <h1 key={reqIndex}>Hi</h1>
                   <OrderCard
                     key={reqIndex}
                     details={request}

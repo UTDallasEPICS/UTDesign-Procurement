@@ -1,14 +1,18 @@
-// RequestCard.tsx
-import React from 'react';
-import { Row, Col, Card, Button } from 'react-bootstrap';
+/**
+ * This is a static version of the Cards in the Orders histor for the Admin.
+ * May not have been updated to reflect the latest changes of the components that it is using
+ */
+
+import React from 'react'
+import { Row, Col, Card, Button } from 'react-bootstrap'
 
 const RequestCard: React.FC = () => {
   return (
-    <Row className="mb-4">
+    <Row className='mb-4'>
       <Col>
         <Card style={{ backgroundColor: '#f8f9fa' }}>
           <Card.Body>
-            <Row className="smaller-row">
+            <Row className='smaller-row'>
               <Col>
                 <h6>Request #</h6>
                 <p>3</p>
@@ -35,50 +39,78 @@ const RequestCard: React.FC = () => {
                 <p>$1928</p>
               </Col>
             </Row>
-            <Row className="smaller-row d-flex justify-content-between">
-              <Col md="auto">
-                <h6> Expense Justification: Need new stuff</h6> 
+            <Row className='smaller-row d-flex justify-content-between'>
+              <Col md='auto'>
+                <h6> Expense Justification: Need new stuff</h6>
               </Col>
-              <Col md = "auto"> <h6>Sponsor: UTSW</h6></Col>
-              
+              <Col md='auto'>
+                {' '}
+                <h6>Sponsor: UTSW</h6>
+              </Col>
             </Row>
-            <Row className="person-info">
-            <Col md="auto">
-              <p>Requested by: Student | student@utdallas.edu</p>
-            </Col>
-            <Col md="auto">
-              <p>Requested by: Mentor | mentor@utdallas.edu</p>
-            </Col>
+            <Row className='person-info'>
+              <Col md='auto'>
+                <p>Requested by: Student | student@utdallas.edu</p>
+              </Col>
+              <Col md='auto'>
+                <p>Requested by: Mentor | mentor@utdallas.edu</p>
+              </Col>
             </Row>
             <Row>
-              <Col><h6>Item #</h6> <p>1</p></Col>
-              
-              <Col><h6>Description</h6> <p>hammer for hammering</p></Col>
+              <Col>
+                <h6>Item #</h6> <p>1</p>
+              </Col>
+
+              <Col>
+                <h6>Description</h6> <p>hammer for hammering</p>
+              </Col>
 
               <Col>
                 <h6>Vendor</h6>
                 <p>Amazon</p>
               </Col>
-              
-              <Col><h6>URL</h6> <a href="#" className="text-info" style={{ textDecoration: 'underline' }}> Amazon </a></Col>
-              
-              <Col><h6>Part No.</h6> <p>2</p></Col>
-              
-              <Col><h6>Qty</h6> <p>1</p></Col>
-              
-              <Col><h6>Unit Cost</h6> <p>$100</p></Col>
-              
-              <Col><h6>Total</h6> <p>$200</p></Col>
-              
-              <Col><h6>Order #</h6></Col>
-              
-              <Col><h6>Tracking Info</h6></Col>
+
+              <Col>
+                <h6>URL</h6>{' '}
+                <a
+                  href='#'
+                  className='text-info'
+                  style={{ textDecoration: 'underline' }}
+                >
+                  {' '}
+                  Amazon{' '}
+                </a>
+              </Col>
+
+              <Col>
+                <h6>Part No.</h6> <p>2</p>
+              </Col>
+
+              <Col>
+                <h6>Qty</h6> <p>1</p>
+              </Col>
+
+              <Col>
+                <h6>Unit Cost</h6> <p>$100</p>
+              </Col>
+
+              <Col>
+                <h6>Total</h6> <p>$200</p>
+              </Col>
+
+              <Col>
+                <h6>Order #</h6>
+              </Col>
+
+              <Col>
+                <h6>Tracking Info</h6>
+              </Col>
             </Row>
           </Card.Body>
         </Card>
       </Col>
     </Row>
-  );
-};
+  )
+}
 
-export default RequestCard;
+export default RequestCard

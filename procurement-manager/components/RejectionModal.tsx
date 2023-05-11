@@ -1,20 +1,28 @@
-import React, { useState } from 'react';
-import { Modal, Button, Form } from 'react-bootstrap';
+/**
+ * This component is what shows when either the Mentor or Admin clicks on the Reject Button
+ */
+
+import React, { useState } from 'react'
+import { Modal, Button, Form } from 'react-bootstrap'
 
 interface RejectionModalProps {
-  show: boolean;
-  onHide: () => void;
-  onSubmit: (reason: string) => void;
+  show: boolean
+  onHide: () => void
+  onSubmit: (reason: string) => void
 }
 
-const RejectionModal: React.FC<RejectionModalProps> = ({ show, onHide, onSubmit }) => {
-  const [reason, setReason] = useState('');
+const RejectionModal: React.FC<RejectionModalProps> = ({
+  show,
+  onHide,
+  onSubmit,
+}) => {
+  const [reason, setReason] = useState('')
 
   const handleSubmit = () => {
-    onSubmit(reason);
-    setReason('');
-    onHide();
-  };
+    onSubmit(reason)
+    setReason('')
+    onHide()
+  }
 
   return (
     <Modal show={show} onHide={onHide}>
@@ -23,10 +31,10 @@ const RejectionModal: React.FC<RejectionModalProps> = ({ show, onHide, onSubmit 
       </Modal.Header>
       <Modal.Body>
         <Form>
-          <Form.Group controlId="rejectionReason">
+          <Form.Group controlId='rejectionReason'>
             <Form.Label>Reason for rejection:</Form.Label>
             <Form.Control
-              as="textarea"
+              as='textarea'
               rows={3}
               value={reason}
               onChange={(e) => setReason(e.target.value)}
@@ -35,15 +43,15 @@ const RejectionModal: React.FC<RejectionModalProps> = ({ show, onHide, onSubmit 
         </Form>
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="secondary" onClick={onHide}>
+        <Button variant='secondary' onClick={onHide}>
           Close
         </Button>
-        <Button variant="danger" onClick={handleSubmit}>
+        <Button variant='danger' onClick={handleSubmit}>
           Submit Rejection
         </Button>
       </Modal.Footer>
     </Modal>
-  );
-};
+  )
+}
 
-export default RejectionModal;
+export default RejectionModal

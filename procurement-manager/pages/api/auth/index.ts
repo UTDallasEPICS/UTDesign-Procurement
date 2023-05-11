@@ -1,5 +1,5 @@
 /**
- * This file might not be needed anymore because I am using NextAuth for fake` authentication.
+ * This file might not be needed anymore because I am using NextAuth for fake authentication.
  */
 
 import { NextApiRequest, NextApiResponse } from 'next'

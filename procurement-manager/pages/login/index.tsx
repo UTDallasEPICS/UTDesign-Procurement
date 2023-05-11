@@ -1,12 +1,12 @@
-import React, { MouseEvent, useContext, useRef, useState } from 'react'
+/**
+ * This file is the first page that the app redirects to and contains the fakeauth login page.
+ */
+
+import React, { MouseEvent } from 'react'
 import styles from '@/styles/Login.module.scss'
 import { Dropdown, DropdownButton, Container, Row, Col } from 'react-bootstrap'
-// import axios from 'axios'
-import { useRouter } from 'next/router'
-import { User } from '@prisma/client'
 import { signIn } from 'next-auth/react'
 import axios from 'axios'
-// import index as Orders from '@/pages/orders/index'
 
 export default function Login() {
   async function handleSelect(e: MouseEvent) {
@@ -53,7 +53,6 @@ export default function Login() {
                     Student
                   </Dropdown.Item>
                 </DropdownButton>
-                {/* <h2>{roleLoggedIn}</h2> */}
               </div>
             </Col>
           </Row>
