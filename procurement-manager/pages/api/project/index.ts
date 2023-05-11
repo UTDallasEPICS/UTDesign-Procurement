@@ -4,8 +4,11 @@
  * new project in the database. The `createProject` function uses this object to create a new project
  * using the Prisma client.
  */
+import { Prisma, PrismaClient } from '@prisma/client'
 import { NextApiRequest, NextApiResponse } from 'next'
 import { prisma } from '@/db'
+
+const prisma = new PrismaClient({ log: ['query'] })
 
 async function createProject(req: any) {
   await prisma.project.create({
@@ -28,29 +31,29 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
+  const method = req.method
+
   let result
   if (req.method === 'POST') {
     //post method as we are getting info
-    const { netID, processID, comment, status } = req.body
+    const { netID, projectInfo } = req.body
     // first get user's netID ??? from req.body
+    //console.log("netid",netID);
     const user = await prisma.user.findUnique({
       where: {
         netID: netID,
       },
     })
-
+    //console.log("USer details",user);
     // check for role -- different roles have different functions
     if (user) {
       //user.roleID is admin so update the comment and status given by admin
       if (user.roleID === 1) {
         //if user is admin
 
-        result = await createProject(req.body)
+        result = await createProject(projectInfo)
         res.json({ result, message: 'project with ${projectId} created' })
       }
     }
-  } else if (req.method === 'GET') {
-    const projects = await prisma.project.findMany()
-    res.status(200).json(projects)
   }
 }

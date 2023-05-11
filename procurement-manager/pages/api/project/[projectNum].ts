@@ -23,6 +23,10 @@ export default async function handler(
 
   const prisma = new PrismaClient()
   let result
+ /* The `if` statement is checking if the HTTP method of the incoming request is a GET request. If it
+ is a GET request, the function retrieves a project from a Prisma database based on its ID using the
+ `prisma.project.findUnique()` method and sends a JSON response containing the result and a message
+ using the `res.json()` method. */
   if (req.method === 'GET') {
     result = await prisma.project.findUnique({
       where: {
