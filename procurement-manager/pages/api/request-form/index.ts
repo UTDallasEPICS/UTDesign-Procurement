@@ -5,6 +5,7 @@ import {
   RequestItem,
   RequestUpload,
   Process,
+  Prisma,
 } from '@prisma/client'
 import { prisma } from '@/db'
 
@@ -157,11 +158,15 @@ async function createRequest(
   const project = await prisma.project.findUnique({
     where: { projectNum: body.projectNum },
   })
+  console.log('project', project?.totalExpenses)
   // Update the totalExpenses in the project
   const updateExpense = await prisma.project.update({
     where: { projectNum: body.projectNum },
     data: {
-      totalExpenses: project?.totalExpenses + body.totalExpenses,
+      totalExpenses: Prisma.Decimal.add(
+        project?.totalExpenses === undefined ? 0 : project.totalExpenses,
+        body.totalExpenses
+      ),
     },
   })
   return requestForm

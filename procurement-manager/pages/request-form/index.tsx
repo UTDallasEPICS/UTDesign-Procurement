@@ -277,19 +277,19 @@ const StudentRequest = ({ session, user, vendors }: StudentRequestProps) => {
 
     // Call the API
     try {
-      // const newRequest = await axios.post('/api/request-form', {
-      //   dateNeeded: date,
-      //   projectNum: selectedProject,
-      //   studentEmail: user.email,
-      //   items: itemsToSend,
-      //   additionalInfo: additionalInfo,
-      //   totalExpenses: Prisma.Decimal.sub(startingBudget, remainingBudget),
-      // })
-      // if (newRequest.status === 200) {
-      //   // Redirects to the orders page (which will redirect to the student view)
-      //   alert('Request Successfully Submitted')
-      //   router.push('/orders')
-      // }
+      const newRequest = await axios.post('/api/request-form', {
+        dateNeeded: date,
+        projectNum: selectedProject,
+        studentEmail: user.email,
+        items: itemsToSend,
+        additionalInfo: additionalInfo,
+        totalExpenses: Prisma.Decimal.sub(startingBudget, remainingBudget),
+      })
+      if (newRequest.status === 200) {
+        // Redirects to the orders page (which will redirect to the student view)
+        alert('Request Successfully Submitted')
+        router.push('/orders')
+      }
     } catch (error) {
       console.log(error)
     }
@@ -411,6 +411,9 @@ const StudentRequest = ({ session, user, vendors }: StudentRequestProps) => {
           </Col>
         </Row>
 
+        <h5>
+          <strong>Items:</strong>
+        </h5>
         {items.map((item, index) => (
           <div key={index} className={`${styles.itemSection} my-2`}>
             <Row>

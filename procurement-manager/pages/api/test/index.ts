@@ -63,22 +63,22 @@ export default async function handler(
       },
     })
     //create sample request
-    await prisma.request.create({
-      data: {
-        dateNeeded: new Date(),
-        dateSubmitted: new Date(),
-        dateOrdered: new Date(),
-        dateReceived: new Date(),
-        dateApproved: new Date(),
-        additionalInfo: 'Some Additional info',
-        project: {
-          connect: { projectID: 1 },
-        },
-        student: {
-          connect: { userID: 1 },
-        },
-      },
-    })
+    // await prisma.request.create({
+    //   data: {
+    //     dateNeeded: new Date(),
+    //     dateSubmitted: new Date(),
+    //     dateOrdered: new Date(),
+    //     dateReceived: new Date(),
+    //     dateApproved: new Date(),
+    //     additionalInfo: 'Some Additional info',
+    //     project: {
+    //       connect: { projectID: 1 },
+    //     },
+    //     student: {
+    //       connect: { userID: 1 },
+    //     },
+    //   },
+    // })
 
     // Connect student to a project
     await prisma.worksOn.create({

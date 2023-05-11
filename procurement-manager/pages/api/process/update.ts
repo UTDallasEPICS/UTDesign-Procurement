@@ -43,6 +43,7 @@ export default async function handler(
     // CHECK FOR ROLE -- DIFFERENT ROLES HAVE DIFFERENT PERMISSIONS TO UPDATE THE PROCESS
     // user.roleID is admin so update the comment and status given by admin
     if (user.roleID === 1) {
+      console.log(comment)
       const updateC = await prisma.process.update({
         where: { processID: request.Process[0].processID },
         data: {
@@ -50,7 +51,17 @@ export default async function handler(
           status: status,
           adminProcessed: new Date(),
         },
+        include: {
+          request: true,
+        },
       })
+      if (status === Status.REJECTED) {
+        // Undo the expense
+        const undoExpense = await prisma.project.update({
+          where: { projectID: request.projectID },
+          data: { totalExpenses: 0 },
+        })
+      }
       res.status(200).json({
         message: `Process ${request.Process[0].processID} in Request #${requestID} was updated successfully`,
         update: updateC,
@@ -76,6 +87,14 @@ export default async function handler(
         await prisma.request.update({
           where: { requestID: requestID },
           data: { dateApproved: new Date() },
+        })
+      }
+
+      if (status === Status.REJECTED) {
+        // Undo the expense
+        const undoExpense = await prisma.project.update({
+          where: { projectID: request.projectID },
+          data: { totalExpenses: 0 },
         })
       }
 

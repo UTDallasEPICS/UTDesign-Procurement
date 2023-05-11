@@ -126,7 +126,7 @@ export default function Admin({
       const response = await axios.post('/api/process/update', {
         netID: user.netID,
         requestID: selectedRequestID,
-        commet: reason,
+        comment: reason,
         status: Status.REJECTED,
       })
 
