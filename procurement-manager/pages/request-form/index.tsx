@@ -13,12 +13,12 @@ import axios from 'axios'
 import { Session, getServerSession } from 'next-auth'
 import { authOptions } from '@/pages/api/auth/[...nextauth]'
 import { useRouter } from 'next/router'
+import { prisma } from '@/db'
 
 export async function getServerSideProps(context: any) {
   const session = await getServerSession(context.req, context.res, authOptions)
   const user = session?.user as User
-  // const vendors = await axios.get('/api/vendor/get')
-  const vendors: Vendor[] = []
+  let vendors = await prisma.vendor.findMany({})
   return {
     props: {
       session: session,
@@ -39,10 +39,10 @@ const StudentRequest = ({ session, user, vendors }: StudentRequestProps) => {
   const [date, setDate] = useState('')
   const [additionalInfo, setAdditionalInfo] = useState('')
   const [remainingBudget, setRemainingBudget] = useState<Prisma.Decimal>(
-    new Prisma.Decimal(3000)
+    new Prisma.Decimal(1000)
   )
   const [startingBudget, setStartingBudget] = useState<Prisma.Decimal>(
-    new Prisma.Decimal(3000)
+    new Prisma.Decimal(1000)
   )
   const [totalExpenses, setTotalExpenses] = useState<Prisma.Decimal>(
     new Prisma.Decimal(0)
@@ -268,6 +268,7 @@ const StudentRequest = ({ session, user, vendors }: StudentRequestProps) => {
       date,
       additionalInfo,
       itemsToSend,
+      items: items,
       selectedFiles,
       selectedProject: selectedProject,
       user: user.email,
@@ -276,19 +277,19 @@ const StudentRequest = ({ session, user, vendors }: StudentRequestProps) => {
 
     // Call the API
     try {
-      const newRequest = await axios.post('/api/request-form', {
-        dateNeeded: date,
-        projectNum: selectedProject,
-        studentEmail: user.email,
-        items: itemsToSend,
-        additionalInfo: additionalInfo,
-        totalExpenses: Prisma.Decimal.sub(startingBudget, remainingBudget),
-      })
-      if (newRequest.status === 200) {
-        // Redirects to the orders page (which will redirect to the student view)
-        alert('Request Successfully Submitted')
-        router.push('/orders')
-      }
+      // const newRequest = await axios.post('/api/request-form', {
+      //   dateNeeded: date,
+      //   projectNum: selectedProject,
+      //   studentEmail: user.email,
+      //   items: itemsToSend,
+      //   additionalInfo: additionalInfo,
+      //   totalExpenses: Prisma.Decimal.sub(startingBudget, remainingBudget),
+      // })
+      // if (newRequest.status === 200) {
+      //   // Redirects to the orders page (which will redirect to the student view)
+      //   alert('Request Successfully Submitted')
+      //   router.push('/orders')
+      // }
     } catch (error) {
       console.log(error)
     }
@@ -337,6 +338,8 @@ const StudentRequest = ({ session, user, vendors }: StudentRequestProps) => {
         <Col>
           <p>
             <strong>Budget: </strong>
+          </p>
+          <p>
             <span>
               ${new Prisma.Decimal(startingBudget).toFixed(4).toString()}
             </span>
@@ -345,6 +348,8 @@ const StudentRequest = ({ session, user, vendors }: StudentRequestProps) => {
         <Col>
           <p>
             <strong>Remaining: </strong>
+          </p>
+          <p>
             <span>${remainingBudget.toFixed(4).toString()}</span>
           </p>
         </Col>
@@ -434,11 +439,11 @@ const StudentRequest = ({ session, user, vendors }: StudentRequestProps) => {
                   {/* <ReactSearchAutocomplete
                     items={vendors}
                     maxResults={15}
-                    onSearch={handleOnSearch}
-                    onHover={handleOnHover}
-                    onSelect={handleOnSelect}
-                    onFocus={handleOnFocus}
-                    onClear={handleOnClear}
+                    // onSearch={handleOnSearch}
+                    // onHover={handleOnHover}
+                    // onSelect={handleOnSelect}
+                    // onFocus={handleOnFocus}
+                    // onClear={handleOnClear}
                     fuseOptions={{ keys: ['name', 'description'] }} // Search in the description text as well
                     styling={{ zIndex: 3 }} // To display it on top of the search box below
                   /> */}
@@ -456,6 +461,19 @@ const StudentRequest = ({ session, user, vendors }: StudentRequestProps) => {
                       Tooltip text
                     </span>
                   </div>
+
+                  {/* <Form.Select
+                    value={item.vendor}
+                    onChange={(e) => handleItemChange(e, index, 'vendor')}
+                  >
+                    {vendors.map((vendor, vendorIndex) => {
+                      return (
+                        <option key={vendorIndex} value={vendor.vendorID}>
+                          {vendor.vendorName}
+                        </option>
+                      )
+                    })}
+                  </Form.Select> */}
                 </Form.Group>
               </Col>
 
@@ -609,7 +627,7 @@ const StudentRequest = ({ session, user, vendors }: StudentRequestProps) => {
                     />
                   </InputGroup>
                 </Form.Group>
-                <Col md={1} className='d-flex align-items-end mt-2'>
+                <Col className='d-flex justify-content-end mt-2 w-100'>
                   {items.length > 1 && (
                     <Button
                       variant='danger'
