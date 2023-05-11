@@ -1,26 +1,27 @@
-import React, { MouseEvent, useRef, useState } from 'react'
+/**
+ * This file is the first page that the app redirects to and contains the fakeauth login page.
+ */
+
+import React, { MouseEvent } from 'react'
 import styles from '@/styles/Login.module.scss'
 import { Dropdown, DropdownButton, Container, Row, Col } from 'react-bootstrap'
+import { signIn } from 'next-auth/react'
 import axios from 'axios'
 
 export default function Login() {
-  const [roleLoggedIn, setRoleLoggedIn] = useState('No user is logged in')
-
   async function handleSelect(e: MouseEvent) {
     e.preventDefault()
 
     // type safe
     if ('id' in e.target && typeof e.target.id === 'string') {
-      const role: string = e.target.id
+      const roleID: number = parseInt(e.target.id)
 
       try {
-        // POST request to our user API
-        const { data, status } = await axios.post('/api/user', {
-          role: role,
+        const result = await signIn('credentials', {
+          roleID: roleID,
+          redirect: true,
+          callbackUrl: '/orders',
         })
-        console.log('response status: ', status)
-        console.log('response data: ', data)
-        setRoleLoggedIn(`${data.givenRole} is logged in`)
       } catch (error) {
         // Error handling from https://bobbyhadz.com/blog/typescript-http-request-axios#making-http-post-requests-with-axios-in-typescript
         if (axios.isAxiosError(error)) {
@@ -42,17 +43,16 @@ export default function Login() {
             <Col>
               <div className={styles.wrapper}>
                 <DropdownButton id='userDropdown' title='Select User'>
-                  <Dropdown.Item onClick={handleSelect} id='admin'>
+                  <Dropdown.Item onClick={handleSelect} id='1'>
                     Admin
                   </Dropdown.Item>
-                  <Dropdown.Item onClick={handleSelect} id='mentor'>
+                  <Dropdown.Item onClick={handleSelect} id='2'>
                     Mentor
                   </Dropdown.Item>
-                  <Dropdown.Item onClick={handleSelect} id='student'>
+                  <Dropdown.Item onClick={handleSelect} id='3'>
                     Student
                   </Dropdown.Item>
                 </DropdownButton>
-                <h2>{roleLoggedIn}</h2>
               </div>
             </Col>
           </Row>

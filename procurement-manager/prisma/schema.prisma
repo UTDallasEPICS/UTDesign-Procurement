@@ -47,9 +47,10 @@ model Project {
   startingBudget    Decimal
   sponsorCompany    String
   activationDate    DateTime
-  deactivationDate  DateTime
+  deactivationDate  DateTime?
   additionalInfo    String?
   costCenter        Int?
+  totalExpenses     Decimal             @default(0)
   // RELATIONSHIPS HERE ::
   Request           Request[]
   PreviousRecord    PreviousRecord[]
@@ -75,26 +76,23 @@ model PreviousRecord {
 model Request {
   requestID Int @id @default(autoincrement())
 
-  dateNeeded        DateTime
-  dateSubmitted     DateTime
-  dateOrdered       DateTime
-  DateReceved       DateTime
-  dateApproved      DateTime
-  justification     String? // reason why item(s) is included
-  additionalInfo    String?
-  status            String?
+  dateNeeded     DateTime
+  dateSubmitted  DateTime
+  dateOrdered    DateTime?
+  dateReceived   DateTime?
+  dateApproved   DateTime?
+  additionalInfo String?
   // RELATIONSHIPS HERE ::
-  project           Project             @relation(fields: [projectID], references: [projectID])
-  projectID         Int
-  student           User                @relation(fields: [studentID], references: [userID])
-  studentID         Int
-  vendor            Vendor              @relation(fields: [vendorID], references: [vendorID])
-  vendorID          Int
-  RequestItem       RequestItem[]
-  Order             Order[]
-  OtherExpense      OtherExpense[]
-  ReimbursementItem ReimbursementItem[]
-  Process           Process[]
+  project        Project        @relation(fields: [projectID], references: [projectID])
+  projectID      Int
+  student        User           @relation(fields: [studentID], references: [userID])
+  studentID      Int
+  RequestItem    RequestItem[]
+  Order          Order[]
+  OtherExpense   OtherExpense[]
+  Process        Process[]
+  upload         RequestUpload? @relation(fields: [uploadID], references: [uploadID])
+  uploadID       Int?
 }
 
 // A RequestItem is each item field that is being requested to order by students
@@ -105,14 +103,12 @@ model RequestItem {
   url         String
   partNumber  String
   quantity    Int
-  unitPrice   Decimal?
+  unitPrice   Decimal
   // RELATIONSHIPS HERE ::
-  request     Request        @relation(fields: [requestID], references: [requestID])
+  request     Request @relation(fields: [requestID], references: [requestID])
   requestID   Int
-  vendor      Vendor         @relation(fields: [vendorID], references: [vendorID])
+  vendor      Vendor  @relation(fields: [vendorID], references: [vendorID])
   vendorID    Int
-  upload      RequestUpload? @relation(fields: [uploadID], references: [uploadID])
-  uploadID    Int?
 }
 
 // An Order happens after Request has been processed (approved and verified by mentor and admin) and admin "orders" the items
@@ -145,39 +141,43 @@ model OtherExpense {
 }
 
 model RequestUpload {
-  uploadID       Int           @id @default(autoincrement())
+  uploadID       Int       @id @default(autoincrement())
   attachmentPath String?
   attachmentName String?
   // RELATIONSHIPS HERE ::
-  RequestItem    RequestItem[]
+  Request        Request[]
 }
 
 // ------------------------------------------------------------//
 
 // ----------EVERYTHING WITHIN REIMBURSEMENT FORM----------------//
 model Reimbursement {
-  reimbursementID Int       @id @default(autoincrement())
-  dateSubmitted   DateTime
-  status          String
-  justification   String?
-  additionalInfo  String?
+  reimbursementID   Int                 @id @default(autoincrement())
+  dateSubmitted     DateTime
+  status            String
+  justification     String?
+  additionalInfo    String?
   // RELATIONSHIPS HERE ::
-  project         Project   @relation(fields: [projectID], references: [projectID])
-  projectID       Int
-  student         User      @relation(fields: [studentID], references: [userID])
-  studentID       Int // changed to NOT NULL since this should show which student submitted the reimbursement form
-  Process         Process[]
+  project           Project             @relation(fields: [projectID], references: [projectID])
+  projectID         Int
+  student           User                @relation(fields: [studentID], references: [userID])
+  studentID         Int // changed to NOT NULL since this should show which student submitted the reimbursement form
+  Process           Process[]
+  ReimbursementItem ReimbursementItem[]
 }
 
 model ReimbursementItem {
-  itemID    Int                 @id @default(autoincrement())
+  itemID          Int                  @id @default(autoincrement())
+  receiptDate     DateTime
+  description     String
+  receiptTotal    Decimal
   // RELATIONSHIPS HERE ::
-  request   Request             @relation(fields: [requestID], references: [requestID])
-  requestID Int
-  vendor    Vendor              @relation(fields: [vendorID], references: [vendorID])
-  vendorID  Int
-  upload    ReimbursementUpload @relation(fields: [uploadID], references: [uploadID])
-  uploadID  Int
+  reimbursement   Reimbursement        @relation(fields: [reimbursementID], references: [reimbursementID])
+  reimbursementID Int
+  vendor          Vendor               @relation(fields: [vendorID], references: [vendorID])
+  vendorID        Int
+  upload          ReimbursementUpload? @relation(fields: [uploadID], references: [uploadID])
+  uploadID        Int?
 }
 
 model ReimbursementUpload {
@@ -199,21 +199,21 @@ enum Status {
 }
 
 model Process {
-  processID               Int           @id @default(autoincrement())
-  status                  Status        @default(UNDER_REVIEW)
+  processID               Int            @id @default(autoincrement())
+  status                  Status         @default(UNDER_REVIEW)
   mentorProcessed         DateTime?
   mentorProcessedComments String?
   adminProcessed          DateTime?
   adminProcessedComments  String?
   // RELATIONSHIPS HERE ::
-  mentor                  User?         @relation("Mentor", fields: [mentorID], references: [userID])
+  mentor                  User?          @relation("Mentor", fields: [mentorID], references: [userID])
   mentorID                Int?
-  admin                   User?         @relation("Admin", fields: [adminID], references: [userID])
+  admin                   User?          @relation("Admin", fields: [adminID], references: [userID])
   adminID                 Int?
-  request                 Request       @relation(fields: [requestID], references: [requestID])
-  requestID               Int
-  reimbursement           Reimbursement @relation(fields: [reimbursementID], references: [reimbursementID])
-  reimbursementID         Int
+  request                 Request?       @relation(fields: [requestID], references: [requestID])
+  requestID               Int?
+  reimbursement           Reimbursement? @relation(fields: [reimbursementID], references: [reimbursementID])
+  reimbursementID         Int?
 }
 
 model Department {
@@ -226,7 +226,7 @@ model Department {
 model Vendor {
   vendorID          Int                 @id @default(autoincrement())
   vendorName        String
-  Request           Request[]
+  vendorCategory    String?
   RequestItem       RequestItem[]
   ReimbursementItem ReimbursementItem[]
 }
