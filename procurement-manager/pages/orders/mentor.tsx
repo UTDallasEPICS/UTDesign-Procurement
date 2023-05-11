@@ -102,7 +102,7 @@ export default function Mentor({ session, user }: MentorProps) {
       const response = await axios.post('/api/process/update', {
         netID: user.netID,
         requestID: selectedRequestID,
-        mentorProcessedComments: reason,
+        comment: reason,
         status: Status.REJECTED,
       })
 

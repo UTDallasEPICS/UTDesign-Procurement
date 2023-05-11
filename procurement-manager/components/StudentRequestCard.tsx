@@ -203,13 +203,24 @@ const StudentRequestCard: React.FC<RequestCardProps> = ({
                 <Col xs={12} lg={5}>
                   {!editable && (
                     <Button
-                      className={styles.editBtn}
+                      className={`${styles.cardBtn} ${styles.editBtn} mb-3`}
                       variant='warning'
                       onClick={() => setEditable(true)}
                     >
                       Edit
                     </Button>
                   )}
+                  <h6 className={styles.headingLabel}>Comments: </h6>
+                  <p>
+                    {!details.Process[0].adminProcessedComments
+                      ? 'No Comments from Admin'
+                      : 'Admin: ' + details.Process[0].adminProcessedComments}
+                  </p>
+                  <p>
+                    {!details.Process[0].mentorProcessedComments
+                      ? 'No Comments from Mentor'
+                      : 'Mentor: ' + details.Process[0].mentorProcessedComments}
+                  </p>
                 </Col>
               )}
             </Row>

@@ -264,6 +264,7 @@ const StudentRequest = ({ session, user, vendors }: StudentRequestProps) => {
       selectedFiles,
       selectedProject: selectedProject,
       user: user.email,
+      totalExpenses: Prisma.Decimal.sub(startingBudget, remainingBudget),
     })
 
     try {
@@ -273,6 +274,7 @@ const StudentRequest = ({ session, user, vendors }: StudentRequestProps) => {
         studentEmail: user.email,
         items: itemsToSend,
         additionalInfo: additionalInfo,
+        totalExpenses: Prisma.Decimal.sub(startingBudget, remainingBudget),
       })
       if (newRequest.status === 200) {
         alert('Request Successfully Submitted')

@@ -21,7 +21,6 @@ import { prisma } from '@/db'
 /// create a new process and put in database -- done
 
 interface Optionals {
-  justification: string | undefined
   additionalInfo: string | undefined
 }
 
@@ -81,11 +80,8 @@ export default async function handler(
     const body = req.body
 
     // CHECK IF OPTIONAL FIELDS ARE IN THE req.body
-    let justification: string | undefined, additionalInfo: string | undefined
-    const optionalFields: Optionals = { justification, additionalInfo }
-    if ('justification' in body && typeof body.justification === 'string') {
-      optionalFields.justification = body.justification
-    }
+    let additionalInfo: string | undefined
+    const optionalFields: Optionals = { additionalInfo }
     if ('additionalInfo' in body && typeof body.additionalInfo === 'string')
       optionalFields.additionalInfo = body.additionalInfo
 
@@ -145,13 +141,29 @@ async function createRequest(
         student: {
           connect: { email: body.studentEmail },
         },
-        justification: optionalFields.justification,
         additionalInfo: optionalFields.additionalInfo,
+      },
+      include: {
+        RequestItem: true,
+        Process: true,
       },
     })
     .catch((e) => {
       throw new Error(e)
     })
+
+  // Update the total expenses in the project
+  // Find the project to get the total expenses
+  const project = await prisma.project.findUnique({
+    where: { projectNum: body.projectNum },
+  })
+  // Update the totalExpenses in the project
+  const updateExpense = await prisma.project.update({
+    where: { projectNum: body.projectNum },
+    data: {
+      totalExpenses: project?.totalExpenses + body.totalExpenses,
+    },
+  })
   return requestForm
 }
 
@@ -168,6 +180,7 @@ async function createItem(reqID: number, itemToPut: Item) {
 
   console.log('itemToPut', itemToPut)
 
+  // TODO :: move this where submitting the request creates a RequestUpload instead of in each RequestItem
   // If something was uploaded, create a new RequestUpload to database
   let uploadID: number | undefined = undefined
   if (upload) {
