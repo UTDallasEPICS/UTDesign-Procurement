@@ -42,5 +42,10 @@ After making any changes to the database running `npx prisma migrate dev` will u
 - Some more documentation regarding this is provided at https://www.prisma.io/docs/concepts/components/prisma-migrate
 
 ## Future Todo list
-APIs to work on: [final list of API endpoints.docx](https://github.com/UTDallasEPICS/UTDesign-Procurement/files/11426026/final.list.of.API.endpoints.docx)
-
+-Continue developing API endpoints and integrating them with the front-end to provide full functionality of the application.
+-APIs to work on: [final list of API endpoints.docx](https://github.com/UTDallasEPICS/UTDesign-Procurement/files/11426026/final.list.of.API.endpoints.docx)
+-Implement the UTD SSO (Single Sign-On) feature for user authentication.
+-Input data for Departments table.
+-Start working on Orders History page.
+-Work on improving the UI design of the web application based on user feedback and suggestions.
+-The application still needs to have the feature of the project partner being able to add users, projects, and modify any data in the database.
