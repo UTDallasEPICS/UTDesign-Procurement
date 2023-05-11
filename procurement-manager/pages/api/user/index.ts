@@ -1,4 +1,3 @@
-
 /**
  * Type safe for requesting body
  * https://stackoverflow.com/questions/69893369/how-to-add-typescript-types-to-request-body-in-next-js-api-route/70788003#70788003
@@ -31,8 +30,9 @@ export default async function handler(
   data from the request body (first name, last name, email, responsibilities, and role ID), using
   that data to create a new user in the database using Prisma's `create` method, and then sending
   a JSON response with the newly created user data and a status code of 201 (indicating that the
-  request was successful and a new resource was created). */
-  else if (req.method === 'POST') {
+  request was successful and a new resource was created). */ else if (
+    req.method === 'POST'
+  ) {
     const { firstName, lastName, email, responsibilities, roleID } = req.body
     try {
       const user = await prisma.user.create({
