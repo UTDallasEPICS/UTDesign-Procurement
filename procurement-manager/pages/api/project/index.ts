@@ -4,11 +4,8 @@
  * new project in the database. The `createProject` function uses this object to create a new project
  * using the Prisma client.
  */
-import { Prisma, PrismaClient } from '@prisma/client'
 import { NextApiRequest, NextApiResponse } from 'next'
 import { prisma } from '@/db'
-
-const prisma = new PrismaClient({ log: ['query'] })
 
 async function createProject(req: any) {
   await prisma.project.create({

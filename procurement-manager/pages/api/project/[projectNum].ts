@@ -11,8 +11,8 @@
  * back to the client. It has methods like `json()` to send a JSON response, `send()` to send a plain
  * text response, and `status()` to set the HTTP status code of the response.
  */
-import { Prisma, PrismaClient } from '@prisma/client'
 import { NextApiRequest, NextApiResponse } from 'next'
+import { prisma } from '@/db'
 
 export default async function handler(
   req: NextApiRequest,
@@ -20,10 +20,8 @@ export default async function handler(
 ) {
   const method = req.method
   let id = req.query?.projectNum
-
-  const prisma = new PrismaClient()
   let result
- /* The `if` statement is checking if the HTTP method of the incoming request is a GET request. If it
+  /* The `if` statement is checking if the HTTP method of the incoming request is a GET request. If it
  is a GET request, the function retrieves a project from a Prisma database based on its ID using the
  `prisma.project.findUnique()` method and sends a JSON response containing the result and a message
  using the `res.json()` method. */
