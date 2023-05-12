@@ -42,7 +42,7 @@ export default function NavBar({}: NavbarProps): JSX.Element {
                   </Nav.Link>
 
                   {/* Links seen by Admin and Mentor */}
-                  {(user.roleID === 1 || user.roleID === 2) && (
+                  {user.roleID === 1 && (
                     <>
                       <Nav.Link href='/project-updates' className='mx-2'>
                         Project Updates
@@ -61,6 +61,15 @@ export default function NavBar({}: NavbarProps): JSX.Element {
                       </Nav.Link>
                     </>
                   )}
+
+                  {user.roleID === 2 ||
+                    (user.roleID === 3 && (
+                      <>
+                        <Nav.Link href='/project-updates' className='mx-2'>
+                          Projects
+                        </Nav.Link>
+                      </>
+                    ))}
 
                   <Button variant='secondary' onClick={() => signOut()}>
                     Log Out
