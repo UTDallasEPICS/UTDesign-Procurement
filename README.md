@@ -1,15 +1,17 @@
 # UTDesign-Procurement
 
-## Pre-requisites for running the app locally
+## READ EVERYTHING BEFORE STARTING ON THE PROJECT!!!
+
+## 🔗 Pre-requisites for running the app locally 🔗
 
 You must have the following tools installed:
 
-- VSCode (recomended editor): https://code.visualstudio.com/download
+- VS Code (recomended editor): https://code.visualstudio.com/download
 - Node.js (needed for npm): https://nodejs.org/en/download/
 - Git: https://git-scm.com/
 - (https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
 
-### Database stuff:
+### 💾 Database stuff 💾
 
 #### Watch these first (just the installation part):
 
@@ -17,18 +19,18 @@ You must have the following tools installed:
 - Mosh - https://youtu.be/7S_tz1z_5bA?t=292
   > IMPORTANT: REMEMBER THE PASSWORD
 
-#### Download Links:
+#### 🔗 Download Links: 🔗
 
 - mySQL (our database): https://www.mysql.com/downloads/
 - mySQL Workbench (work with database): https://dev.mysql.com/downloads/workbench/
 
-### Also, using Github Desktop instead of Git will be easier to use.
+### Also if you want, Github Desktop instead of Git will be easier to use.
 
 - Github Desktop: https://desktop.github.com/
 
 ---
 
-## Setting up local environment
+## 🛠️ Setting up local environment 🛠️
 
 1. Install all the required softwares specified above.
 2. Check if you have git and npm installed by typing in your terminal: `git --version` and `npm --version`
@@ -36,50 +38,76 @@ You must have the following tools installed:
 
 ### Cloning Repository
 
-#### Using Git (Recommended)
+#### 😎 Using Git (Recommended) 😎
 
 4. Find a folder to save this repository and go there using your terminal. For example mine is saved in `C:\Isaac\Programming`
    In your terminal, write `git clone https://github.com/UTDallasEPICS/UTDesign-Procurement.git` or the SSH link if you have that set up. Sign in to Github if asked.
-   > Cloning a repository should create a folder for you so don't make a folder like "UTDesign Procurement"
+   > Cloning a repository should create a folder for you inside the folder the terminal is in, so don't make a folder like "UTDesign Procurement"
 5. Open the repository in VS Code
 
-#### Using GitHub Desktop:
+#### 😑 Using GitHub Desktop 😑
 
 4. Clone a Repository by clicking `File > Clone Repository` and finding it through Github.com or through URL tabs.
 5. Open the repository in VS Code
 
-### Dependencies setup
+### 📦 Dependencies setup 📦
 
 Dependencies are the packages used to create the project.
 
-6. To install the dependencies, in VSCode, create a new terminal run `cd procurement-manager/` to make sure that the terminal is in the procurement-manager folder (the project itself) and run `npm install` or `npm i`. This will install all the packages as specified in our `package.json` file.
+6. To install the dependencies, in VS Code, create a new terminal in the editor and run `cd procurement-manager/` to make sure that the terminal is in the **procurement-manager** folder (the project itself) and run `npm install` or `npm i`. This will install all the packages as specified in our `package.json` file.
 
-### Database Setup
+### 💾 Database Setup 💾
 
 Downlading and setting up mySQL is required first. mySQL Workbench is used then to manually add some data into the tables and can be used to further view changes done to the database.
 
 7. First, we have to create a **.env** file inside of the **procurement-manager** folder.
-8. In the **.env** file, type `DATABASE_URL=`
-
-The prisma file under the prisma folder had the schema setup and can be edited to change the database.
-After making any changes to the database, running `npx prisma migrate dev` will update the database
+8. In the **.env** file, type `DATABASE_URL="mysql://root:password@localhost:3306/procurement"` but change the password to your password when initially setting up mySQL.
+9. To sync your database with the project schema type `npx prisma migrate dev` (make sure your in the procurement-manager folder).
+   > The prisma file under the prisma folder has the schema setup and can be edited to change the database.
+   > After making any changes to the database, running `npx prisma migrate dev` will also update the database
 
 > Some more documentation regarding this is provided here: https://www.prisma.io/docs/concepts/components/prisma-migrate
 
-## To-do list (After SPRING 2023)
+### One more thing: 1️⃣
+
+10. In the terminal, enter `openssl rand -base64 32` which will generate random characters and copy it.
+11. In the **.env** file, below the DATABASE_URL type: `NEXTAUTH_SECRET="randomcode"` and paste the randome characters in the randomcode.
+    > This is what makes the fake authentication work
+
+### 😁 Finally!!! 😁
+
+12. Making sure you are still in the **procurement-manager** folder, type `npm run dev` which runs the website
+13. In your browser, type `localhost:3000/api/test`. This creates all the sample data to run the project.
+14. Finally go to the website in `localhost:3000`.
+15. 🎉🎉 GOOD LUCK AND HAVE FUN! 🎉🎉
+
+---
+
+## ✅ To-do list (After SPRING 2023) ✅
+
+### Front-end
+
+- Make Orders History page where completed requests are seen.
+- Make Reimbursement Form
+- Start on Project page where Mentors/Students can see what projects they are in (confirm with Project Partner).
+- The application still needs to have the feature of the project partner being able to add users, projects, and modify any data in the database. (Project Updates page in Admin View)
+- Work on improving the UI/UX of the web application based on user feedback and suggestions.
+- Keep following UTD guidelines
+
+### Back-end
 
 - Continue developing API endpoints and integrating them with the front-end to provide full functionality of the application.
 - APIs to work on: [final list of API endpoints.docx](https://github.com/UTDallasEPICS/UTDesign-Procurement/files/11426026/final.list.of.API.endpoints.docx)
-- Implement the UTD SSO (Single Sign-On) feature for user authentication.
-- Input data for Departments table.
-- Start working on Orders History page.
-- Work on improving the UI design of the web application based on user feedback and suggestions.
-- The application still needs to have the feature of the project partner being able to add users, projects, and modify any data in the database.
+  > Updated by Isaac (2023) in **docs/api.md**
+- Implement UTD SSO (Single Sign-On) feature for user authentication.
+- Data Input for Departments table.
+- Finish data input for Vendors from the vendor list in the UTDesign website
+- Improve code by better type-checking and error handling
 
-## Resources
+## ⚡ Resources ⚡
 
 - Prisma: https://www.youtube.com/watch?v=RebA5J-rlwg
-- Next.Js: https://youtu.be/mTz0GXj8NN0
+- Next.js: https://youtu.be/mTz0GXj8NN0
 
 ### Creating APIs
 
@@ -87,3 +115,8 @@ After making any changes to the database, running `npx prisma migrate dev` will 
 - https://www.youtube.com/watch?v=varePWkGi8Y&t
 - https://www.youtube.com/watch?v=J4pdHM-oG-s&t
 - https://youtu.be/GgzWFxIiwK4
+
+---
+
+> Although this is a new project in SPRING 2023, there was a previous version of this project. We are desperately trying to improve from their mistakes so that the reset button for this project won't be pressed again. Please do not have duplicated code and resources since this is what the previous version of this project had and document your code as much as you can. I know that some of our code does not have the same format of documentations, some are made by me, and others used a documentation generator, but we tried to explain our code to you nonetheless. Please do the same for others as well. Good luck team!
+> -- Isaac (SPRING 2023)
