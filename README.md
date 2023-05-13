@@ -6,27 +6,27 @@
 
 You must have the following tools installed:
 
-- VS Code (recomended editor): https://code.visualstudio.com/download
-- Node.js (needed for npm): https://nodejs.org/en/download/
-- Git: https://git-scm.com/
-- (https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
+- [VS Code (recomended editor)](https://code.visualstudio.com/download)
+- [Node.js (needed for npm)](https://nodejs.org/en/download/)
+- [Git](https://git-scm.com/)
+- [Git Installing Guide & Customizing](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
 
 ### 💾 Database stuff 💾
 
 #### Watch these first (just the installation part):
 
-- BroCode - https://youtu.be/5OdVJbNCSso?t=142
-- Mosh - https://youtu.be/7S_tz1z_5bA?t=292
-  > IMPORTANT: REMEMBER THE PASSWORD
+- [BroCode](https://youtu.be/5OdVJbNCSso?t=142)
+- [Mosh](https://youtu.be/7S_tz1z_5bA?t=292)
+- **IMPORTANT: REMEMBER THE PASSWORD**
 
 #### 🔗 Download Links: 🔗
 
-- mySQL (our database): https://www.mysql.com/downloads/
-- mySQL Workbench (work with database): https://dev.mysql.com/downloads/workbench/
+- [mySQL (our database)](https://www.mysql.com/downloads/)
+- [mySQL Workbench (work with database)](https://dev.mysql.com/downloads/workbench/)
 
 ### Also if you want, Github Desktop instead of Git will be easier to use.
 
-- Github Desktop: https://desktop.github.com/
+- [Github Desktop](https://desktop.github.com/)
 
 ---
 
@@ -42,7 +42,9 @@ You must have the following tools installed:
 
 4. Find a folder to save this repository and go there using your terminal. For example mine is saved in `C:\Isaac\Programming`
    In your terminal, write `git clone https://github.com/UTDallasEPICS/UTDesign-Procurement.git` or the SSH link if you have that set up. Sign in to Github if asked.
-   > Cloning a repository should create a folder for you inside the folder the terminal is in, so don't make a folder like "UTDesign Procurement"
+
+   Cloning a repository should create a folder for you inside the folder the terminal is in, so don't make a folder like "UTDesign Procurement"
+
 5. Open the repository in VS Code
 
 #### 😑 Using GitHub Desktop 😑
@@ -63,12 +65,15 @@ Downlading and setting up mySQL is required first. mySQL Workbench is used then 
 7. First, we have to create a **.env** file inside of the **procurement-manager** folder.
 8. In the **.env** file, type `DATABASE_URL="mysql://root:password@localhost:3306/procurement"` but change the password to your password when initially setting up mySQL.
 9. To sync your database with the project schema type `npx prisma migrate dev` (make sure your in the procurement-manager folder).
-   > The prisma file under the prisma folder has the schema setup and can be edited to change the database.
-   > After making any changes to the database, running `npx prisma migrate dev` will also update the database
 
-> Some more documentation regarding this is provided here: https://www.prisma.io/docs/concepts/components/prisma-migrate
+The prisma file under the prisma folder has the schema setup and can be edited to change the database.
+After making any changes to the database, running `npx prisma migrate dev` will also update the database
 
-### One more thing: 1️⃣
+You can also do `npx prisma studio` instead of using mySQL Workbench to see the database through Prisma.
+
+> Some more documentation regarding this is provided here: [Prisma Migrate](https://www.prisma.io/docs/concepts/components/prisma-migrate)
+
+### 1️⃣ more thing: 1️⃣
 
 10. In the terminal, enter `openssl rand -base64 32` which will generate random characters and copy it.
 11. In the **.env** file, below the DATABASE_URL type: `NEXTAUTH_SECRET="randomcode"` and paste the randome characters in the randomcode.
@@ -98,7 +103,7 @@ Downlading and setting up mySQL is required first. mySQL Workbench is used then 
 
 - Continue developing API endpoints and integrating them with the front-end to provide full functionality of the application.
 - APIs to work on: [final list of API endpoints.docx](https://github.com/UTDallasEPICS/UTDesign-Procurement/files/11426026/final.list.of.API.endpoints.docx)
-  > Updated by Isaac (2023) in **docs/api.md**
+- [Updated List of API we did](docs/api.md)
 - Implement UTD SSO (Single Sign-On) feature for user authentication.
 - Data Input for Departments table.
 - Finish data input for Vendors from the vendor list in the UTDesign website
@@ -106,17 +111,29 @@ Downlading and setting up mySQL is required first. mySQL Workbench is used then 
 
 ## ⚡ Resources ⚡
 
-- Prisma: https://www.youtube.com/watch?v=RebA5J-rlwg
-- Next.js: https://youtu.be/mTz0GXj8NN0
+- [Prisma Crash Course](https://www.youtube.com/watch?v=RebA5J-rlwg)
+- [Next.js Crash Course](https://youtu.be/mTz0GXj8NN0)
 
 ### Creating APIs
 
-- https://www.youtube.com/watch?v=FMnlyi60avU
-- https://www.youtube.com/watch?v=varePWkGi8Y&t
-- https://www.youtube.com/watch?v=J4pdHM-oG-s&t
-- https://youtu.be/GgzWFxIiwK4
+- [Familiarize using Prisma with Next.js](https://www.youtube.com/watch?v=FMnlyi60avU)
+- [Creating API routes in Next.js 13](https://www.youtube.com/watch?v=varePWkGi8Y&t)
+- [API Route Handlers in Next.js 13](https://www.youtube.com/watch?v=J4pdHM-oG-s&t)
+- [API GET Request](https://youtu.be/GgzWFxIiwK4)
+
+## ⚡ Recommended VS Code Extensions ⚡
+
+- Prisma - formatting and snippets for Prisma
+- GitLens - lets you see who edited the code
+- CodeSnap - if you want to take screenshots of code
+- Auto Close Tag, Auto Rename Tag - good for quickly editing the html/component tags
+- ES7+ React/Redux/React-Native Snippets - quickly create components
+- ESLint - shows unused or errors in your code, may need some customizing and research (we should have done a configuration for the project so everybody has the same formatting)
+- **Live Share** - incredibly useful! it's like Google Docs but for coding
+- **Prettier** - awesome code formatting
+- Thunder Client - good for testing API and alternative to Postman
 
 ---
 
-> Although this is a new project in SPRING 2023, there was a previous version of this project. We are desperately trying to improve from their mistakes so that the reset button for this project won't be pressed again. Please do not have duplicated code and resources since this is what the previous version of this project had and document your code as much as you can. I know that some of our code does not have the same format of documentations, some are made by me, and others used a documentation generator, but we tried to explain our code to you nonetheless. Please do the same for others as well. Good luck team!
+> Although this was a new project in SPRING 2023, there was a previous version of this project from past semesters. We are constantly trying to improve from their mistakes so that the reset button for this project won't be pressed again. Please do not have duplicated code and resources since this is what the previous version of this project had and document your code as much as you can. I know that some of our code does not have the same format of documentations, some are made by me, and others used a documentation generator, but we tried to explain our code to you nonetheless. Please do the same for others as well. Good luck team!
 > -- Isaac (SPRING 2023)

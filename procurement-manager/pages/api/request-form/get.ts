@@ -1,13 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import { prisma } from '@/db'
-import {
-  OtherExpense,
-  Process,
-  Project,
-  Request,
-  RequestItem,
-  Status,
-} from '@prisma/client'
+import { Project, Status } from '@prisma/client'
 import { RequestDetails } from '@/lib/types'
 
 export default async function handler(

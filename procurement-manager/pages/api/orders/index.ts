@@ -42,7 +42,7 @@ the client with the newly created order as JSON data. */
   //export default async function handleOrders(req: NextApiRequest, res: NextApiResponse) {
   else if (req.method === 'POST') {
     //post method as we are getting info
-    const { netID, processID, comment, status } = req.body
+    const { netID } = req.body
     // first get user's netID ??? from req.body
     const user = await prisma.user.findUnique({
       where: {

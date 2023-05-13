@@ -1,5 +1,13 @@
-// This is your Prisma schema file,
+// This is your Prisma schema file, the schema for the database with its documentation
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// One of the goals of the SPRING 2023 team is to develop a solid database schema, so before making any changes please discuss
+// with the team, the mentor, and especially the project partner, and make sure everyone is on the same page.
+// Before making changes, make sure you know what your doing.
+
+// NOTES:
+/// anything that has a @relation needs to be specified and connect when creating the API
+/// underneath the RELATIONSHIPS there will be something  something[] which means that it is a one to many relationship even though it seems like it hasn't and was automatically added by Prisma when I typed @relation
 
 generator client {
   provider = "prisma-client-js"
@@ -10,47 +18,50 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// This model signifies a user in the database. A user can have a roleID of student (3), mentor (2), or admin (1)
 model User {
-  userID           Int              @id @unique @default(autoincrement())
+  userID           Int              @id @unique @default(autoincrement()) // unique identifier for each user
   netID            String           @unique // parsed from email in our API 
-  firstName        String
-  lastName         String
-  email            String           @unique
-  active           Boolean
-  responsibilities String?
-  deactivationDate DateTime?
+  firstName        String // possibly given by SSO?
+  lastName         String // possibly given by SSO?
+  email            String           @unique // possibly given by SSO?
+  active           Boolean // indicates if user is active or not
+  responsibilities String? // not sure if this is needed
+  deactivationDate DateTime? // indicates when user was deactivated, active should be false if this is not null
   // RELATIONSHIPS HERE ::
   role             Role             @relation(fields: [roleID], references: [roleID]) //unique?
   roleID           Int
-  Request          Request[]
+  Request          Request[] // a user has many requests
   mentorProcess    Process[]        @relation("Mentor")
   adminProcess     Process[]        @relation("Admin")
-  PreviousRecord   PreviousRecord[]
-  Order            Order[]
-  Reimbursement    Reimbursement[]
-  DepartmentUser   DepartmentUser[]
-  WorksOn          WorksOn[]
+  PreviousRecord   PreviousRecord[] // a user has many previous records
+  Order            Order[] // a user has many orders
+  Reimbursement    Reimbursement[] // a user has many reimbursements
+  DepartmentUser   DepartmentUser[] // a user can be in many departments
+  WorksOn          WorksOn[] // a user can work on many projects
 }
 
+// This model signifies what role a user has. There are 3 roles: student, mentor, and admin
 model Role {
-  roleID         Int              @id @default(autoincrement())
+  roleID         Int              @id @default(autoincrement()) // unique identifier for each role
   role           String           @unique
-  User           User[]
-  PreviousRecord PreviousRecord[]
+  User           User[] // a role has many users
+  PreviousRecord PreviousRecord[] // a role has many previous records
 }
 
+// This model signifies a project in the database.
 model Project {
-  projectID         Int                 @id @default(autoincrement())
-  projectType       String
-  projectNum        Int                 @unique
-  projectTitle      String
-  startingBudget    Decimal
-  sponsorCompany    String
-  activationDate    DateTime
-  deactivationDate  DateTime?
-  additionalInfo    String?
-  costCenter        Int?
-  totalExpenses     Decimal             @default(0)
+  projectID         Int                 @id @default(autoincrement()) // unique identifier for each project
+  projectType       String // Capstone, EPICS, etc.
+  projectNum        Int                 @unique // The project number given by UTDesign
+  projectTitle      String // The title of the project
+  startingBudget    Decimal // The starting budget of the project
+  sponsorCompany    String // The company that is sponsoring the project
+  activationDate    DateTime            @default(now()) // The date the project was activated
+  deactivationDate  DateTime? // The date the project was deactivated, can be null if project is still active
+  additionalInfo    String? // Any additional information about the project, can be null
+  costCenter        Int? // "The cost center is used by the admins when we buy parts for projects sponsored by another department at UTD. Like an internal bank account"
+  totalExpenses     Decimal             @default(0) // The total expenses of the project
   // RELATIONSHIPS HERE ::
   Request           Request[]
   PreviousRecord    PreviousRecord[]
@@ -60,6 +71,7 @@ model Project {
   ProjectDepartment ProjectDepartment[]
 }
 
+// 
 model PreviousRecord {
   recordID  Int     @id @default(autoincrement())
   // RELATIONSHIPS HERE :: 
@@ -72,16 +84,17 @@ model PreviousRecord {
 }
 
 // ----------EVERYTHING WITHIN PROCUREMENT FORM----------------//
-// A Request is a procurement form sent by students
+// This model signifies that a Request is a procurement form sent by students
 model Request {
   requestID Int @id @default(autoincrement())
 
-  dateNeeded     DateTime
-  dateSubmitted  DateTime
-  dateOrdered    DateTime?
-  dateReceived   DateTime?
-  dateApproved   DateTime?
-  additionalInfo String?
+  dateNeeded     DateTime // the date the items are needed by
+  dateSubmitted  DateTime       @default(now()) // the date the request was created
+  dateOrdered    DateTime? // date the order was placed by admin
+  dateReceived   DateTime? // date the order was received by the student
+  dateApproved   DateTime? // date the request was approved by mentor
+  additionalInfo String? // any additional information about the request and why request is needed
+  expense        Decimal        @default(0) // the total expense of the request - used to calculate totalExpenses in Project
   // RELATIONSHIPS HERE ::
   project        Project        @relation(fields: [projectID], references: [projectID])
   projectID      Int
@@ -91,7 +104,7 @@ model Request {
   Order          Order[]
   OtherExpense   OtherExpense[]
   Process        Process[]
-  upload         RequestUpload? @relation(fields: [uploadID], references: [uploadID])
+  upload         RequestUpload? @relation(fields: [uploadID], references: [uploadID]) // a request can have an upload for more justification - can be null
   uploadID       Int?
 }
 
@@ -99,15 +112,15 @@ model Request {
 model RequestItem {
   itemID Int @id @default(autoincrement())
 
-  description String
-  url         String
-  partNumber  String
-  quantity    Int
-  unitPrice   Decimal
+  description String // description/name of the item
+  url         String // link url of the item
+  partNumber  String // item's part number
+  quantity    Int // quantity of the item needed
+  unitPrice   Decimal // unit price of the item
   // RELATIONSHIPS HERE ::
-  request     Request @relation(fields: [requestID], references: [requestID])
+  request     Request @relation(fields: [requestID], references: [requestID]) // the request that the item is in
   requestID   Int
-  vendor      Vendor  @relation(fields: [vendorID], references: [vendorID])
+  vendor      Vendor  @relation(fields: [vendorID], references: [vendorID]) // the vendor that sells the item
   vendorID    Int
 }
 
@@ -115,35 +128,37 @@ model RequestItem {
 model Order {
   orderID Int @id @default(autoincrement())
 
-  dateOrdered  DateTime
-  orderNumber  String
-  orderDetails String
-  trackingInfo String
-  shippingCost Decimal
+  dateOrdered  DateTime // date the order was placed by admin
+  orderNumber  String // order number given by vendor
+  orderDetails String // any additional information about the order
+  trackingInfo String // tracking information of the order
+  shippingCost Decimal // shipping cost of the order
   // RELATIONSHIPS HERE ::
-  request      Request  @relation(fields: [requestID], references: [requestID])
+  request      Request  @relation(fields: [requestID], references: [requestID]) // the request that the order is in
   requestID    Int
-  admin        User     @relation(fields: [adminID], references: [userID])
-  adminID      Int // changed to NOT NULL since an order should show which admin made the order
+  admin        User     @relation(fields: [adminID], references: [userID]) // changed to NOT NULL since an order should show which admin made the order
+  adminID      Int
 }
 
+// This model signifies the other expenses in a request such as taxes, fees, etc.
 model OtherExpense {
-  expenseID       Int      @id @default(autoincrement())
-  expenseType     String
-  expenseAmount   Decimal
-  expenseDate     DateTime
-  expenseComments String?
+  expenseID       Int      @id @default(autoincrement()) // unique identifier for each expense
+  expenseType     String // type of expense
+  expenseAmount   Decimal // amount of expense
+  expenseDate     DateTime // date of expense 
+  expenseComments String? // any additional comments about the expense - can be null
   // RELATIONSHIPS HERE ::
-  project         Project  @relation(fields: [projectID], references: [projectID])
+  project         Project  @relation(fields: [projectID], references: [projectID]) // the project that the expense is in to calculate the totalExpenses
   projectID       Int
-  request         Request  @relation(fields: [requestID], references: [requestID])
+  request         Request  @relation(fields: [requestID], references: [requestID]) // the request that the expense is in
   requestID       Int
 }
 
+// This model signifies the upload of a file for a request and optional for the request form
 model RequestUpload {
-  uploadID       Int       @id @default(autoincrement())
-  attachmentPath String?
-  attachmentName String?
+  uploadID       Int       @id @default(autoincrement()) // unique identifier for each upload
+  attachmentPath String? // path of the file/url
+  attachmentName String? // name of the file/url
   // RELATIONSHIPS HERE ::
   Request        Request[]
 }
@@ -151,26 +166,27 @@ model RequestUpload {
 // ------------------------------------------------------------//
 
 // ----------EVERYTHING WITHIN REIMBURSEMENT FORM----------------//
+// This model signifies that a Reimbursement is a reimbursement form sent by students
 model Reimbursement {
   reimbursementID   Int                 @id @default(autoincrement())
-  dateSubmitted     DateTime
-  status            String
-  justification     String?
-  additionalInfo    String?
+  dateSubmitted     DateTime // date the reimbursement form was submitted
+  status            String // status of the reimbursement form
+  additionalInfo    String? // any additional information and why the reimbursement is being requested 
   // RELATIONSHIPS HERE ::
-  project           Project             @relation(fields: [projectID], references: [projectID])
+  project           Project             @relation(fields: [projectID], references: [projectID]) // the project that the reimbursement is in
   projectID         Int
-  student           User                @relation(fields: [studentID], references: [userID])
-  studentID         Int // changed to NOT NULL since this should show which student submitted the reimbursement form
+  student           User                @relation(fields: [studentID], references: [userID]) // changed to NOT NULL since this should show which student submitted the reimbursement form
+  studentID         Int
   Process           Process[]
   ReimbursementItem ReimbursementItem[]
 }
 
+// A ReimbursementItem is each item field that is being requested to reimburse by students
 model ReimbursementItem {
-  itemID          Int                  @id @default(autoincrement())
-  receiptDate     DateTime
-  description     String
-  receiptTotal    Decimal
+  itemID          Int                  @id @default(autoincrement()) // unique identifier for each item
+  receiptDate     DateTime // date of the receipt
+  description     String // description/name of the item 
+  receiptTotal    Decimal // total amount of the receipt
   // RELATIONSHIPS HERE ::
   reimbursement   Reimbursement        @relation(fields: [reimbursementID], references: [reimbursementID])
   reimbursementID Int
@@ -180,58 +196,62 @@ model ReimbursementItem {
   uploadID        Int?
 }
 
+// This model signifies the upload of a file for a reimbursement such as a receipt or a quote
 model ReimbursementUpload {
-  uploadID          Int                 @id @default(autoincrement())
-  attachmentPath    String
-  attachmentName    String
+  uploadID          Int                 @id @default(autoincrement()) // unique identifier for each upload
+  attachmentPath    String // path of the file/url
+  attachmentName    String // name of the file/url
   // RELATIONSHIPS HERE ::
   ReimbursementItem ReimbursementItem[]
 }
 
 // --------------------------------------------------------------//
+// The different status that a process can have
 enum Status {
-  UNDER_REVIEW
-  APPROVED
-  REJECTED
-  ORDERED
-  DELIVERED
-  CANCELLED
+  UNDER_REVIEW // default status after a request/reimbursement is submitted
+  APPROVED // status after a request/reimbursement is approved by mentor
+  REJECTED // status after a request/reimbursement is rejected by mentor
+  ORDERED // status after a request is ordered by admin
+  DELIVERED // status after a request is delivered to student
+  CANCELLED // status after a request is cancelled by student and does not need to be requested/reimbursed anymore
+  RECALLED // status after a request/reimbursement is recalled by student and wants to edit before resubmitting
 }
 
 model Process {
-  processID               Int            @id @default(autoincrement())
-  status                  Status         @default(UNDER_REVIEW)
-  mentorProcessed         DateTime?
-  mentorProcessedComments String?
-  adminProcessed          DateTime?
-  adminProcessedComments  String?
+  processID               Int            @id @default(autoincrement()) // unique identifier for each process
+  status                  Status         @default(UNDER_REVIEW) // status of the process
+  mentorProcessed         DateTime? // date the request/reimbursement was approved/rejected by mentor
+  mentorProcessedComments String? // any additional comments from mentor - can be null
+  adminProcessed          DateTime? // date the request/reimbursement was ordered by admin
+  adminProcessedComments  String? // any additional comments from admin - can be null
   // RELATIONSHIPS HERE ::
-  mentor                  User?          @relation("Mentor", fields: [mentorID], references: [userID])
+  mentor                  User?          @relation("Mentor", fields: [mentorID], references: [userID]) // changed to NOT NULL since a process should show which mentor approved/rejected the request/reimbursement
   mentorID                Int?
-  admin                   User?          @relation("Admin", fields: [adminID], references: [userID])
+  admin                   User?          @relation("Admin", fields: [adminID], references: [userID]) // changed to NOT NULL since a process should show which admin ordered/rejected the request/reimbursement
   adminID                 Int?
-  request                 Request?       @relation(fields: [requestID], references: [requestID])
+  request                 Request?       @relation(fields: [requestID], references: [requestID]) // the request that the process is in - can be null because a process can be in a reimbursement
   requestID               Int?
-  reimbursement           Reimbursement? @relation(fields: [reimbursementID], references: [reimbursementID])
+  reimbursement           Reimbursement? @relation(fields: [reimbursementID], references: [reimbursementID]) // the reimbursement that the process is in - can be null because a process can be in a request
   reimbursementID         Int?
 }
 
+// This model signifies what department a project is in
 model Department {
-  departmentID      Int                 @id @default(autoincrement())
-  department        String              @unique
+  departmentID      Int                 @id @default(autoincrement()) // unique identifier for each department
+  department        String              @unique // name of the department
   DepartmentUser    DepartmentUser[]
   ProjectDepartment ProjectDepartment[]
 }
 
+// This model signifies the different vendors that students can order from
 model Vendor {
-  vendorID          Int                 @id @default(autoincrement())
-  vendorName        String
-  vendorCategory    String?
+  vendorID          Int                 @id @default(autoincrement()) // unique identifier for each vendor
+  vendorName        String // name of the vendor
+  vendorCategory    String? // category of the vendor - may be changed since vendor can have multiple categories so probably create another model for VendorCategory
   RequestItem       RequestItem[]
   ReimbursementItem ReimbursementItem[]
 }
 
-// I don't know if these are needed...
 //---------ASSOCIATION TABLES---------//
 // user and their department
 model DepartmentUser {
@@ -243,15 +263,17 @@ model DepartmentUser {
   @@id([departmentID, userID])
 }
 
+// This signifies what projects a user is working on
 model WorksOn {
-  user      User    @relation(fields: [userID], references: [userID])
+  user      User    @relation(fields: [userID], references: [userID]) // the user to connect to
   userID    Int     @unique
-  project   Project @relation(fields: [projectID], references: [projectID])
+  project   Project @relation(fields: [projectID], references: [projectID]) // the project to connect to
   projectID Int
 
   @@id([userID, projectID])
 }
 
+// This signifies what departments a project is in
 model ProjectDepartment {
   department   Department @relation(fields: [departmentID], references: [departmentID])
   departmentID Int        @unique

@@ -322,7 +322,10 @@ const StudentRequest = ({ session, user, vendors }: StudentRequestProps) => {
     let budget: Prisma.Decimal = new Prisma.Decimal(0)
     proj.forEach((project) => {
       if (project.projectNum === projectNum) {
-        budget = project.startingBudget
+        budget = Prisma.Decimal.sub(
+          project.startingBudget,
+          project.totalExpenses
+        )
       }
     })
     setStartingBudget(budget)

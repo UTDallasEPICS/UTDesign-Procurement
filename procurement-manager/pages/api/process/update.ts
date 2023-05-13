@@ -56,10 +56,20 @@ export default async function handler(
         },
       })
       if (status === Status.REJECTED) {
-        // Undo the expense
+        // TODO :: Undo the expense - hard coded to zero for demo purposes
+        const project = await prisma.project.findUnique({
+          where: { projectID: request.projectID },
+        })
         const undoExpense = await prisma.project.update({
           where: { projectID: request.projectID },
-          data: { totalExpenses: 0 },
+          data: {
+            totalExpenses: Prisma.Decimal.sub(
+              project?.totalExpenses === undefined
+                ? request.expense
+                : project.totalExpenses,
+              request.expense
+            ),
+          },
         })
       }
       res.status(200).json({
