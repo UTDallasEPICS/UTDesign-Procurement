@@ -1,3 +1,7 @@
+/**
+ * This file is the first page that the app redirects to and contains the fakeauth login page.
+ */
+
 import React, { MouseEvent, useState } from 'react';
 import styles from '@/styles/Login.module.scss';
 import { Container, Row, Col, Form, Button } from 'react-bootstrap';
@@ -22,7 +26,7 @@ export default function Login() {
         console.error('Error:', error);
       }
     } else {
-      console.error('Invalid login format. Please enter 3 letters followed by 6 numbers.');
+      console.error('Invalid login format. Please enter a valid UTD NetID.');
     }
   }
 
@@ -37,14 +41,16 @@ export default function Login() {
                   <Form.Group controlId='loginInput'>
                     <Form.Control
                       type='text'
-                      placeholder='Enter login (3 letters, 6 numbers)'
+                      placeholder='Enter Your NetID'
                       value={loginInput}
                       onChange={(e) => setLoginInput(e.target.value)}
                       maxLength={9}
                     />
                   </Form.Group>
-                  <Button variant='primary' onClick={handleLogin}>
-                    Log In
+                  <Button
+                    style={{width:210, backgroundColor: "dark green", textAlign: "center", marginTop:20, borderColor: "dark green"}}
+                    variant='primary' onClick={handleLogin}>
+                    Login
                   </Button>
                 </Form>
               </div>
