@@ -48,7 +48,7 @@ export default function Login() {
                     />
                   </Form.Group>
                   <Button
-                    style={{width:210, backgroundColor: "dark green", textAlign: "center", marginTop:20, borderColor: "dark green"}}
+                    style={{width:210, backgroundColor: "dark green", marginTop:20, borderColor: "dark green"}}
                     variant='primary' onClick={handleLogin}>
                     Login
                   </Button>
