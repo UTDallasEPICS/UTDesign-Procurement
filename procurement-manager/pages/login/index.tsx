@@ -1,37 +1,28 @@
-/**
- * This file is the first page that the app redirects to and contains the fakeauth login page.
- */
-
-import React, { MouseEvent } from 'react'
-import styles from '@/styles/Login.module.scss'
-import { Dropdown, DropdownButton, Container, Row, Col } from 'react-bootstrap'
-import { signIn } from 'next-auth/react'
-import axios from 'axios'
+import React, { MouseEvent, useState } from 'react';
+import styles from '@/styles/Login.module.scss';
+import { Container, Row, Col, Form, Button } from 'react-bootstrap';
+import { signIn } from 'next-auth/react';
+import axios from 'axios';
 
 export default function Login() {
-  async function handleSelect(e: MouseEvent) {
-    e.preventDefault()
+  const [loginInput, setLoginInput] = useState('');
 
-    // type safe
-    if ('id' in e.target && typeof e.target.id === 'string') {
-      const roleID: number = parseInt(e.target.id)
-
+  async function handleLogin() {
+    // Validate loginInput format (3 letters followed by 6 numbers)
+    const loginFormat = /^[a-zA-Z]{3}\d{6}$/;
+    if (loginInput.match(loginFormat)) {
       try {
         const result = await signIn('credentials', {
-          roleID: roleID,
+          loginInput: loginInput,
           redirect: true,
           callbackUrl: '/orders',
-        })
+        });
       } catch (error) {
-        // Error handling from https://bobbyhadz.com/blog/typescript-http-request-axios#making-http-post-requests-with-axios-in-typescript
-        if (axios.isAxiosError(error)) {
-          console.log('Axios error :: ', error.message)
-          return error.message
-        } else {
-          console.log('Unexpected error :: ', error)
-          return 'An unexpected error occurred'
-        }
+        // Error handling logic
+        console.error('Error:', error);
       }
+    } else {
+      console.error('Invalid login format. Please enter 3 letters followed by 6 numbers.');
     }
   }
 
@@ -42,22 +33,25 @@ export default function Login() {
           <Row className='h-100'>
             <Col>
               <div className={styles.wrapper}>
-                <DropdownButton id='userDropdown' title='Select User'>
-                  <Dropdown.Item onClick={handleSelect} id='1'>
-                    Admin
-                  </Dropdown.Item>
-                  <Dropdown.Item onClick={handleSelect} id='2'>
-                    Mentor
-                  </Dropdown.Item>
-                  <Dropdown.Item onClick={handleSelect} id='3'>
-                    Student
-                  </Dropdown.Item>
-                </DropdownButton>
+                <Form>
+                  <Form.Group controlId='loginInput'>
+                    <Form.Control
+                      type='text'
+                      placeholder='Enter login (3 letters, 6 numbers)'
+                      value={loginInput}
+                      onChange={(e) => setLoginInput(e.target.value)}
+                      maxLength={9}
+                    />
+                  </Form.Group>
+                  <Button variant='primary' onClick={handleLogin}>
+                    Log In
+                  </Button>
+                </Form>
               </div>
             </Col>
           </Row>
         </Container>
       </main>
     </>
-  )
+  );
 }
