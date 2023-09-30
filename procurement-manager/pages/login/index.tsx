@@ -8,13 +8,25 @@ import { Dropdown, DropdownButton, Container, Row, Col } from 'react-bootstrap'
 import { signIn } from 'next-auth/react'
 import axios from 'axios'
 
+async function getRoleID(NetID: string)
+{
+  // HTTP POST request (to get updated data role ID based on request/param net ID)
+  // used existing API from request form since it already has param net ID and returns role ID
+  const response = await axios.post('/api/request-form/get', {
+    netID: NetID,
+  })
+  const roleID: number = response.data.userRole;
+  return roleID;
+}
+
 export default function Login() {
   async function handleSelect(e: MouseEvent) {
     e.preventDefault()
 
     // type safe
     if ('id' in e.target && typeof e.target.id === 'string') {
-      const roleID: number = parseInt(e.target.id)
+      const sampleNetID: string = "abc000000";
+      const roleID: number = await getRoleID(sampleNetID);
 
       try {
         const result = await signIn('credentials', {
