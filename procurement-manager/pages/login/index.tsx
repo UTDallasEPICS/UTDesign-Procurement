@@ -1,12 +1,9 @@
-/**
- * This file is the first page that the app redirects to and contains the fakeauth login page.
- */
-
 import React, { MouseEvent, useState } from 'react';
 import styles from '@/styles/Login.module.scss';
 import { Container, Row, Col, Form, Button } from 'react-bootstrap';
 import { signIn } from 'next-auth/react';
 import axios from 'axios';
+import { posix } from 'path';
 
 export default function Login() {
   const [loginInput, setLoginInput] = useState('');
@@ -26,12 +23,13 @@ export default function Login() {
         console.error('Error:', error);
       }
     } else {
-      console.error('Invalid login format. Please enter a valid UTD NetID.');
+      console.error('Invalid login format. Please enter 3 letters followed by 6 numbers.');
     }
   }
 
   return (
     <>
+
       <main className={styles.main}>
         <Container className='h-100'>
           <Row className='h-100'>
@@ -47,9 +45,17 @@ export default function Login() {
                       maxLength={9}
                     />
                   </Form.Group>
+
+                  <div>
+                    <img src = "./images/utdLogo.png"
+                      style = {{position: 'absolute', top: 150, marginTop:20, marginBottom:20}}
+                      width = {210} height={210}
+                      alt = "UTD logo" />
+                  </div>
+
                   <Button
-                    style={{width: 210, backgroundColor:'darkgreen', marginTop:20, borderColor: "black"}}
-                    variant='primary' onClick={handleLogin}>
+                    style = {{width: 210, backgroundColor:'darkgreen', marginTop:20, borderColor: "black"}}   
+                    variant = 'primary' onClick = {handleLogin}>
                     Login
                   </Button>
                 </Form>
