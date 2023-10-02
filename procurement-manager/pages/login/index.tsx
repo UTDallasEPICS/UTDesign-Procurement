@@ -53,6 +53,12 @@ export default function Login() {
                       alt = "UTD logo" />
                   </div>
 
+                  <p style = {{position: 'fixed', bottom: 300, fontSize: 15}} > 
+                    <b>
+                      NetID
+                    </b>
+                  </p>
+
                   <Button
                     style = {{width: 210, backgroundColor:'darkgreen', marginTop:20, borderColor: "black"}}   
                     variant = 'primary' onClick = {handleLogin}>
