@@ -8,6 +8,17 @@ import { Container, Row, Col, Form, Button } from 'react-bootstrap';
 import { signIn } from 'next-auth/react';
 import axios from 'axios';
 
+async function getRoleID(NetID: string)
+{
+  // HTTP POST request (to get updated data role ID based on request/param net ID)
+  // used existing API from request form since it already has param net ID and returns role ID
+  const response = await axios.post('/api/request-form/get', {
+    netID: NetID,
+  })
+  const roleID: number = response.data.userRole;
+  return roleID;
+}
+
 export default function Login() {
   const [loginInput, setLoginInput] = useState('');
 
@@ -15,9 +26,10 @@ export default function Login() {
     // Validate loginInput format (3 letters followed by 6 numbers)
     const loginFormat = /^[a-zA-Z]{3}\d{6}$/;
     if (loginInput.match(loginFormat)) {
+      const roleID: number = await getRoleID(loginInput);
       try {
         const result = await signIn('credentials', {
-          loginInput: loginInput,
+          roleID: roleID,
           redirect: true,
           callbackUrl: '/orders',
         });
