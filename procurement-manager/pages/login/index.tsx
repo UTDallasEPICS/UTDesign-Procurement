@@ -15,7 +15,7 @@ async function validateUser(NetID: string)
   const response = await axios.post('/api/request-form/get', {
     netID: NetID,
   })
-  return response; // JSON object with data like role ID
+  return response; // JSON object with role ID or error if user does not exist
 }
 
 export default function Login() {
@@ -26,7 +26,7 @@ export default function Login() {
     const loginFormat = /^[a-zA-Z]{3}\d{6}$/;
     if (loginInput.match(loginFormat)) {
       try {
-        const response = await validateUser(loginInput);
+        const response = await validateUser(loginInput); // first make sure response is successful then get role ID
         const roleID: number = response.data.userRole;
         const result = await signIn('credentials', {
           roleID: roleID,
@@ -34,8 +34,8 @@ export default function Login() {
           callbackUrl: '/orders',
         });
       } catch (error) {
-        // Error handling logic
         console.error('Error:', error);
+        console.error('Invalid Net ID, user does not exist.');
       }
     } else {
       console.error('Invalid login format. Please enter a valid UTD NetID.');
