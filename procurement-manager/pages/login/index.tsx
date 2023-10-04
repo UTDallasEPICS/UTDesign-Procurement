@@ -26,7 +26,7 @@ export default function Login() {
           const response = await validateUser(loginInput); // first make sure response is successful then get role ID
           const roleID: number = response.data.userRole;
           const result = await signIn('credentials', {
-          loginInput: loginInput,
+          roleID: roleID,
           redirect: true,
           callbackUrl: '/orders',
         });
@@ -61,7 +61,7 @@ export default function Login() {
                   </Form.Group>
 
                   {error && (
-                    <p style={{ color: 'red', fontSize: 15 }}>
+                    <p style={{ color: 'red', fontSize: 15, position: 'absolute' }}>
                       <b>{error}</b>
                     </p>
                   )}
@@ -81,7 +81,7 @@ export default function Login() {
                   </p>
 
                   <Button
-                    style={{ width: 210, backgroundColor: 'darkgreen', marginTop: 20, borderColor: 'black' }}
+                    style={{ width: 210, backgroundColor: 'darkgreen', marginTop: 30, borderColor: 'black' }}
                     variant='primary'
                     onClick={handleLogin}
                   >
