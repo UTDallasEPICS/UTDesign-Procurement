@@ -200,7 +200,6 @@ CREATE TABLE `WorksOn` (
     `userID` INTEGER NOT NULL,
     `projectID` INTEGER NOT NULL,
 
-    UNIQUE INDEX `WorksOn_userID_key`(`userID`),
     PRIMARY KEY (`userID`, `projectID`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 

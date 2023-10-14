@@ -266,7 +266,7 @@ model DepartmentUser {
 // This signifies what projects a user is working on
 model WorksOn {
   user      User    @relation(fields: [userID], references: [userID]) // the user to connect to
-  userID    Int     @unique
+  userID    Int     // since @@id defines composite ID (unique combination of userID & projectID), no unique constraint
   project   Project @relation(fields: [projectID], references: [projectID]) // the project to connect to
   projectID Int
 
