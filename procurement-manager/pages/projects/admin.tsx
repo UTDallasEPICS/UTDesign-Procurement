@@ -19,6 +19,7 @@ const Ready = ({ title }: { title: string }) => {
         top: 150, left: 85,
         borderColor: 'black', 
         backgroundColor: 'lightgray' }}>
+        
         <p style = {{position: 'absolute', fontSize: 25, color: 'black', textIndent: 20, bottom: 45}}>#</p>
         <p style = {{position: 'absolute', fontSize: 25, color: 'green', textIndent: 125, bottom: 45}}>Template Project</p>
         <p style = {{position: 'absolute', fontSize: 25, color: 'black', textIndent: 700, bottom: 45}}>Total Budget:</p>
