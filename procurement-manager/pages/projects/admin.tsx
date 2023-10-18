@@ -4,6 +4,7 @@
 
 import React from 'react'; 
 import Head from 'next/head';
+import { Container, Row, Col, Form, Button } from 'react-bootstrap';
 
 const Ready = ({ title }: { title: string }) => {
   return (
