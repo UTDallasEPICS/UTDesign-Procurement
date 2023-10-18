@@ -10,6 +10,7 @@ export default async function handler(
   res: NextApiResponse
 ) {
   try {
+    /*
     // create roles
     await prisma.role.createMany({
       data: [{ role: 'Admin' }, { role: 'Mentor' }, { role: 'Student' }],
@@ -51,7 +52,7 @@ export default async function handler(
       },
     })
 
-    // create sample project
+    // create sample projects
     await prisma.project.create({
       data: {
         projectType: 'EPICS',
@@ -62,14 +63,25 @@ export default async function handler(
         activationDate: new Date(),
       },
     })
-
+*/
     await prisma.project.create({
       data: {
         projectType: 'EPICS',
         projectNum: 1001,
         projectTitle: 'Sample Project 2',
-        startingBudget: 1000.0,
+        startingBudget: 1050.0,
         sponsorCompany: 'Sample Company 2',
+        activationDate: new Date(),
+      },
+    })
+
+    await prisma.project.create({
+      data: {
+        projectType: 'EPICS',
+        projectNum: 1002,
+        projectTitle: 'Sample Project 3',
+        startingBudget: 1100.0,
+        sponsorCompany: 'Sample Company 3',
         activationDate: new Date(),
       },
     })
@@ -90,7 +102,7 @@ export default async function handler(
     //     },
     //   },
     // })
-
+/*
     // Connect student to a project
     await prisma.worksOn.create({
       data: {
@@ -106,7 +118,7 @@ export default async function handler(
         project: { connect: { projectNum: 1000 } },
       },
     })
-
+*/
     // Connect mentor to project 2
     await prisma.worksOn.create({
       data: {
@@ -114,14 +126,7 @@ export default async function handler(
         project: { connect: { projectNum: 1001 } },
       },
     })
-
-    // Deletes the connection between mentor and project 2
-    await prisma.worksOn.delete({
-      where: {
-        userID_projectID: { userID:  2, projectID: 2 },
-      },
-    })
-
+/*
     // Create a sample vendor
     await prisma.vendor.createMany({
       data: [
@@ -131,7 +136,7 @@ export default async function handler(
       ],
       skipDuplicates: true,
     })
-
+*/
     res.status(200).json({ message: 'Responded Successfully!' })
   } catch (error) {
     console.log(error)
