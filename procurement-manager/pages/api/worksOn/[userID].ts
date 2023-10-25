@@ -40,7 +40,7 @@ export default async function handler(
             // replace ** with the values
 
             // PUT will update a user's worksOn  based on passed in userID and projectID
-            // this happens by deleting the user's current worksOn if needed and then creating a new worksOn (so now only works if user has just 0 or 1 worksOn)
+            // this happens by deleting the user's current worksOn if needed and then creating a new worksOn (so now only works if user has just 1 worksOn)
             const project = await prisma.project.findUnique({
                 where:
                 { projectID: Number(projectID)},
@@ -66,6 +66,7 @@ export default async function handler(
                     },
                 })
             }
+            else throw new Error('No existing worksOn found')
 
             const worksOnNew = await prisma.worksOn.create({
                 data: {
