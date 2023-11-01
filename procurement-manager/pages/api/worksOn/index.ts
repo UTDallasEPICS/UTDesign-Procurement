@@ -8,7 +8,7 @@ export default async function handler(
 
     if (req.method === 'GET') {
         try{
-            const WorksOns = await prisma.worksOn.findMany()
+            const WorksOns = await prisma.worksOn.findMany() // get all works on entries in database
             res.status(200).json(WorksOns)
         }
         catch(error) {
@@ -16,12 +16,13 @@ export default async function handler(
         }
     }
     else if (req.method === 'POST') {
-        const {netID, projectNum} = req.body
+        const {netID, projectNum} = req.body // to create new works on entry for a specific user and project
         try {
             const worksOn = await prisma.worksOn.create({
                 data: {
                   user: { connect: { netID: netID } },
                   project: { connect: { projectNum: projectNum } },
+                  startDate: new Date(), // since starting at the time admin creates user, user is a current project user
                 },
               })
               res.status(201).json(worksOn)
