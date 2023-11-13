@@ -25,8 +25,6 @@ export default function index({ title }: { title: string }) {
   // Different roles pushes to their respective pages
   if (session) {
     if (user.roleID === 1) router.push('/project-page/admin')
-    else if (user.roleID === 2) router.push('/project-page/mentor')
-    else if (user.roleID === 3) router.push('/project-page/student')
   } else
     return (
       <>
