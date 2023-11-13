@@ -37,6 +37,9 @@ export default function NavBar({}: NavbarProps): JSX.Element {
                   <Nav.Link href='/orders' className='mx-2'>
                     Orders
                   </Nav.Link>
+                  <Nav.Link href='/project-page' className='mx-2'>
+                    Project Page
+                  </Nav.Link>
                   <Nav.Link href='/order-history' className='mx-2'>
                     Order History
                   </Nav.Link>
