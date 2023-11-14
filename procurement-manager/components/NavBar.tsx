@@ -70,7 +70,7 @@ export default function NavBar({}: NavbarProps): JSX.Element {
                     </>
                   )}
 
-                  <Button variant='secondary' onClick={() => signOut()}>
+                  <Button variant='secondary' onClick={() => signOut({ callbackUrl: '/'})}>
                     Log Out
                   </Button>
                 </>
