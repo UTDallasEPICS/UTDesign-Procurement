@@ -38,6 +38,14 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
   const [projectTitle, setProjectTitle] = useState(project.projectTitle);
   const [totalBudget, setTotalBudget] = useState<Decimal>(project.startingBudget);
   const [remainingBudget, setRemainingBudget] = useState<Decimal>(project.startingBudget - project.totalExpenses);
+  const [mentors1, setMentors1] = useState("Teacher 1");
+  const [mentors2, setMentors2] = useState("Teacher 2");
+  const [students1, setStudents1] = useState("Student 1");
+  const [students2, setStudents2] = useState("Student 2");
+  const [students3, setStudents3] = useState("Student 3");
+  const [students4, setStudents4] = useState("Student 4");
+  const [students5, setStudents5] = useState("Student 5");
+  const [students6, setStudents6] = useState("Student 6");
   // state that contains the values of the input fields in the request card
   // const [inputValues, setInputValues] = useState() // input values for request field
 
@@ -150,6 +158,88 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
       </Row>
               </fieldset>
             </Form>
+
+ <Row className='mt-3'>
+              {/* Mentors */}
+              <Form className={styles.requestDetails}>
+              <fieldset disabled={!editable}>
+              <Row>
+                <Col xs={12} md={1}>
+                <h6 className={styles.headingLabel}>Mentors</h6>
+                </Col>
+              <Col xs={12} md={2}>
+              <Form.Control
+                name='mentors1'
+                value={mentors1}
+                onChange={(e) => {setMentors1(e.target.value)}}
+              />
+              </Col>
+              <Col xs={12} md={2}>
+              <Form.Control
+                name='mentors2'
+                value={mentors2}
+                onChange={(e) => {setMentors2(e.target.value)}}
+              />
+              </Col>
+              </Row>
+              </fieldset>
+              </Form>
+      </Row>
+
+              <div className='mb-3'></div>
+
+              {/* Students */}
+              <Form className={styles.requestDetails}>
+                <fieldset disabled={!editable}>
+              <Row>
+              <Col xs={12} md={12}>
+                <h6 className={styles.headingLabel}>Students</h6>
+              </Col>
+              <Col xs={12} md={2}>
+              <Form.Control
+                name='students1'
+                value={students1}
+                onChange={(e) => {setStudents1(e.target.value)}}
+              />
+              </Col>
+              <Col xs={12} md={2}>
+              <Form.Control
+                name='students2'
+                value={students2}
+                onChange={(e) => {setStudents2(e.target.value)}}
+              />
+              </Col>
+              <Col xs={12} md={2}>
+              <Form.Control
+                name='students3'
+                value={students3}
+                onChange={(e) => {setStudents3(e.target.value)}}
+              />
+              </Col>
+              <Col xs={12} md={2}>
+              <Form.Control
+                name='students4'
+                value={students4}
+                onChange={(e) => {setStudents4(e.target.value)}}
+              />
+              </Col>
+              <Col xs={12} md={2}>
+              <Form.Control
+                name='students5'
+                value={students5}
+                onChange={(e) => {setStudents5(e.target.value)}}
+              />
+              </Col>
+              <Col xs={12} md={2}>
+              <Form.Control
+                name='students6'
+                value={students6}
+                onChange={(e) => {setStudents6(e.target.value)}}
+              />
+              </Col>
+              </Row>
+                </fieldset>
+              </Form>
 
               {/* REQUEST NUMBER */}
               {/*
