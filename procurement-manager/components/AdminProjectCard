@@ -118,7 +118,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
                 <Row className='smaller-row'>
                 {/* Project Number */}
                 <Col xs={12} md={3}>
-                  <h6 className={styles.headingLabel}>#</h6>
+                  <h6 className={styles.headingLabel}>Number</h6>
             <Form.Control
               name='projectNumber'
               value={projectNumber}
