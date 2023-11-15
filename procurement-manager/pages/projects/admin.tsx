@@ -1,140 +1,196 @@
 /**
- * This is the Admin View for the Projects Page
+ * This is the Admin View for the Orders Page
  */
 
-import Head from 'next/head';
-import React, { useState } from 'react';
-import { Container, Row, Col, Form, Button } from 'react-bootstrap';
+import React, { useEffect, useState } from 'react'
+import { Row } from 'react-bootstrap'
+import AdminProjectCard from '@/components/AdminProjectCard'
+import ProjectPageHeader from '@/components/ProjectPageHeader'
+import ReimbursementCard from '@/components/AdminReimbursementCard'
+import { prisma } from '@/db'
+import { RequestDetails } from '@/lib/types'
+import { Prisma, Project, Status, User } from '@prisma/client'
+import RejectionModal from '@/components/RejectionModal'
+import axios from 'axios'
+import { Session, getServerSession } from 'next-auth'
+import { authOptions } from '../api/auth/[...nextauth]'
 
-function Ready() {
-  const [isEditing, setIsEditing] = useState(false);
-  const [projectNumber, setProjectNumber] = useState ('');
-  const [projectName, setProjectName] = useState('Project Template');
-  const [totalBudget, setTotalBudget] = useState('');
-  const [remainingBudget, setRemainingBudget] = useState('');
-  const [mentors, setMentors] = useState('');
-  const [students, setStudents] = useState('');
+export async function getServerSideProps(context: any) {
+  const session = await getServerSession(context.req, context.res, authOptions)
+  const user = session?.user as User
 
-  const handleEdit = () => {
-    setIsEditing(true);
-  };
+  // projects and requests are loaded from the server-side first (I wanted it try it out)
+  // These will be passed to a state so if we need to fetch again, we can just update the state
+  const projects = await prisma.project.findMany()
+  const requestOfMultipleProjects: RequestDetails[][] = []
 
-  const handleSave = () => {
-    setIsEditing(false);
-  };
+  // Next.js recommends that instead of calling from '/api/request-form/get', just perform the query here
+  // to reduce the number of API calls and improve performance because getServerSideProps can do server-side code
+  for (const project of projects) {
+    const requests = await prisma.request.findMany({
+      where: {
+        projectID: project.projectID, // returns all requests regardless of status
+      },
+      include: {
+        RequestItem: true,
+        Process: true,
+        OtherExpense: true,
+        project: true,
+      },
+    })
+    requestOfMultipleProjects.push(requests)
+  }
 
-  return (
-    <div>
-      <Button
-        style={{
-          position: 'relative',
-          width: 1350,
-          height: 100,
-          top: 0,
-          left: 0,
-          borderColor: 'black',
-          backgroundColor: 'lightgray',
-        }}
-      >
-
-        <div>
-          <p style = {{position: 'absolute', fontSize: 20, color: 'black', textIndent: 20, bottom: 45}}>
-              # {isEditing ? (
-              <input
-                value={projectNumber}
-                onChange={(e) => setProjectNumber(e.target.value)}
-                onBlur={handleSave}
-                style={{ width: '50px', height: '30px' }}
-              />
-            ) : (
-              projectNumber
-            )}
-          </p>
-        </div>
-
-        <div>
-          <p style = {{position: 'absolute', fontSize: 25, color: 'green', textIndent: 125, bottom: 45}}>
-              {isEditing ? (
-              <input
-                value={projectName}
-                onChange={(e) => setProjectName(e.target.value)}
-                onBlur={handleSave}
-                style={{ width: '300px', height: '30px' }}
-              />
-            ) : (
-              projectName
-            )}
-          </p>
-        </div>
-
-        <div>
-          <p style = {{position: 'absolute', fontSize: 20, color: 'black', textIndent: 700, bottom: 45}}>
-            Total Budget: {isEditing ? (
-              <input
-                value={totalBudget}
-                onChange={(e) => setTotalBudget(e.target.value)}
-                onBlur={handleSave}
-                style={{ width: '150px', height: '30px' }}
-              />
-            ) : (
-              totalBudget
-            )}
-          </p>
-        </div>
-
-        <div>
-        <p style = {{position: 'absolute', fontSize: 20, color: 'black', textIndent: 1000, bottom: 45}}>
-            Remaining Budget: {isEditing ? (
-              <input
-                value={remainingBudget}
-                onChange={(e) => setRemainingBudget(e.target.value)}
-                onBlur={handleSave}
-                style={{ width: '150px', height: '30px' }}
-              />
-            ) : (
-              remainingBudget
-            )}
-          </p>
-        </div>
-
-        <div>
-          <p style = {{position: 'absolute', fontSize: 16, color: 'black', textIndent: 20, bottom: 20}}>
-            Mentors: {isEditing ? (
-              <input
-                value={mentors}
-                onChange={(e) => setMentors(e.target.value)}
-                onBlur={handleSave}
-                style={{ width: '300px', height: '20px' }}
-              />
-            ) : (
-              mentors
-            )}
-          </p>
-        </div>
-
-        <div>
-          <p style = {{position: 'absolute', fontSize: 16, color: 'black', textIndent: 20, bottom: -5}}>
-            Students: {isEditing ? (
-              <input
-                value={students}
-                onChange={(e) => setStudents(e.target.value)}
-                onBlur={handleSave}
-                style={{ width: '300px', height: '20px' }}
-              />
-            ) : (
-              students
-            )}
-          </p>
-        </div>
-
-      </Button>
-
-      <button onClick={isEditing ? handleSave : handleEdit}>
-        {isEditing ? "Save" : "Edit"}
-      </button>
-
-    </div>
-  );
+  return {
+    props: {
+      session: session,
+      user: user,
+      // needed to stringify the object first to avoid non-serializable error
+      reqs: JSON.parse(JSON.stringify(requestOfMultipleProjects)),
+      projs: JSON.parse(JSON.stringify(projects)),
+    },
+  }
 }
 
-export default Ready;
+interface AdminProps {
+  session: Session | null
+  user: User
+  reqs: RequestDetails[][]
+  projs: Project[]
+}
+
+export default function Admin({
+  session,
+  user,
+  reqs,
+  projs,
+}: AdminProps): JSX.Element {
+  // state for opening the collapsed cards - an array due to multiple projects
+  const [isOpen, setIsOpen] = useState<boolean[]>([])
+  // state for the modal for rejecting requests
+  const [showRejectModal, setShowRejectModal] = useState(false)
+  // state to set the request number for the reject modal to show
+  const [selectedRequestID, setSelectedRequestID] = useState<number | null>(
+    null
+  )
+  // state for the requests inside the different projects associated to the user
+  const [projectRequests, setProjectRequests] =
+    useState<RequestDetails[][]>(reqs)
+  // state for the projects associated to the user
+  const [projects, setProjects] = useState<Project[]>(projs)
+
+  // Opens all the cards by default
+  useEffect(() => {
+    setIsOpen(projects.map(() => true))
+  }, [])
+
+  // Client-side data fetching whenever we need to refetch the data and rerender the page
+  /**
+   * This function is called when the page needs to be rerendered with the updated data
+   * This function calls our api that gets all the projects and their requests with the status of approved
+   */
+  async function getAdmin() {
+    const response = await axios.post('/api/request-form/get', {
+      netID: user.netID,
+    })
+    const [projects, requestsOfMultipleProjects] = await Promise.all([
+      response.data.projects,
+      response.data.requests,
+    ])
+    setProjects(projects)
+    setProjectRequests(requestsOfMultipleProjects)
+    setIsOpen(projects.map(() => true))
+  }
+
+  /**
+   * This function is called after the mentor clicks the reject button on a request.
+   * @param requestID - The requestID of the request being rejected.
+   */
+  const handleReject = (requestID: number) => {
+    setSelectedRequestID(requestID)
+    setShowRejectModal(true)
+  }
+
+  /**
+   * This function is called after the mentor submits the rejection reason through the RejectionModal.
+   * @param reason - The reason for rejecting the request.
+   */
+  const handleSubmitRejection = async (reason: string) => {
+    setShowRejectModal(false)
+    try {
+      const response = await axios.post('/api/process/update', {
+        netID: user.netID,
+        requestID: selectedRequestID,
+        comment: reason,
+        status: Status.REJECTED,
+      })
+
+      // Updates the page if the request was successfully rejected so the rejected request should not be seen
+      if (response.status === 200) {
+        getAdmin()
+      }
+    } catch (error) {
+      if (error instanceof Error) console.log(error.message)
+      else if (axios.isAxiosError(error))
+        console.log(error.message, error.status)
+      else console.log(error)
+    }
+  }
+
+  /**
+   * This was a feature where clicking the hide/show button in ProjectHeader
+   * would instead hide all the requests for the project. - May not be needed
+   * @param projectIndex - The index of the project in the projects array.
+   */
+  const toggleProjectCollapse = (projectIndex: number) => {
+    setIsOpen((prevOpen) => {
+      const newOpen = [...prevOpen]
+      newOpen[projectIndex] = !newOpen[projectIndex]
+      return newOpen
+    })
+  }
+
+  /**
+   * This is the feature where clicking the hide/show button in ProjectHeader
+   * would show the details of each request in the project
+   * @param projectIndex - The index of the project in the projects array.
+   */
+  const toggleCards = (projectIndex: number) => {
+    setIsOpen((prevOpen) => {
+      const newOpen = [...prevOpen]
+      newOpen[projectIndex] = !newOpen[projectIndex]
+      return newOpen
+    })
+  }
+
+  return (
+    <>
+      <Row className='my-4'>
+        <h1>Welcome back to Project Page, {user && user.firstName}</h1>
+      </Row>
+      {/* Creates the ProjectHeader  */}
+      {projects.map((project, projIndex) => 
+      {
+        return (
+          <Row key={projIndex}>
+            <ProjectPageHeader
+              projectID={project.projectID}
+              onToggleCollapse={() => {
+                // toggleProjectCollapse(projIndex)
+                toggleCards(projIndex)
+              }}
+              isOpen={isOpen[projIndex]}
+            />
+            <AdminProjectCard
+            project={project}
+            requests={projectRequests}
+            collapsed={isOpen[projIndex]}
+            />
+          </Row>
+        )
+      }
+      )
+      }
+    </>
+  )
+}
