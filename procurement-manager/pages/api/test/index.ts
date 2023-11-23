@@ -62,29 +62,55 @@ export default async function handler(
         activationDate: new Date(),
       },
     })
-    //create sample request
-    // await prisma.request.create({
-    //   data: {
-    //     dateNeeded: new Date(),
-    //     dateSubmitted: new Date(),
-    //     dateOrdered: new Date(),
-    //     dateReceived: new Date(),
-    //     dateApproved: new Date(),
-    //     additionalInfo: 'Some Additional info',
-    //     project: {
-    //       connect: { projectID: 1 },
-    //     },
-    //     student: {
-    //       connect: { userID: 1 },
-    //     },
-    //   },
-    // })
+
+    // create sample project 2
+    await prisma.project.create({
+      data: {
+        projectType: 'EPICS',
+        projectNum: 1001,
+        projectTitle: 'Sample Project 2',
+        startingBudget: 1010.0,
+        sponsorCompany: 'Sample Company 2',
+        activationDate: new Date(),
+      },
+    })
+
+    // create sample project 3
+    await prisma.project.create({
+      data: {
+        projectType: 'EPICS',
+        projectNum: 1002,
+        projectTitle: 'Sample Project 3',
+        startingBudget: 1100.0,
+        sponsorCompany: 'Sample Company 3',
+        activationDate: new Date(),
+      },
+    })
+
+    // create sample request
+    await prisma.request.create({
+      data: {
+        dateNeeded: new Date(),
+        dateSubmitted: new Date(),
+        dateOrdered: new Date(),
+        dateReceived: new Date(),
+        dateApproved: new Date(),
+        additionalInfo: 'Some Additional info',
+        project: {
+          connect: { projectID: 1 },
+        },
+        student: {
+          connect: { userID: 1 },
+        },
+      },
+    })
 
     // Connect student to a project
     await prisma.worksOn.create({
       data: {
         user: { connect: { netID: 'abc000000' } },
         project: { connect: { projectNum: 1000 } },
+        startDate : new Date(),
       },
     })
 
@@ -93,8 +119,20 @@ export default async function handler(
       data: {
         user: { connect: { netID: 'def000000' } },
         project: { connect: { projectNum: 1000 } },
+        startDate : new Date(),
       },
     })
+
+
+    // Connect mentor to a project 2
+    await prisma.worksOn.create({
+      data: {
+        user: { connect: { netID: 'def000000' } },
+        project: { connect: { projectNum: 1001 } },
+        startDate : new Date(),
+      },
+    })
+
 
     // Create a sample vendor
     await prisma.vendor.createMany({
