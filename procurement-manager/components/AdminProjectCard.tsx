@@ -15,11 +15,11 @@ import {
   Collapse,
 } from 'react-bootstrap'
 import styles from '@/styles/RequestCard.module.scss'
-import { User, Project } from '@prisma/client'
+import { User, Project, WorksOn } from '@prisma/client'
 import axios from 'axios'
 
 interface AdminProjectCardProps {
-  project: Project
+  project: (Project & {worksOn: WorksOn[];})
   requests: RequestDetails[][]
   collapsed: boolean
 }
@@ -35,6 +35,9 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
   const [editable, setEditable] = useState<boolean>(false)
 
   const [projectTitle, setProjectTitle] = useState(project.projectTitle);
+  // TODO:: get works on entries
+  // const users = project.worksOn.filter((worksOn) => worksOn.projectID === project.projectID)
+
   // state that contains the values of the input fields in the request card
   // const [inputValues, setInputValues] = useState() // input values for request field
 
@@ -42,8 +45,6 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
   useEffect(() => {
     setCollapse(collapsed)
   }, [collapsed])
-
-  
 
   /**
    * This function handles changes to inputs whenever user is editing the input fields in the request card
@@ -57,7 +58,6 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
     index: number
   ) {
     const { name, value } = e.target
-
     setInputValues((prev) => {
       return prev.map((item, i) => {
         if (i !== index) return item
@@ -86,7 +86,6 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
         requestID: details.requestID,
         requestDetails: newDetails,
       })
-
       if (response.status === 200) console.log(response.data)
     } catch (error) {
       if (axios.isAxiosError(error) || error instanceof Error)
@@ -151,7 +150,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
                 </p>
               </Col>
               */}
-              
+
 
               {/* REJECT/EDIT BUTTONS */}
               <Col xs={12} className='d-flex justify-content-end'>
@@ -170,11 +169,9 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
             {/* COLLAPSED ROW */}
             <Collapse in={collapse}>
               <div>
-                <Row className='my-4 smaller-row'>
-                  
-                </Row>
+                {/* display row in drop down for each request item for each request */}
 
-                
+
                 {/* REQUEST ITEMS */}
                 <Row className='my-2'>
                   <Form className={styles.requestDetails}>
@@ -300,7 +297,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
                     </Row>
                   </Form>
                 </Row>
-                
+
               </div>
             </Collapse>
           </Card.Body>

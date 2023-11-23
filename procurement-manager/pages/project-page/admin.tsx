@@ -9,7 +9,7 @@ import ProjectPageHeader from '@/components/ProjectPageHeader'
 import ReimbursementCard from '@/components/AdminReimbursementCard'
 import { prisma } from '@/db'
 import { RequestDetails } from '@/lib/types'
-import { Prisma, Project, Status, User } from '@prisma/client'
+import { Prisma, Project, Status, User, WorksOn } from '@prisma/client'
 import RejectionModal from '@/components/RejectionModal'
 import axios from 'axios'
 import { Session, getServerSession } from 'next-auth'
@@ -21,7 +21,11 @@ export async function getServerSideProps(context: any) {
 
   // projects and requests are loaded from the server-side first (I wanted it try it out)
   // These will be passed to a state so if we need to fetch again, we can just update the state
-  const projects = await prisma.project.findMany()
+  const projects = await prisma.project.findMany({
+    include: {
+      WorksOn: true
+    }
+  })
   const requestOfMultipleProjects: RequestDetails[][] = []
 
   // Next.js recommends that instead of calling from '/api/request-form/get', just perform the query here
@@ -56,7 +60,7 @@ interface AdminProps {
   session: Session | null
   user: User
   reqs: RequestDetails[][]
-  projs: Project[]
+  projs: (Project & {worksOn: WorksOn[];})[]
 }
 
 export default function Admin({
@@ -77,7 +81,7 @@ export default function Admin({
   const [projectRequests, setProjectRequests] =
     useState<RequestDetails[][]>(reqs)
   // state for the projects associated to the user
-  const [projects, setProjects] = useState<Project[]>(projs)
+  const [projects, setProjects] = useState<(Project & {worksOn: WorksOn[];})[]>(projs)
 
   // Opens all the cards by default
   useEffect(() => {
