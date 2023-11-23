@@ -120,19 +120,25 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
     try {
       const newDetails = {
         ...details, // copy the details object
-        RequestItem: inputValues, // replace the RequestItem array with the new input values
+        RequestItem: inputValues, // replace the RequestItem array with the new inputs in each request item
       }
-      // The API is giving a 500 error when trying to update the request details - sorry it wasn't fixed
-      const response = await axios.post('/api/request-form/update', {
-        requestID: details.requestID,
-        requestDetails: newDetails,
-      })
 
-      if (response.status === 200) console.log(response.data)
+      for (let i = 0; i < newDetails.RequestItem.length; i++) {
+        const response = await axios.post('/api/request-form/update', {
+          requestID: details.requestID,
+          itemID: details.RequestItem[i].itemID,
+          description: newDetails.RequestItem[i].description, // used new details data in parameters for editable fields
+          url: newDetails.RequestItem[i].url, 
+          partNumber: newDetails.RequestItem[i].partNumber, 
+          quantity: newDetails.RequestItem[i].quantity, 
+          unitPrice: newDetails.RequestItem[i].unitPrice, 
+        })
+        if (response.status === 200) console.log(response.data)
+      }
     } catch (error) {
       if (axios.isAxiosError(error) || error instanceof Error)
         console.error(error.message)
-      else console.error(error)
+      else console.log(error)
     }
   }
 
