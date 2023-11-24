@@ -15,11 +15,11 @@ import {
   Collapse,
 } from 'react-bootstrap'
 import styles from '@/styles/RequestCard.module.scss'
-import { User, Project, WorksOn } from '@prisma/client'
+import { Prisma, User, Project } from '@prisma/client'
 import axios from 'axios'
 
 interface AdminProjectCardProps {
-  project: (Project & {worksOn: WorksOn[];})
+  project: Project
   requests: RequestDetails[][]
   collapsed: boolean
 }
@@ -34,10 +34,18 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
   // state for editing the request details
   const [editable, setEditable] = useState<boolean>(false)
 
+  const [projectNumber, setProjectNumber] = useState(project.projectNum);
   const [projectTitle, setProjectTitle] = useState(project.projectTitle);
-  // TODO:: get works on entries
-  // const users = project.worksOn.filter((worksOn) => worksOn.projectID === project.projectID)
-
+  const [totalBudget, setTotalBudget] = useState(project.startingBudget);
+  const [remainingBudget, setRemainingBudget] = useState(Prisma.Decimal.sub(project.startingBudget, project.totalExpenses)); // subtracts values of decimal data type
+  const [mentors1, setMentors1] = useState("Teacher 1");
+  const [mentors2, setMentors2] = useState("Teacher 2");
+  const [students1, setStudents1] = useState("Student 1");
+  const [students2, setStudents2] = useState("Student 2");
+  const [students3, setStudents3] = useState("Student 3");
+  const [students4, setStudents4] = useState("Student 4");
+  const [students5, setStudents5] = useState("Student 5");
+  const [students6, setStudents6] = useState("Student 6");
   // state that contains the values of the input fields in the request card
   // const [inputValues, setInputValues] = useState() // input values for request field
 
@@ -45,6 +53,8 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
   useEffect(() => {
     setCollapse(collapsed)
   }, [collapsed])
+
+  
 
   /**
    * This function handles changes to inputs whenever user is editing the input fields in the request card
@@ -58,6 +68,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
     index: number
   ) {
     const { name, value } = e.target
+
     setInputValues((prev) => {
       return prev.map((item, i) => {
         if (i !== index) return item
@@ -86,6 +97,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
         requestID: details.requestID,
         requestDetails: newDetails,
       })
+
       if (response.status === 200) console.log(response.data)
     } catch (error) {
       if (axios.isAxiosError(error) || error instanceof Error)
@@ -101,21 +113,132 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
         <Card style={{ backgroundColor: '#f8f9fa' }}>
           <Card.Body>
             {/* UNCOLLAPSED ROW */}
-            <Row className='smaller-row'>
             <Form className={styles.requestDetails}>
-            <fieldset disabled={!editable}>
-              {/* create separate variables for project fields and update separately */}
-              <Col xs={12} md={3}>
-              <h6 className={styles.headingLabel}>Project Title</h6>
-              </Col>
-              <Col xs={12} md={5}>
+              <fieldset disabled={!editable}>
+                <Row className='smaller-row'>
+                {/* Project Number */}
+                <Col xs={12} md={3}>
+                  <h6 className={styles.headingLabel}>Number</h6>
+            <Form.Control
+              name='projectNumber'
+              value={projectNumber}
+              onChange={(e) => {setProjectNumber(parseInt(e.target.value))}}
+          />
+      </Col>
+
+                {/* Project Title */}
+                <Col xs={12} md={4}>
+                  <h6 className={styles.headingLabel}>Title</h6>
               <Form.Control
-                  name='projectTitle'
-                  value={projectTitle}
-                  onChange={(e) => {setProjectTitle(e.target.value)}}
-                />
-              </Col>
+                name='projectTitle'
+                value={projectTitle}
+                onChange={(e) => {setProjectTitle(e.target.value)}}
+            />
+      </Col>
+
+              {/* Total Budget */}
+                <Col xs={12} md={3}>
+                  <h6 className={styles.headingLabel}>Total Budget</h6>
+              <Form.Control
+                name='totalBudget'
+                value={Number(totalBudget)}
+                onChange={(e) => {setTotalBudget(new Prisma.Decimal(e.target.value))}}
+            />
+      </Col>
+
+              {/* Remaining Budget */}
+                <Col xs={12} md={2}>
+                  <h6 className={styles.headingLabel}>Remaining Budget</h6>
+              <Form.Control
+                name='remainingBudget'
+                value={Number(remainingBudget)}
+                onChange={(e) => {setRemainingBudget(new Prisma.Decimal(e.target.value))}}
+            />
+      </Col>
+      </Row>
               </fieldset>
+            </Form>
+
+ <Row className='mt-3'>
+              {/* Mentors */}
+              <Form className={styles.requestDetails}>
+              <fieldset disabled={!editable}>
+              <Row>
+                <Col xs={12} md={1}>
+                <h6 className={styles.headingLabel}>Mentors</h6>
+                </Col>
+              <Col xs={12} md={2}>
+              <Form.Control
+                name='mentors1'
+                value={mentors1}
+                onChange={(e) => {setMentors1(e.target.value)}}
+              />
+              </Col>
+              <Col xs={12} md={2}>
+              <Form.Control
+                name='mentors2'
+                value={mentors2}
+                onChange={(e) => {setMentors2(e.target.value)}}
+              />
+              </Col>
+              </Row>
+              </fieldset>
+              </Form>
+      </Row>
+
+              <div className='mb-3'></div>
+
+              {/* Students */}
+              <Form className={styles.requestDetails}>
+                <fieldset disabled={!editable}>
+              <Row>
+              <Col xs={12} md={12}>
+                <h6 className={styles.headingLabel}>Students</h6>
+              </Col>
+              <Col xs={12} md={2}>
+              <Form.Control
+                name='students1'
+                value={students1}
+                onChange={(e) => {setStudents1(e.target.value)}}
+              />
+              </Col>
+              <Col xs={12} md={2}>
+              <Form.Control
+                name='students2'
+                value={students2}
+                onChange={(e) => {setStudents2(e.target.value)}}
+              />
+              </Col>
+              <Col xs={12} md={2}>
+              <Form.Control
+                name='students3'
+                value={students3}
+                onChange={(e) => {setStudents3(e.target.value)}}
+              />
+              </Col>
+              <Col xs={12} md={2}>
+              <Form.Control
+                name='students4'
+                value={students4}
+                onChange={(e) => {setStudents4(e.target.value)}}
+              />
+              </Col>
+              <Col xs={12} md={2}>
+              <Form.Control
+                name='students5'
+                value={students5}
+                onChange={(e) => {setStudents5(e.target.value)}}
+              />
+              </Col>
+              <Col xs={12} md={2}>
+              <Form.Control
+                name='students6'
+                value={students6}
+                onChange={(e) => {setStudents6(e.target.value)}}
+              />
+              </Col>
+              </Row>
+                </fieldset>
               </Form>
 
               {/* REQUEST NUMBER */}
@@ -150,9 +273,9 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
                 </p>
               </Col>
               */}
-
-
-              {/* REJECT/EDIT BUTTONS */}
+              
+            <Row className='mt-3'>
+              {/*EDIT BUTTON */}
               <Col xs={12} className='d-flex justify-content-end'>
                     {!editable && (
                       <Button
@@ -163,15 +286,32 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
                         Edit
                       </Button>
                     )}
-                </Col>
+               </Col>
             </Row>
+
+             <Row>
+               {/*SAVE BUTTON */}
+               <Col xs={12} className='d-flex justify-content-end'>
+                    {editable && (
+                      <Button
+                        className={styles.cardBtn}
+                        variant='success'
+                        onClick={(e) => handleSave()}
+                        >
+                        Save
+                        </Button>
+                      )}
+                </Col>
+              </Row>
 
             {/* COLLAPSED ROW */}
             <Collapse in={collapse}>
               <div>
-                {/* display row in drop down for each request item for each request */}
+                <Row className='my-4 smaller-row'>
+                  
+                </Row>
 
-
+                
                 {/* REQUEST ITEMS */}
                 <Row className='my-2'>
                   <Form className={styles.requestDetails}>
@@ -282,22 +422,9 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
                       </Table>
                     </fieldset>
                     */}
-                    <Row>
-                      <Col xs={12} className='d-flex justify-content-end'>
-                        {editable && (
-                          <Button
-                            className={styles.cardBtn}
-                            variant='success'
-                            onClick={(e) => handleSave()}
-                          >
-                            Save
-                          </Button>
-                        )}
-                      </Col>
-                    </Row>
                   </Form>
                 </Row>
-
+                
               </div>
             </Collapse>
           </Card.Body>

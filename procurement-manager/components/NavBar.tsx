@@ -43,7 +43,7 @@ export default function NavBar({}: NavbarProps): JSX.Element {
 
                   {(user.roleID === 1) && (
                     <>
-                      <Nav.Link href='/project-page' className='mx-2'>
+                      <Nav.Link href='/projects' className='mx-2'>
                     Project Page
                   </Nav.Link>
                     </>
