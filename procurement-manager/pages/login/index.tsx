@@ -1,7 +1,3 @@
-/**
- * This file is the first page that the app redirects to and contains the fakeauth login page.
- */
-
 import React, { MouseEvent, useState } from 'react';
 import styles from '@/styles/Login.module.scss';
 import { Container, Row, Col, Form, Button } from 'react-bootstrap';
@@ -27,14 +23,15 @@ export default function Login() {
     const loginFormat = /^[a-zA-Z]{3}\d{6}$/;
     if (loginInput.match(loginFormat)) {
       try {
-        const response = await validateUser(loginInput); // first make sure response is successful then get role ID
-        const roleID: number = response.data.userRole;
-        const result = await signIn('credentials', {
+          const response = await validateUser(loginInput); // first make sure response is successful then get role ID
+          const roleID: number = response.data.userRole;
+          const result = await signIn('credentials', {
           roleID: roleID,
           redirect: true,
           callbackUrl: '/orders',
         });
       } catch (error) {
+        console.error('Error:', error);
         setError('Invalid NetId, user does not exist');
       }
     } else {
@@ -72,8 +69,8 @@ export default function Login() {
                   <div>
                     <img
                       src='./images/utdLogo.png'
-                      style={{ position: 'absolute', top: 150, marginTop: 20, marginBottom: 20 }}
-                      width={210}
+                      style={{ position: 'absolute', top: 150, left: 620, marginTop: 20, marginBottom: 30 }}
+                      width={280}
                       height={210}
                       alt='UTD logo'
                     />
@@ -84,8 +81,10 @@ export default function Login() {
                   </p>
 
                   <Button
-                    style={{width:210, backgroundColor: "dark green", marginTop:20, borderColor: "dark green"}}
-                    variant='primary' onClick={handleLogin}>
+                    style={{ width: 210, backgroundColor: 'darkgreen', marginTop: 30, borderColor: 'black' }}
+                    variant='primary'
+                    onClick={handleLogin}
+                  >
                     Login
                   </Button>
                 </Form>
