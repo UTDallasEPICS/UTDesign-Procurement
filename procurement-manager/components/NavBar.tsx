@@ -41,6 +41,14 @@ export default function NavBar({}: NavbarProps): JSX.Element {
                     Order History
                   </Nav.Link>
 
+                  {(user.roleID === 1) && (
+                    <>
+                      <Nav.Link href='/projects' className='mx-2'>
+                    Project Page
+                  </Nav.Link>
+                    </>
+                  )}
+
                   {/* Links seen by Admin and Mentor */}
                   {(user.roleID === 1 || user.roleID === 2) && (
                     <>

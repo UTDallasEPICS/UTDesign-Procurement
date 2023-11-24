@@ -15,7 +15,7 @@ import {
   Collapse,
 } from 'react-bootstrap'
 import styles from '@/styles/RequestCard.module.scss'
-import { User, Project } from '@prisma/client'
+import { Prisma, User, Project } from '@prisma/client'
 import axios from 'axios'
 
 interface AdminProjectCardProps {
@@ -34,10 +34,10 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
   // state for editing the request details
   const [editable, setEditable] = useState<boolean>(false)
 
-  const [projectNumber, setProjectNumber] = useState<Decimal>(project.projectNum);
+  const [projectNumber, setProjectNumber] = useState(project.projectNum);
   const [projectTitle, setProjectTitle] = useState(project.projectTitle);
-  const [totalBudget, setTotalBudget] = useState<Decimal>(project.startingBudget);
-  const [remainingBudget, setRemainingBudget] = useState<Decimal>(project.startingBudget - project.totalExpenses);
+  const [totalBudget, setTotalBudget] = useState(project.startingBudget);
+  const [remainingBudget, setRemainingBudget] = useState(Prisma.Decimal.sub(project.startingBudget, project.totalExpenses)); // subtracts values of decimal data type
   const [mentors1, setMentors1] = useState("Teacher 1");
   const [mentors2, setMentors2] = useState("Teacher 2");
   const [students1, setStudents1] = useState("Student 1");
@@ -122,7 +122,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
             <Form.Control
               name='projectNumber'
               value={projectNumber}
-              onChange={(e) => {setProjectNumber(e.target.value)}}
+              onChange={(e) => {setProjectNumber(parseInt(e.target.value))}}
           />
       </Col>
 
@@ -141,8 +141,8 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
                   <h6 className={styles.headingLabel}>Total Budget</h6>
               <Form.Control
                 name='totalBudget'
-                value={totalBudget}
-                onChange={(e) => {setTotalBudget(e.target.value)}}
+                value={Number(totalBudget)}
+                onChange={(e) => {setTotalBudget(new Prisma.Decimal(e.target.value))}}
             />
       </Col>
 
@@ -151,8 +151,8 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
                   <h6 className={styles.headingLabel}>Remaining Budget</h6>
               <Form.Control
                 name='remainingBudget'
-                value={remainingBudget}
-                onChange={(e) => {setRemainingBudget(e.target.value)}}
+                value={Number(remainingBudget)}
+                onChange={(e) => {setRemainingBudget(new Prisma.Decimal(e.target.value))}}
             />
       </Col>
       </Row>
