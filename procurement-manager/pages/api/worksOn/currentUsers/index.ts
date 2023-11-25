@@ -11,22 +11,21 @@ export default async function handler(
 ) {
     if (req.method === 'GET') {
         try{
-            const projectID = parseInt(req.query.projectID as string)
+            const { query: { projectID }, method } = req;
 
             const project = await prisma.project.findUnique({
                 where: {
-                    projectID: projectID
+                    projectID: Number(projectID)
                 }
             })
             if (project === null) throw new Error('invalid projectID')
 
             let worksOns = await prisma.worksOn.findMany({
                 where:{ 
-                    projectID: projectID,
+                    projectID: Number(projectID),
                     endDate: null // if no end date then users are still in project, so current users
                 }
             })
-
             if (worksOns === null || worksOns.length === 0) throw new Error('no current worksOn entries') 
             // to prevent finding users if no works on entries or if empty array returned
 
