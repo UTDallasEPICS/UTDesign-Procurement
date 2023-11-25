@@ -11,7 +11,7 @@ export default async function handler(
         try {
             let project = await prisma.project.findUnique({
                 where: {
-                    projectNum: Number(req.body.projectNum)
+                    projectID: req.body.projectID // use projectID and not projectNum to check project to avoid error if updated projectNum
                 }
             })
 
@@ -99,6 +99,7 @@ export default async function handler(
             res.status(200).json( { project })
             }
         catch (error) {
+            console.log(error)
             if (error instanceof Error) res.status(500).json({ message: error.message })
         }
     }
