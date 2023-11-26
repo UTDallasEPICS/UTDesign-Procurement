@@ -15,7 +15,7 @@ import {
   Collapse,
 } from 'react-bootstrap'
 import styles from '@/styles/RequestCard.module.scss'
-import { Prisma, User, Project } from '@prisma/client'
+import { Prisma, User, Project, WorksOn } from '@prisma/client'
 import axios from 'axios'
 
 interface AdminProjectCardProps {
@@ -31,31 +31,127 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
 }) => {
 
   const [collapse, setCollapse] = useState<boolean | undefined>(false)
-  // state for editing the request details
-  const [editable, setEditable] = useState<boolean>(false)
+  const [editable, setEditable] = useState<boolean>(false) // state for editing the request details
+  const [mentorArr, setMentorArr] = useState<User[]>([])
+  const [studentArr, setStudentArr] = useState<User[]>([])
 
-  const [projectNumber, setProjectNumber] = useState(project.projectNum);
-  const [projectTitle, setProjectTitle] = useState(project.projectTitle);
-  const [totalBudget, setTotalBudget] = useState(project.startingBudget);
-  const [remainingBudget, setRemainingBudget] = useState(Prisma.Decimal.sub(project.startingBudget, project.totalExpenses)); // subtracts values of decimal data type
-  const [mentors1, setMentors1] = useState("Teacher 1");
-  const [mentors2, setMentors2] = useState("Teacher 2");
-  const [students1, setStudents1] = useState("Student 1");
-  const [students2, setStudents2] = useState("Student 2");
-  const [students3, setStudents3] = useState("Student 3");
-  const [students4, setStudents4] = useState("Student 4");
-  const [students5, setStudents5] = useState("Student 5");
-  const [students6, setStudents6] = useState("Student 6");
-  // state that contains the values of the input fields in the request card
-  // const [inputValues, setInputValues] = useState() // input values for request field
+  // get current mentors and students by default
+  useEffect(() => {
+    getProjectMembers()
+  }, [])
 
-  // Show cards by default and rerenders everytime collapsed changes
+  // show cards by default, and rerenders everytime collapse state's value changes
   useEffect(() => {
     setCollapse(collapsed)
   }, [collapsed])
 
-  
+  const [projectNumber, setProjectNumber] = useState(project.projectNum);
+  const [projectTitle, setProjectTitle] = useState(project.projectTitle);
+  const [totalBudget, setTotalBudget] = useState(project.startingBudget);
+  const [remainingBudget, setRemainingBudget] = useState(Prisma.Decimal.sub(project.startingBudget, project.totalExpenses)); // subtract values of decimal data type
+  const [mentors1, setMentors1] = useState(" ");
+  const [mentors2, setMentors2] = useState(" ");
+  const [students1, setStudents1] = useState(" ");
+  const [students2, setStudents2] = useState(" ");
+  const [students3, setStudents3] = useState(" ");
+  const [students4, setStudents4] = useState(" ");
+  const [students5, setStudents5] = useState(" ");
+  const [students6, setStudents6] = useState(" ");
+  // state that contains the values of the input fields in the request card
+  // const [inputValues, setInputValues] = useState() // input values for request field
+  const [users, setUsers] = useState<boolean[]>([false, false, false, false, false, false, false, false]) // track which of the 8 mentors & students were edited by admin
 
+  // sets default values based on existing works on user info and rerenders if works on users change
+  useEffect(() => {
+    setMentors1((mentorArr.length >= 1) ? ("" + mentorArr[0].firstName + " " + mentorArr[0].lastName) : (""))
+    setMentors2((mentorArr.length >= 2) ? (mentorArr[1].firstName + " " + mentorArr[1].lastName) : (""))
+  }, [mentorArr]) 
+
+  useEffect(() => {
+    setStudents1(studentArr.length >= 1 ? (studentArr[0].firstName + " " + studentArr[0].lastName) : (""))
+    setStudents2(studentArr.length >= 2 ? (studentArr[1].firstName + " " + studentArr[1].lastName) : (""))
+    setStudents3(studentArr.length >= 3 ? (studentArr[2].firstName + " " + studentArr[2].lastName) : (""))
+    setStudents4(studentArr.length >= 4 ? (studentArr[3].firstName + " " + studentArr[3].lastName) : (""))
+    setStudents5(studentArr.length >= 5 ? (studentArr[4].firstName + " " + studentArr[4].lastName) : (""))
+    setStudents6(studentArr.length >= 6 ? (studentArr[5].firstName + " " + studentArr[5].lastName) : (""))
+  }, [studentArr])
+
+  async function getProjectMembers() {
+    let mentors: User[] = []
+    let students: User[] = []
+    
+    try {
+      const response = await axios.get('/api/worksOn/currentUsers/', {
+        params: {
+          projectID: project.projectID
+      }})
+      if (response.status === 200) {
+        const users: User[] = response.data.worksOnUsers
+
+        for (let i = 0; i < users.length; i++) {
+            console.log("user " + i + ": " + users[i].firstName + ", role: " + users[i].roleID)
+
+            if (users[i].roleID === 2) {
+              mentors.push(users[i])
+            }
+            else if (users[i].roleID === 3) {
+              students.push(users[i])
+        }
+        setMentorArr(mentors)
+        setStudentArr(students)
+      }
+    }
+  }
+    catch (error) {
+      if (error instanceof Error) console.log(error.message)
+      else if (axios.isAxiosError(error))
+        console.log(error.message, error.status)
+      else console.log(error)
+    }
+  }
+
+  const updateUserAtIndex = (index: number, value: boolean) => {
+    const updatedUsers = [...users];
+    updatedUsers[index] = value; // Update the value at the specified index
+    setUsers(updatedUsers); // Set the state with the new array
+  };
+
+  function handleUserChange(targetName: string, targetValue: string) {
+    switch(targetName) {
+      case 'mentors1':
+        setMentors1(targetValue)
+        updateUserAtIndex(0, true)
+        break
+      case 'mentors2':
+        setMentors2(targetValue)
+        updateUserAtIndex(1, true)
+        break
+      case 'students1':
+        setStudents1(targetValue)
+        updateUserAtIndex(2, true)
+        break
+      case 'students2':
+        setStudents2(targetValue)
+        updateUserAtIndex(3, true)
+        break
+      case 'students3':
+        setStudents3(targetValue)
+        updateUserAtIndex(4, true)
+        break
+      case 'students4':
+        setStudents4(targetValue)
+        updateUserAtIndex(5, true)
+        break
+      case 'students5':
+        setStudents5(targetValue)
+        updateUserAtIndex(6, true)
+        break
+      case 'students6':
+        setStudents6(targetValue)
+        updateUserAtIndex(7, true)
+        break
+    }
+  }
   /**
    * This function handles changes to inputs whenever user is editing the input fields in the request card
    * @param e - the onChange event passed by the input field
@@ -86,6 +182,242 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
    */
   async function handleSave() {
     setEditable(false)
+
+    try {
+      let projectRes = await axios.post('/api/project/update', {
+        projectID: Number(project.projectID),
+        projectNum: Number(projectNumber),
+        projectTitle: String(projectTitle),
+        startingBudget: Number(totalBudget),
+      })
+      if (projectRes.status === 200) {
+        console.log(projectRes.data)
+      }
+      let newProject: Project = projectRes.data.project
+      setRemainingBudget(Prisma.Decimal.sub(totalBudget, project.totalExpenses))
+      let userRes, worksOnRes, worksOns: WorksOn[], projectWorksOn: WorksOn[], deactivateRes
+      
+      if (users[0] === true) { // if mentor was edited
+        if (mentorArr.length >= 1) { // if existing mentor array had an initial value for mentor but now admin removed initial mentor
+          worksOnRes = await axios.get('/api/worksOn/currentProjects/', {
+            params: {
+              userID: mentorArr[0].userID,
+          }})
+          if (worksOnRes.status === 200) { // first get worksOn entry to access start date, then deactivate initial user
+            console.log(worksOnRes.data)
+          }
+          worksOns = worksOnRes.data.worksOn
+          projectWorksOn = worksOns.filter((worksOn) => (worksOn.projectID === project.projectID))
+
+          deactivateRes = await axios.post('/api/worksOn/deactivate/', {
+          netID: mentorArr[0].netID,
+          projectNum: newProject.projectNum,
+          startDate: projectWorksOn[0].startDate,
+          })
+          if (deactivateRes.status === 200) {
+            console.log(deactivateRes.data)
+          } 
+        }
+        if (mentors1.length > 1) { // if admin added new mentor
+          userRes = await axios.post('/api/user/get/fullName', {
+            firstName: mentors1.substring(0, mentors1.search(" ")), // extract 2 values since first name and last name are separated by a space
+            lastName: mentors1.substring(mentors1.search(" ") + 1)
+          })
+          if (userRes.status === 200) { // first validate the entered user then add to project
+            console.log(userRes.data)
+          }
+          worksOnRes = await axios.post('/api/worksOn/', {
+            netID: userRes.data.user.netID,
+            projectNum: newProject.projectNum,
+          })
+          if (worksOnRes.status === 201) {
+            console.log(worksOnRes.data)
+          }
+        }
+      }
+      if (users[1] === true) { // if mentor was edited
+        if (mentorArr.length >= 2) { // if existing mentor array had an initial value for mentor but now admin removed initial mentor
+          worksOnRes = await axios.get('/api/worksOn/currentProjects/', {
+            params: {
+              userID: mentorArr[1].userID,
+          }})
+          if (worksOnRes.status === 200) { // first get worksOn entry to access start date, then deactivate initial user
+            console.log(worksOnRes.data)
+          } 
+          worksOns = worksOnRes.data.worksOn
+          projectWorksOn = worksOns.filter((worksOn) => (worksOn.projectID === project.projectID))
+
+          deactivateRes = await axios.post('/api/worksOn/deactivate/', {
+            netID: mentorArr[1].netID,
+            projectNum: newProject.projectNum,
+            startDate: projectWorksOn[0].startDate,
+          })
+          if (deactivateRes.status === 200) {
+            console.log(deactivateRes.data)
+          } 
+        }
+        if (mentors2.length > 1) { // if admin added new mentor
+          userRes = await axios.post('/api/user/get/fullName', {
+            firstName: mentors2.substring(0, mentors2.search(" ")), // extract 2 values since first name and last name are separated by a space
+            lastName: mentors2.substring(mentors2.search(" ") + 1)
+          })
+          if (userRes.status === 200) { // first validate the entered user then add to project
+            console.log(userRes.data)
+          }
+          worksOnRes = await axios.post('/api/worksOn/', {
+            netID: userRes.data.user.netID,
+            projectNum: newProject.projectNum,
+          })
+          if (worksOnRes.status === 201) {
+            console.log(worksOnRes.data)
+          }
+        }
+      }
+
+      for (let i = 2; i < users.length; i++) { // loop through remaining students that could be edited
+        if (users[i] === true) { // if user was edited
+          // if existing array had an initial value for but now admin removed initial user
+          if (studentArr.length >= (i + 1 - 2)) { // i + 1 since i is array index so 1 less than length, and - 2 since user[2] corresponds to studentArr[0], etc
+            worksOnRes = await axios.get('/api/worksOn/currentProjects/', {
+              params: {
+                userID: studentArr[i - 2].userID,
+            }})
+            if (worksOnRes.status === 200) { // first get worksOn entry to access start date, then deactivate initial user
+              console.log(worksOnRes.data)
+            } 
+            worksOns = worksOnRes.data.worksOn
+            projectWorksOn = worksOns.filter((worksOn) => (worksOn.projectID === project.projectID))
+  
+            deactivateRes = await axios.post('/api/worksOn/deactivate/', {
+              netID: studentArr[i - 2].netID, // - 2 since user[2] corresponds to studentArr[0], etc
+              projectNum: newProject.projectNum,
+              startDate: projectWorksOn[0].startDate,
+            })
+            if (deactivateRes.status === 200) {
+              console.log(deactivateRes.data)
+            } 
+          }
+          
+          switch(i) {
+            case 2:
+              if (students1.length > 1) { // if admin added new mentor
+                userRes = await axios.post('/api/user/get/fullName', {
+                  firstName: students1.substring(0, students1.search(" ")), // extract 2 values since first name and last name are separated by a space
+                  lastName: students1.substring(students1.search(" ") + 1)
+                })
+                if (userRes.status === 200) { // first validate the entered user then add to project
+                  console.log(userRes.data)
+                }
+                worksOnRes = await axios.post('/api/worksOn/', {
+                  netID: userRes.data.user.netID,
+                  projectNum: newProject.projectNum,
+                })
+                if (worksOnRes.status === 201) {
+                  console.log(worksOnRes.data)
+                }
+              }
+              break
+            case 3:
+              if (students2.length > 1) { // if admin added new mentor
+                userRes = await axios.post('/api/user/get/fullName', {
+                  firstName: students2.substring(0, students2.search(" ")), // extract 2 values since first name and last name are separated by a space
+                  lastName: students2.substring(students2.search(" ") + 1)
+                })
+                if (userRes.status === 200) { // first validate the entered user then add to project
+                  console.log(userRes.data)
+                }
+                worksOnRes = await axios.post('/api/worksOn/', {
+                  netID: userRes.data.user.netID,
+                  projectNum: newProject.projectNum,
+                })
+                if (worksOnRes.status === 201) {
+                  console.log(worksOnRes.data)
+                }
+              }
+              break
+            case 4:
+              if (students3.length > 1) { // if admin added new mentor
+                userRes = await axios.post('/api/user/get/fullName', {
+                  firstName: students3.substring(0, students3.search(" ")), // extract 2 values since first name and last name are separated by a space
+                  lastName: students3.substring(students3.search(" ") + 1)
+                })
+                if (userRes.status === 200) { // first validate the entered user then add to project
+                  console.log(userRes.data)
+                }
+                worksOnRes = await axios.post('/api/worksOn/', {
+                  netID: userRes.data.user.netID,
+                  projectNum: newProject.projectNum,
+                })
+                if (worksOnRes.status === 201) {
+                  console.log(worksOnRes.data)
+                }
+              }
+              break
+            case 5:
+              if (students4.length > 1) { // if admin added new mentor
+                userRes = await axios.post('/api/user/get/fullName', {
+                  firstName: students4.substring(0, students4.search(" ")), // extract 2 values since first name and last name are separated by a space
+                  lastName: students4.substring(students4.search(" ") + 1)
+                })
+                if (userRes.status === 200) { // first validate the entered user then add to project
+                  console.log(userRes.data)
+                }
+                worksOnRes = await axios.post('/api/worksOn/', {
+                  netID: userRes.data.user.netID,
+                  projectNum: newProject.projectNum,
+                })
+                if (worksOnRes.status === 201) {
+                  console.log(worksOnRes.data)
+                }
+              }
+              break
+            case 6:
+              if (students5.length > 1) { // if admin added new mentor
+                userRes = await axios.post('/api/user/get/fullName', {
+                  firstName: students5.substring(0, students5.search(" ")), // extract 2 values since first name and last name are separated by a space
+                  lastName: students5.substring(students5.search(" ") + 1)
+                })
+                if (userRes.status === 200) { // first validate the entered user then add to project
+                  console.log(userRes.data)
+                }
+                worksOnRes = await axios.post('/api/worksOn/', {
+                  netID: userRes.data.user.netID,
+                  projectNum: newProject.projectNum,
+                })
+                if (worksOnRes.status === 201) {
+                  console.log(worksOnRes.data)
+                }
+              }
+              break
+            case 7:
+              if (students6.length > 1) { // if admin added new mentor
+                userRes = await axios.post('/api/user/get/fullName', {
+                  firstName: students6.substring(0, students6.search(" ")), // extract 2 values since first name and last name are separated by a space
+                  lastName: students6.substring(students6.search(" ") + 1)
+                })
+                if (userRes.status === 200) { // first validate the entered user then add to project
+                  console.log(userRes.data)
+                }
+                worksOnRes = await axios.post('/api/worksOn/', {
+                  netID: userRes.data.user.netID,
+                  projectNum: newProject.projectNum,
+                })
+                if (worksOnRes.status === 201) {
+                  console.log(worksOnRes.data)
+                }
+              }
+              break
+          }
+        }
+      }
+    }
+    catch (error) {
+      console.log(error)
+      if (axios.isAxiosError(error) || error instanceof Error)
+        console.error(error.message)
+      else console.error(error)
+    }
+
     /*
     try {
       const newDetails = {
@@ -171,14 +503,14 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
               <Form.Control
                 name='mentors1'
                 value={mentors1}
-                onChange={(e) => {setMentors1(e.target.value)}}
+                onChange={(e) => {handleUserChange(e.target.name, e.target.value)}}
               />
               </Col>
               <Col xs={12} md={2}>
               <Form.Control
                 name='mentors2'
                 value={mentors2}
-                onChange={(e) => {setMentors2(e.target.value)}}
+                onChange={(e) => {handleUserChange(e.target.name, e.target.value)}}
               />
               </Col>
               </Row>
@@ -199,42 +531,42 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
               <Form.Control
                 name='students1'
                 value={students1}
-                onChange={(e) => {setStudents1(e.target.value)}}
+                onChange={(e) => {handleUserChange(e.target.name, e.target.value)}}
               />
               </Col>
               <Col xs={12} md={2}>
               <Form.Control
                 name='students2'
                 value={students2}
-                onChange={(e) => {setStudents2(e.target.value)}}
+                onChange={(e) => {handleUserChange(e.target.name, e.target.value)}}
               />
               </Col>
               <Col xs={12} md={2}>
               <Form.Control
                 name='students3'
                 value={students3}
-                onChange={(e) => {setStudents3(e.target.value)}}
+                onChange={(e) => {handleUserChange(e.target.name, e.target.value)}}
               />
               </Col>
               <Col xs={12} md={2}>
               <Form.Control
                 name='students4'
                 value={students4}
-                onChange={(e) => {setStudents4(e.target.value)}}
+                onChange={(e) => {handleUserChange(e.target.name, e.target.value)}}
               />
               </Col>
               <Col xs={12} md={2}>
               <Form.Control
                 name='students5'
                 value={students5}
-                onChange={(e) => {setStudents5(e.target.value)}}
+                onChange={(e) => {handleUserChange(e.target.name, e.target.value)}}
               />
               </Col>
               <Col xs={12} md={2}>
               <Form.Control
                 name='students6'
                 value={students6}
-                onChange={(e) => {setStudents6(e.target.value)}}
+                onChange={(e) => {handleUserChange(e.target.name, e.target.value)}}
               />
               </Col>
               </Row>
