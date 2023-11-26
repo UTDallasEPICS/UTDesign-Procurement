@@ -19,12 +19,18 @@ export default async function handler(
                 }
             })
 
-            if (worksOn === null) throw new Error // since userID and projectID is either invalid or user is not in that project
+            if (worksOn === null) throw new Error('no current worksOn entries')  // since userID and projectID is either invalid or user is not in that project
 
             res.status(200).json({ worksOn })
         }
         catch (error) {
-            res.status(500).json({error: 'WorksOn not found'})
+            console.log(error)
+            if (error instanceof Error)
+            res.status(500).json({
+                message: error.message,
+                error: error,
+            })
+            else res.status(500).send(error)
         }
     }
     else
