@@ -25,20 +25,24 @@ export default async function handler(
             
             if (project === null) throw new Error('not a valid project')
 
-            const worksOnVals = await prisma.worksOn.findFirst({
+            const worksOnVals = await prisma.worksOn.findUnique({
                 where: {
-                    userID: user.userID,
-                    projectID: project.projectID,
-                    startDate: new Date(req.body.startDate) // passed in start date in correct date format
+                    userID_projectID_startDate: { // composite key - finds entry using unique combination of userID, projectID, and startDate
+                        userID: user.userID,
+                        projectID: project.projectID,
+                        startDate: new Date(req.body.startDate) // passed in start date in correct date format
+                    }
                 }
             })
 
             if ('comments' in req.body && typeof req.body.comments === 'string') {
-                const worksOn = await prisma.worksOn.updateMany({
+                const worksOn = await prisma.worksOn.update({
                     where: {
-                        userID: user.userID,
-                        projectID: project.projectID,
-                        startDate: new Date(req.body.startDate) // passed in start date in correct date format
+                        userID_projectID_startDate: {
+                            userID: user.userID,
+                            projectID: project.projectID,
+                            startDate: new Date(req.body.startDate) // passed in start date in correct date format
+                        }
                     },
                     data: {
                         endDate: new Date(), // since starting at the time admin deactivates user, user is no longer in project and is a past project user
@@ -50,11 +54,13 @@ export default async function handler(
                 res.status(200).json( { worksOnVals })
             }
             else {
-                const worksOn = await prisma.worksOn.updateMany({
+                const worksOn = await prisma.worksOn.update({
                     where: {
-                        userID: user.userID,
-                        projectID: project.projectID,
-                        startDate: new Date(req.body.startDate) // passed in start date in correct date format
+                        userID_projectID_startDate: {
+                            userID: user.userID,
+                            projectID: project.projectID,
+                            startDate: new Date(req.body.startDate) // passed in start date in correct date format
+                        }
                     },
                     data: {
                         endDate: new Date(), // since starting at the time admin deactivates user, user is no longer in project and is a past project user
@@ -66,7 +72,13 @@ export default async function handler(
             }
         }
         catch (error) {
-            if (error instanceof Error) res.status(500).json({ message: error.message })
+            console.log(error)
+            if (error instanceof Error)
+            res.status(500).json({
+                message: error.message,
+                error: error,
+            })
+            else res.status(500).send(error)
         }
     }
     else {
