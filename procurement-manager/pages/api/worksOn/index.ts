@@ -25,11 +25,17 @@ export default async function handler(
                   startDate: new Date(), // since starting at the time admin creates user, user is a current project user
                 },
               })
-              res.status(201).json(worksOn)
+              res.status(201).json({ worksOn })
         }
-        catch(error) {
-            res.status(500).json({ error: 'failed to create worksOn entry' })
-        }    
+        catch (error) {
+            console.log(error)
+            if (error instanceof Error)
+            res.status(500).json({
+                message: error.message,
+                error: error,
+            })
+            else res.status(500).send(error)
+        }  
     }
     else {
         res.status(400).json({ error: 'Invalid method' })
