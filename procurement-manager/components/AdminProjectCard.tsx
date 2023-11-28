@@ -74,17 +74,21 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
   
   function handleInputChange(
     e: React.ChangeEvent<HTMLInputElement>,
-    index: number
+    itemIndex: number,
+    requestIndex: number
   ) {
     const { name, value } = e.target
 
-    setInputValues((prev) => {
-      return prev.map((item, i) => {
-        if (i !== index) return item
-        return {
-          ...item,
-          [name]: value,
-        }
+    setInputValues((prevRequestItemList) => {
+      return prevRequestItemList.map((reqItems, reqItemsIndex) => {
+        if (reqItemsIndex !== requestIndex) return reqItems
+        return reqItems.map((item, i) => {
+          if (i !== itemIndex) return item
+          return {
+            ...item,
+            [name]: value,
+          }
+        })
       })
     })
   }
@@ -249,39 +253,6 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
               </Row>
                 </fieldset>
               </Form>
-
-              {/* REQUEST NUMBER */}
-              {/*
-              <Col xs={12} lg={3}>
-                <Card.Title>
-                  <h4 className={styles.headingLabel}>
-                    Request #{details.requestID}
-                  </h4>
-                </Card.Title>
-              </Col>
-              */}
-              {/* STATUS */}
-              {/*
-              <Col xs={6} lg={6}>
-                <h6 className={styles.headingLabel}>Status</h6>
-                <p>{details.Process[0].status}</p>
-              </Col>
-              */}
-
-              {/* ORDER SUBTOTAL */}
-              {/*
-              <Col xs={6} lg={2}>
-                <h6 className={styles.headingLabel}>Total Cost</h6>
-                <p>
-                  $
-                  {details.RequestItem.reduce(
-                    (total, item) =>
-                      total + item.quantity * (item.unitPrice as any),
-                    0
-                  ).toFixed(4)}
-                </p>
-              </Col>
-              */}
               
             <Row className='mt-3'>
               {/*EDIT BUTTON */}
@@ -320,7 +291,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
                 {
                   inputValues.map((reqItems, reqIndex) => {
                     return (
-                <div>
+                <div key={reqIndex}>
                 <Row className='smaller-row'>
                 {/* Request ID */}
                 <Col xs={12} md={7}>
@@ -378,7 +349,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
                                   onChange={(e) =>
                                     handleInputChange(
                                       e as React.ChangeEvent<HTMLInputElement>,
-                                      itemIndex
+                                      itemIndex, reqIndex
                                     )
                                   }
                                 />
@@ -391,7 +362,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
                                   onChange={(e) =>
                                     handleInputChange(
                                       e as React.ChangeEvent<HTMLInputElement>,
-                                      itemIndex
+                                      itemIndex, reqIndex
                                     )
                                   }
                                 />
@@ -403,7 +374,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
                                   onChange={(e) =>
                                     handleInputChange(
                                       e as React.ChangeEvent<HTMLInputElement>,
-                                      itemIndex
+                                      itemIndex, reqIndex
                                     )
                                   }
                                 />
@@ -415,7 +386,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
                                   onChange={(e) =>
                                     handleInputChange(
                                       e as React.ChangeEvent<HTMLInputElement>,
-                                      itemIndex
+                                      itemIndex, reqIndex
                                     )
                                   }
                                 />
@@ -427,7 +398,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
                                   onChange={(e) =>
                                     handleInputChange(
                                       e as React.ChangeEvent<HTMLInputElement>,
-                                      itemIndex
+                                      itemIndex, reqIndex
                                     )
                                   }
                                 />
