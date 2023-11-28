@@ -19,12 +19,14 @@ import { Prisma, User, Project } from '@prisma/client'
 import axios from 'axios'
 
 interface AdminProjectCardProps {
+  projectIndex: number
   project: Project
   requests: RequestDetails[][]
   collapsed: boolean
 }
 
 const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
+  projectIndex,
   project,
   requests,
   collapsed,
@@ -47,7 +49,14 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
   const [students5, setStudents5] = useState("Student 5");
   const [students6, setStudents6] = useState("Student 6");
   // state that contains the values of the input fields in the request card
-  // const [inputValues, setInputValues] = useState() // input values for request field
+  const [inputValues, setInputValues] = useState(
+    // for each request in a project, store the request items for those requests
+    requests[projectIndex].map((request) => {
+      return request.RequestItem.map((item) => {
+      return { ...item }
+      })
+    })
+  )
 
   // Show cards by default and rerenders everytime collapsed changes
   useEffect(() => {
@@ -62,7 +71,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
    * @param index - the index of the request item the input field is in within the request items array
    */
 
-  /*
+  
   function handleInputChange(
     e: React.ChangeEvent<HTMLInputElement>,
     index: number
@@ -79,7 +88,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
       })
     })
   }
-*/
+
 
   /**
    * This function handles saving the changes made to the request card
@@ -307,123 +316,153 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
             {/* COLLAPSED ROW */}
             <Collapse in={collapse}>
               <div>
-                <Row className='my-4 smaller-row'>
-                  
+                
+                {
+                  inputValues.map((reqItems, reqIndex) => {
+                    return (
+                <div>
+                <Row className='smaller-row'>
+                {/* Request ID */}
+                <Col xs={12} md={7}>
+                  <h6 className={styles.headingLabel}>Request # {requests[projectIndex][reqIndex].requestID}</h6>
+                  </Col>
+                {/* Request status */}
+                 <Col xs={12} md={3}>
+                  <h6 className={styles.headingLabel}>Status </h6>
+                  <p>
+                  {requests[projectIndex][reqIndex].Process[0].status}
+                  </p>
+                </Col>
+                {/* Order Cost for Request */}
+                <Col xs={12} md={2}>
+                  <h6 className={styles.headingLabel}> Order Subtotal</h6>
+                  <p>
+                  ${requests[projectIndex][reqIndex].RequestItem.reduce(
+                    (total, item) =>
+                      total + item.quantity * (item.unitPrice as any),
+                    0
+                  ).toFixed(4)}
+                  </p>
+                  </Col>
                 </Row>
 
-                
                 {/* REQUEST ITEMS */}
                 <Row className='my-2'>
-                  <Form className={styles.requestDetails}>
-                    {/*
-                    <fieldset disabled={!editable}>
-                      <Table responsive striped>
-                        <thead>
-                          <tr>
-                            <th>#</th>
-                            <th>Description</th>
-                            <th>Vendor</th>
-                            <th>URL</th>
-                            <th>Part #</th>
-                            <th>Qty</th>
-                            <th>Unit Price</th>
-                            <th>Total</th>
-                            <th>Order #</th>
-                            <th>Tracking Info</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {inputValues.map((item, itemIndex) => {
-                            return (
-                              <tr key={itemIndex}>
-                                <td>{itemIndex + 1}</td>
-                                <td>
+                <Form className={styles.requestDetails}>
+                  {
+                  <fieldset disabled={!editable}>
+                    <Table responsive striped>
+                      <thead>
+                        <tr>
+                          <th>#</th>
+                          <th>Description</th>
+                          <th>Vendor</th>
+                          <th>URL</th>
+                          <th>Part #</th>
+                          <th>Qty</th>
+                          <th>Unit Price</th>
+                          <th>Total</th>
+                          <th>Order #</th>
+                          <th>Tracking Info</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {reqItems.map((item, itemIndex) => {
+                          return (
+                            <tr key={itemIndex}>
+                              <td>{itemIndex + 1}</td>
+                              <td>
+                                <Form.Control
+                                  name='description'
+                                  value={item.description}
+                                  onChange={(e) =>
+                                    handleInputChange(
+                                      e as React.ChangeEvent<HTMLInputElement>,
+                                      itemIndex
+                                    )
+                                  }
+                                />
+                              </td>
+                              <td>{item.vendorID}</td>
+                              <td>
+                                <Form.Control
+                                  name='url'
+                                  value={item.url}
+                                  onChange={(e) =>
+                                    handleInputChange(
+                                      e as React.ChangeEvent<HTMLInputElement>,
+                                      itemIndex
+                                    )
+                                  }
+                                />
+                              </td>
+                              <td>
+                                <Form.Control
+                                  name='partNumber'
+                                  value={item.partNumber}
+                                  onChange={(e) =>
+                                    handleInputChange(
+                                      e as React.ChangeEvent<HTMLInputElement>,
+                                      itemIndex
+                                    )
+                                  }
+                                />
+                              </td>
+                              <td>
+                                <Form.Control
+                                  name='quantity'
+                                  value={item.quantity}
+                                  onChange={(e) =>
+                                    handleInputChange(
+                                      e as React.ChangeEvent<HTMLInputElement>,
+                                      itemIndex
+                                    )
+                                  }
+                                />
+                              </td>
+                              <td>
+                                <Form.Control
+                                  name='unitPrice'
+                                  value={item.unitPrice.toString()}
+                                  onChange={(e) =>
+                                    handleInputChange(
+                                      e as React.ChangeEvent<HTMLInputElement>,
+                                      itemIndex
+                                    )
+                                  }
+                                />
+                              </td>
+                              <td>
+                                <InputGroup>
+                                  <InputGroup.Text>$</InputGroup.Text>
                                   <Form.Control
-                                    name='description'
-                                    value={item.description}
-                                    onChange={(e) =>
-                                      handleInputChange(
-                                        e as React.ChangeEvent<HTMLInputElement>,
-                                        itemIndex
-                                      )
-                                    }
+                                    value={(
+                                      item.quantity * (item.unitPrice as any)
+                                    ).toFixed(4)}
+                                    disabled
                                   />
-                                </td>
-                                <td>{item.vendorID}</td>
-                                <td>
-                                  <Form.Control
-                                    name='url'
-                                    value={item.url}
-                                    onChange={(e) =>
-                                      handleInputChange(
-                                        e as React.ChangeEvent<HTMLInputElement>,
-                                        itemIndex
-                                      )
-                                    }
-                                  />
-                                </td>
-                                <td>
-                                  <Form.Control
-                                    name='partNumber'
-                                    value={item.partNumber}
-                                    onChange={(e) =>
-                                      handleInputChange(
-                                        e as React.ChangeEvent<HTMLInputElement>,
-                                        itemIndex
-                                      )
-                                    }
-                                  />
-                                </td>
-                                <td>
-                                  <Form.Control
-                                    name='quantity'
-                                    value={item.quantity}
-                                    onChange={(e) =>
-                                      handleInputChange(
-                                        e as React.ChangeEvent<HTMLInputElement>,
-                                        itemIndex
-                                      )
-                                    }
-                                  />
-                                </td>
-                                <td>
-                                  <Form.Control
-                                    name='unitPrice'
-                                    value={item.unitPrice.toString()}
-                                    onChange={(e) =>
-                                      handleInputChange(
-                                        e as React.ChangeEvent<HTMLInputElement>,
-                                        itemIndex
-                                      )
-                                    }
-                                  />
-                                </td>
-                                <td>
-                                  <InputGroup>
-                                    <InputGroup.Text>$</InputGroup.Text>
-                                    <Form.Control
-                                      value={(
-                                        item.quantity * (item.unitPrice as any)
-                                      ).toFixed(4)}
-                                      disabled
-                                    />
-                                  </InputGroup>
-                                </td>
-                                <td>
-                                  <Form.Control />
-                                </td>
-                                <td>
-                                  <Form.Control />
-                                </td>
-                              </tr>
-                            )
-                          })}
-                        </tbody>
-                      </Table>
-                    </fieldset>
-                    */}
-                  </Form>
-                </Row>
+                                </InputGroup>
+                              </td>
+                              <td>
+                                <Form.Control />
+                              </td>
+                              <td>
+                                <Form.Control />
+                              </td>
+                            </tr>
+                          )
+                        })}
+                      </tbody>
+                    </Table>
+                  </fieldset>
+                  }
+                </Form>
+              </Row>
+              </div>
+                    )
+                  })
+                }
+                
                 
               </div>
             </Collapse>

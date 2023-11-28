@@ -182,6 +182,7 @@ export default function Admin({
               isOpen={isOpen[projIndex]}
             />
             <AdminProjectCard
+            projectIndex={projIndex}
             project={project}
             requests={projectRequests}
             collapsed={isOpen[projIndex]}
