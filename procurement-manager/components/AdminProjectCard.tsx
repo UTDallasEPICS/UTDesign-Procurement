@@ -97,9 +97,10 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
             else if (users[i].roleID === 3) {
               students.push(users[i])
         }
-        setMentorArr(mentors)
-        setStudentArr(students)
       }
+      setMentorArr(mentors) // set current users arrays for mentors and students after going through all users
+      setStudentArr(students)
+      console.log("updated project members")
     }
   }
     catch (error) {
@@ -191,6 +192,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
         startingBudget: Number(totalBudget),
       })
       if (projectRes.status === 200) {
+        console.log("updated project info")
         console.log(projectRes.data)
       }
       let newProject: Project = projectRes.data.project
@@ -204,6 +206,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
               userID: mentorArr[0].userID,
           }})
           if (worksOnRes.status === 200) { // first get worksOn entry to access start date, then deactivate initial user
+            console.log("found current projects of mentor 1")
             console.log(worksOnRes.data)
           }
           worksOns = worksOnRes.data.worksOn
@@ -215,6 +218,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
           startDate: projectWorksOn[0].startDate,
           })
           if (deactivateRes.status === 200) {
+            console.log("deactivated mentor 1")
             console.log(deactivateRes.data)
           } 
         }
@@ -224,6 +228,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
             lastName: mentors1.substring(mentors1.search(" ") + 1)
           })
           if (userRes.status === 200) { // first validate the entered user then add to project
+            console.log("found new user entered as mentor 1")
             console.log(userRes.data)
           }
           worksOnRes = await axios.post('/api/worksOn/', {
@@ -231,6 +236,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
             projectNum: newProject.projectNum,
           })
           if (worksOnRes.status === 201) {
+            console.log("added new user as mentor 1")
             console.log(worksOnRes.data)
           }
         }
@@ -242,6 +248,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
               userID: mentorArr[1].userID,
           }})
           if (worksOnRes.status === 200) { // first get worksOn entry to access start date, then deactivate initial user
+            console.log("found current projects of mentor 2")
             console.log(worksOnRes.data)
           } 
           worksOns = worksOnRes.data.worksOn
@@ -253,6 +260,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
             startDate: projectWorksOn[0].startDate,
           })
           if (deactivateRes.status === 200) {
+            console.log("deactivated mentor 2")
             console.log(deactivateRes.data)
           } 
         }
@@ -262,6 +270,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
             lastName: mentors2.substring(mentors2.search(" ") + 1)
           })
           if (userRes.status === 200) { // first validate the entered user then add to project
+            console.log("found new user entered as mentor 2")
             console.log(userRes.data)
           }
           worksOnRes = await axios.post('/api/worksOn/', {
@@ -269,6 +278,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
             projectNum: newProject.projectNum,
           })
           if (worksOnRes.status === 201) {
+            console.log("added new user as mentor 2")
             console.log(worksOnRes.data)
           }
         }
@@ -283,6 +293,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
                 userID: studentArr[i - 2].userID,
             }})
             if (worksOnRes.status === 200) { // first get worksOn entry to access start date, then deactivate initial user
+              console.log("found current projects of student " + (i + 1 - 2))
               console.log(worksOnRes.data)
             } 
             worksOns = worksOnRes.data.worksOn
@@ -294,6 +305,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
               startDate: projectWorksOn[0].startDate,
             })
             if (deactivateRes.status === 200) {
+              console.log("deactivated student " + (i + 1 - 2))
               console.log(deactivateRes.data)
             } 
           }
@@ -306,6 +318,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
                   lastName: students1.substring(students1.search(" ") + 1)
                 })
                 if (userRes.status === 200) { // first validate the entered user then add to project
+                  console.log("found new user entered as student " + (i + 1 - 2))
                   console.log(userRes.data)
                 }
                 worksOnRes = await axios.post('/api/worksOn/', {
@@ -313,6 +326,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
                   projectNum: newProject.projectNum,
                 })
                 if (worksOnRes.status === 201) {
+                  console.log("added new user entered as student " + (i + 1 - 2))
                   console.log(worksOnRes.data)
                 }
               }
@@ -324,6 +338,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
                   lastName: students2.substring(students2.search(" ") + 1)
                 })
                 if (userRes.status === 200) { // first validate the entered user then add to project
+                  console.log("found new user entered as student " + (i + 1 - 2))
                   console.log(userRes.data)
                 }
                 worksOnRes = await axios.post('/api/worksOn/', {
@@ -331,6 +346,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
                   projectNum: newProject.projectNum,
                 })
                 if (worksOnRes.status === 201) {
+                  console.log("added new user entered as student " + (i + 1 - 2))
                   console.log(worksOnRes.data)
                 }
               }
@@ -342,6 +358,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
                   lastName: students3.substring(students3.search(" ") + 1)
                 })
                 if (userRes.status === 200) { // first validate the entered user then add to project
+                  console.log("found new user entered as student " + (i + 1 - 2))
                   console.log(userRes.data)
                 }
                 worksOnRes = await axios.post('/api/worksOn/', {
@@ -349,6 +366,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
                   projectNum: newProject.projectNum,
                 })
                 if (worksOnRes.status === 201) {
+                  console.log("added new user entered as student " + (i + 1 - 2))
                   console.log(worksOnRes.data)
                 }
               }
@@ -360,6 +378,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
                   lastName: students4.substring(students4.search(" ") + 1)
                 })
                 if (userRes.status === 200) { // first validate the entered user then add to project
+                  console.log("found new user entered as student " + (i + 1 - 2))
                   console.log(userRes.data)
                 }
                 worksOnRes = await axios.post('/api/worksOn/', {
@@ -367,6 +386,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
                   projectNum: newProject.projectNum,
                 })
                 if (worksOnRes.status === 201) {
+                  console.log("added new user entered as student " + (i + 1 - 2))
                   console.log(worksOnRes.data)
                 }
               }
@@ -378,6 +398,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
                   lastName: students5.substring(students5.search(" ") + 1)
                 })
                 if (userRes.status === 200) { // first validate the entered user then add to project
+                  console.log("found new user entered as student " + (i + 1 - 2))
                   console.log(userRes.data)
                 }
                 worksOnRes = await axios.post('/api/worksOn/', {
@@ -385,6 +406,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
                   projectNum: newProject.projectNum,
                 })
                 if (worksOnRes.status === 201) {
+                  console.log("added new user entered as student " + (i + 1 - 2))
                   console.log(worksOnRes.data)
                 }
               }
@@ -396,6 +418,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
                   lastName: students6.substring(students6.search(" ") + 1)
                 })
                 if (userRes.status === 200) { // first validate the entered user then add to project
+                  console.log("found new user entered as student " + (i + 1 - 2))
                   console.log(userRes.data)
                 }
                 worksOnRes = await axios.post('/api/worksOn/', {
@@ -403,6 +426,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
                   projectNum: newProject.projectNum,
                 })
                 if (worksOnRes.status === 201) {
+                  console.log("added new user entered as student " + (i + 1 - 2))
                   console.log(worksOnRes.data)
                 }
               }
@@ -410,6 +434,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
           }
         }
       }
+      getProjectMembers() // update current users arrays for students and mentors after adding/removing
     }
     catch (error) {
       console.log(error)
