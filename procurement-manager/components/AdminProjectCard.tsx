@@ -286,13 +286,13 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
 
             {/* COLLAPSED ROW */}
             <Collapse in={collapse}>
-              <div>
-                
+              <div>                
                 {
                   inputValues.map((reqItems, reqIndex) => {
                     return (
                 <div key={reqIndex}>
                 <Row className='smaller-row'>
+                  <div className='mb-3'></div>
                 {/* Request ID */}
                 <Col xs={12} md={7}>
                   <h6 className={styles.headingLabel}>Request # {requests[projectIndex][reqIndex].requestID}</h6>
