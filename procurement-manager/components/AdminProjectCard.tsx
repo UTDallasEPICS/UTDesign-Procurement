@@ -60,6 +60,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
   const [students5, setStudents5] = useState(" ");
   const [students6, setStudents6] = useState(" ");
   const [users, setUsers] = useState<boolean[]>([false, false, false, false, false, false, false, false]) // track which of the 8 mentors & students were edited by admin
+  const [reqIDs, setReqIDs] = useState<number[]>([]) // track which of the requests were edited by admin using request IDs of updated requests
 
   // state that contains the values of the input fields in the request card
   const [inputValues, setInputValues] = useState(
@@ -172,7 +173,8 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
   function handleInputChange(
     e: React.ChangeEvent<HTMLInputElement>,
     itemIndex: number,
-    requestIndex: number
+    requestIndex: number,
+    details: RequestDetails
   ) {
     const { name, value } = e.target
 
@@ -188,7 +190,14 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
         })
       })
     })
+    updateReqIDs(details.requestID) // add the request ID to list of updated request IDs
   }
+
+  const updateReqIDs = (value: number) => {
+    const storeReqIDs = [...reqIDs]
+    storeReqIDs.push(value) // add new value to array
+    setReqIDs(storeReqIDs) // Set the state with the updated array
+  };
 
   /**
    * This function handles saving the changes made to the request card
@@ -461,25 +470,45 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
       else console.error(error)
     }
 
-    /*
-    try {
-      const newDetails = {
-        ...details, // copy the details object
-        RequestItem: inputValues, // replace the RequestItem array with the new input values
+    requests[projectIndex].map((details, reqIndex) => {
+      try {
+        const newDetails = {
+          ...details, // copy the details object
+          RequestItem: inputValues[reqIndex], // replace the RequestItem array with the new inputs in each request item
+        }
+        let isUpdatedReq: boolean = false
+        for (const id of reqIDs) {
+          if (details.requestID === id) {
+            isUpdatedReq = true
+            console.log("updated request: " + details.requestID)
+          }
+        }
+        if (isUpdatedReq) {
+          for (let i = 0; i < newDetails.RequestItem.length; i++) {
+            updateRequest(details, newDetails, i)
+          }
+        }
+      } catch (error) {
+        if (axios.isAxiosError(error) || error instanceof Error)
+          console.error(error.message)
+        else console.log(error)
       }
-      // The API is giving a 500 error when trying to update the request details - sorry it wasn't fixed
-      const response = await axios.post('/api/request-form/update', {
-        requestID: details.requestID,
-        requestDetails: newDetails,
-      })
+    })
+    setReqIDs([]) // reset list of updated request IDs to empty since after save, resets to none have been edited yet
+  }
 
-      if (response.status === 200) console.log(response.data)
-    } catch (error) {
-      if (axios.isAxiosError(error) || error instanceof Error)
-        console.error(error.message)
-      else console.error(error)
-    }
-    */
+  async function updateRequest(details: RequestDetails, newDetails: RequestDetails, i: number) {
+    const res = await axios.post('/api/request-form/update', {
+      requestID: details.requestID,
+      itemID: details.RequestItem[i].itemID,
+      description: newDetails.RequestItem[i].description, // used new details data in parameters for editable fields
+      url: newDetails.RequestItem[i].url, 
+      partNumber: newDetails.RequestItem[i].partNumber, 
+      quantity: newDetails.RequestItem[i].quantity, 
+      unitPrice: newDetails.RequestItem[i].unitPrice, 
+      vendorID: newDetails.RequestItem[i].vendorID
+    })
+    if (res.status === 200) console.log(res.data)
   }
 
   return (
@@ -711,12 +740,27 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
                                   onChange={(e) =>
                                     handleInputChange(
                                       e as React.ChangeEvent<HTMLInputElement>,
-                                      itemIndex, reqIndex
+                                      itemIndex, 
+                                      reqIndex, 
+                                      requests[projectIndex][reqIndex]
                                     )
                                   }
                                 />
                               </td>
-                              <td>{item.vendorID}</td>
+                              <td>
+                                <Form.Control
+                                  name='vendorID'
+                                  value={item.vendorID}
+                                  onChange={(e) =>
+                                    handleInputChange(
+                                      e as React.ChangeEvent<HTMLInputElement>,
+                                      itemIndex, 
+                                      reqIndex, 
+                                      requests[projectIndex][reqIndex]
+                                    )
+                                  }
+                                />
+                              </td>
                               <td>
                                 <Form.Control
                                   name='url'
@@ -724,7 +768,9 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
                                   onChange={(e) =>
                                     handleInputChange(
                                       e as React.ChangeEvent<HTMLInputElement>,
-                                      itemIndex, reqIndex
+                                      itemIndex, 
+                                      reqIndex, 
+                                      requests[projectIndex][reqIndex]
                                     )
                                   }
                                 />
@@ -736,7 +782,9 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
                                   onChange={(e) =>
                                     handleInputChange(
                                       e as React.ChangeEvent<HTMLInputElement>,
-                                      itemIndex, reqIndex
+                                      itemIndex, 
+                                      reqIndex, 
+                                      requests[projectIndex][reqIndex]
                                     )
                                   }
                                 />
@@ -748,7 +796,9 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
                                   onChange={(e) =>
                                     handleInputChange(
                                       e as React.ChangeEvent<HTMLInputElement>,
-                                      itemIndex, reqIndex
+                                      itemIndex, 
+                                      reqIndex, 
+                                      requests[projectIndex][reqIndex]
                                     )
                                   }
                                 />
@@ -760,7 +810,9 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
                                   onChange={(e) =>
                                     handleInputChange(
                                       e as React.ChangeEvent<HTMLInputElement>,
-                                      itemIndex, reqIndex
+                                      itemIndex, 
+                                      reqIndex, 
+                                      requests[projectIndex][reqIndex]
                                     )
                                   }
                                 />
