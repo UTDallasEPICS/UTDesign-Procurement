@@ -89,7 +89,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
         const users: User[] = response.data.worksOnUsers
 
         for (let i = 0; i < users.length; i++) {
-            console.log("user " + i + ": " + users[i].firstName + ", role: " + users[i].roleID)
+            console.log("user " + users[i].userID + ": " + users[i].firstName + ", role: " + users[i].roleID)
 
             if (users[i].roleID === 2) {
               mentors.push(users[i])
@@ -198,6 +198,11 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
       let newProject: Project = projectRes.data.project
       setRemainingBudget(Prisma.Decimal.sub(totalBudget, project.totalExpenses))
       let userRes, worksOnRes, worksOns: WorksOn[], projectWorksOn: WorksOn[], deactivateRes
+
+      console.log("array of update status")
+      for (let i = 0; i < users.length; i++) {
+        console.log("update status of user " + (i + 1) + " : " + users[i])
+      }
       
       if (users[0] === true) { // if mentor was edited
         if (mentorArr.length >= 1) { // if existing mentor array had an initial value for mentor but now admin removed initial mentor
@@ -435,6 +440,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
         }
       }
       getProjectMembers() // update current users arrays for students and mentors after adding/removing
+      setUsers([false, false, false, false, false, false, false, false]) // reset edit statuses to false since after save, resets to none have been edited yet
     }
     catch (error) {
       console.log(error)
