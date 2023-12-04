@@ -131,11 +131,10 @@ export default function Mentor({ session, user }: MentorProps) {
    * @param requestID - The requestID of the request being approved.
    */
   async function handleApprove(requestID: number) {
-    setSelectedRequestID(requestID)
     try {
       const res = await axios.post('/api/process/update', {
         netID: user.netID,
-        requestID: selectedRequestID,
+        requestID: requestID,
         comment: 'Approved',
         status: Status.APPROVED,
       })
