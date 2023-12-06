@@ -33,19 +33,18 @@ export default function NavBar({}: NavbarProps): JSX.Element {
             <Nav className='justify-content-end flex-grow-1'>
               {user ? (
                 <>
-                  {/* Links everyone can see */}
-                  <Nav.Link href='/orders' className='mx-2'>
-                    Orders
-                  </Nav.Link>
-                  <Nav.Link href='/order-history' className='mx-2'>
-                    Order History
-                  </Nav.Link>
 
                   {/* Links seen by Admin and Mentor */}
                   {(user.roleID === 1 || user.roleID === 2) && (
                     <>
-                      <Nav.Link href='/project-updates' className='mx-2'>
-                        Project Updates
+                     <Nav.Link href='/projects' className='mx-2'>
+                      Projects
+                      </Nav.Link>
+                     <Nav.Link href='/orders' className='mx-2'>
+                      Orders
+                      </Nav.Link>
+                      <Nav.Link href='/Database Updates' className='mx-2'>
+                      Database Updates
                       </Nav.Link>
                     </>
                   )}
@@ -53,6 +52,9 @@ export default function NavBar({}: NavbarProps): JSX.Element {
                   {/* Links seen by Student */}
                   {user.roleID === 3 && (
                     <>
+                      <Nav.Link href='/request List' className='mx-2'>
+                        Request List
+                      </Nav.Link>
                       <Nav.Link href='/request-form' className='mx-2'>
                         Request Form
                       </Nav.Link>
