@@ -32,7 +32,7 @@ export default function Login() {
         });
       } catch (error) {
         console.error('Error:', error);
-        setError('Invalid NetId, user does not exist');
+        setError('Invalid NetID, user does not exist');
       }
     } else {
       setError('Invalid login format. Please enter a valid UTD NetID.');
@@ -47,6 +47,16 @@ export default function Login() {
             <Col>
               <div className={styles.wrapper}>
                 <Form>
+                <div className='text-center'>
+                    <img
+                      src='./images/utdLogo.png'
+                      width={280}
+                      height={210}
+                      style={{ marginBottom: 30 }}
+                      alt='UTD logo'
+                    />
+                  </div>
+
                   <Form.Group controlId='loginInput'>
                     <Form.Control
                       type='text'
@@ -66,27 +76,14 @@ export default function Login() {
                     </p>
                   )}
 
-                  <div>
-                    <img
-                      src='./images/utdLogo.png'
-                      style={{ position: 'absolute', top: 150, left: 620, marginTop: 20, marginBottom: 30 }}
-                      width={280}
-                      height={210}
-                      alt='UTD logo'
-                    />
-                  </div>
-
-                  <p style={{ position: 'absolute', bottom: 300, fontSize: 15 }}>
-                    <b>NetID</b>
-                  </p>
-
                   <Button
-                    style={{ width: 210, backgroundColor: 'darkgreen', marginTop: 30, borderColor: 'black' }}
+                    style={{ width: 300, backgroundColor: 'darkgreen', marginTop: 30, borderColor: 'black' }}
                     variant='primary'
                     onClick={handleLogin}
                   >
                     Login
                   </Button>
+                  
                 </Form>
               </div>
             </Col>
