@@ -67,12 +67,7 @@ export default function Admin({
 }: AdminProps): JSX.Element {
   // state for opening the collapsed cards - an array due to multiple projects
   const [isOpen, setIsOpen] = useState<boolean[]>([])
-  // state for the modal for rejecting requests
-  const [showRejectModal, setShowRejectModal] = useState(false)
-  // state to set the request number for the reject modal to show
-  const [selectedRequestID, setSelectedRequestID] = useState<number | null>(
-    null
-  )
+ 
   // state for the requests inside the different projects associated to the user
   const [projectRequests, setProjectRequests] =
     useState<RequestDetails[][]>(reqs)
@@ -100,41 +95,6 @@ export default function Admin({
     setProjects(projects)
     setProjectRequests(requestsOfMultipleProjects)
     setIsOpen(projects.map(() => true))
-  }
-
-  /**
-   * This function is called after the mentor clicks the reject button on a request.
-   * @param requestID - The requestID of the request being rejected.
-   */
-  const handleReject = (requestID: number) => {
-    setSelectedRequestID(requestID)
-    setShowRejectModal(true)
-  }
-
-  /**
-   * This function is called after the mentor submits the rejection reason through the RejectionModal.
-   * @param reason - The reason for rejecting the request.
-   */
-  const handleSubmitRejection = async (reason: string) => {
-    setShowRejectModal(false)
-    try {
-      const response = await axios.post('/api/process/update', {
-        netID: user.netID,
-        requestID: selectedRequestID,
-        comment: reason,
-        status: Status.REJECTED,
-      })
-
-      // Updates the page if the request was successfully rejected so the rejected request should not be seen
-      if (response.status === 200) {
-        getAdmin()
-      }
-    } catch (error) {
-      if (error instanceof Error) console.log(error.message)
-      else if (axios.isAxiosError(error))
-        console.log(error.message, error.status)
-      else console.log(error)
-    }
   }
 
   /**
@@ -166,7 +126,6 @@ export default function Admin({
   return (
     <>
       <Row className='my-4'>
-        <h1>Welcome back to Project Page, {user && user.firstName}</h1>
       </Row>
       {/* Creates the ProjectHeader  */}
       {projects.map((project, projIndex) => 

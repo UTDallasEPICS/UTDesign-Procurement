@@ -15,7 +15,7 @@ import {
   Collapse,
 } from 'react-bootstrap'
 import styles from '@/styles/RequestCard.module.scss'
-import { Prisma, User, Project, WorksOn } from '@prisma/client'
+import { Prisma, User, Project, WorksOn, Status, Order } from '@prisma/client'
 import axios from 'axios'
 
 interface AdminProjectCardProps {
@@ -40,6 +40,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
   // get current mentors and students by default
   useEffect(() => {
     getProjectMembers()
+    getProcessedReqs()
   }, [])
 
   // show cards by default, and rerenders everytime collapse state's value changes
@@ -61,15 +62,33 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
   const [students6, setStudents6] = useState(" ");
   const [users, setUsers] = useState<boolean[]>([false, false, false, false, false, false, false, false]) // track which of the 8 mentors & students were edited by admin
   const [reqIDs, setReqIDs] = useState<number[]>([]) // track which of the requests were edited by admin using request IDs of updated requests
+  const [processedReqs, setProcessedReqs] = useState<RequestDetails[]>([]) // track which of the approved requests have orders, i.e. are completed
+  const [requestOrders, setRequestOrders] = useState<Order[][]>([])
 
   // state that contains the values of the input fields in the request card
   const [inputValues, setInputValues] = useState(
     // for each request in a project, store the request items for those requests
     requests[projectIndex].map((request) => {
       return request.RequestItem.map((item) => {
-      return { ...item }
+      return { 
+        ...item 
+        }
       })
     })
+  )
+
+  const [orders, setOrders] = useState(
+      requests[projectIndex].map((request) => {
+        return [
+          {
+            orderNumber: '',
+            trackingInfo: '',
+            orderDetails: '',
+            shippingCost: new Prisma.Decimal(0),
+          }
+        ]
+      }
+    )
   )
 
   // sets default values based on existing works on user info and rerenders if works on users change
@@ -107,19 +126,62 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
             }
             else if (users[i].roleID === 3) {
               students.push(users[i])
+          }
         }
+        setMentorArr(mentors) // set current users arrays for mentors and students after going through all users
+        setStudentArr(students)
+        console.log("updated project members")
       }
-      setMentorArr(mentors) // set current users arrays for mentors and students after going through all users
-      setStudentArr(students)
-      console.log("updated project members")
     }
-  }
     catch (error) {
       if (error instanceof Error) console.log(error.message)
       else if (axios.isAxiosError(error))
         console.log(error.message, error.status)
       else console.log(error)
     }
+  }
+
+  async function getProcessedReqs() {
+    try
+    {
+      let reqsWithOrders: RequestDetails[] = []
+      let reqOrders: Order[][] = []
+
+      for (const request of requests[projectIndex]) {
+        const response = await axios.get('/api/orders/get/requestOrders/', {
+          params: {
+            requestID: request.requestID
+        }})
+
+        if (response.status === 200) 
+        {
+          const orders: Order[] = response.data.orders
+          if (orders.length !== 0) {
+            reqsWithOrders.push(request)
+            reqOrders.push(orders)
+          }
+        }
+      }
+      setProcessedReqs(reqsWithOrders)
+      setRequestOrders(reqOrders)
+      console.log("fetched processed requests")
+    }
+    catch (error) {
+      if (error instanceof Error) console.log(error.message)
+      else if (axios.isAxiosError(error))
+        console.log(error.message, error.status)
+      else console.log(error)
+    }
+  }
+
+  function processed (ID: number) 
+  {
+    for (const req of processedReqs) {
+      if (req.requestID === ID) {
+        return true
+      }
+    }
+    return false
   }
 
   const updateUserAtIndex = (index: number, value: boolean) => {
@@ -198,6 +260,14 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
     storeReqIDs.push(value) // add new value to array
     setReqIDs(storeReqIDs) // Set the state with the updated array
   };
+
+  const calculateTotalCost = (reqIndex: number): Prisma.Decimal => {
+    let totalCost = 0
+    inputValues[reqIndex].forEach((item) => {
+      totalCost += (Number(item.unitPrice) * item.quantity)
+    })
+    return new Prisma.Decimal(totalCost);
+  }
 
   /**
    * This function handles saving the changes made to the request card
@@ -338,7 +408,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
           
           switch(i) {
             case 2:
-              if (students1.length > 1) { // if admin added new mentor
+              if (students1.length > 1) { // if admin added new student
                 userRes = await axios.post('/api/user/get/fullName', {
                   firstName: students1.substring(0, students1.search(" ")), // extract 2 values since first name and last name are separated by a space
                   lastName: students1.substring(students1.search(" ") + 1)
@@ -358,7 +428,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
               }
               break
             case 3:
-              if (students2.length > 1) { // if admin added new mentor
+              if (students2.length > 1) { // if admin added new student
                 userRes = await axios.post('/api/user/get/fullName', {
                   firstName: students2.substring(0, students2.search(" ")), // extract 2 values since first name and last name are separated by a space
                   lastName: students2.substring(students2.search(" ") + 1)
@@ -378,7 +448,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
               }
               break
             case 4:
-              if (students3.length > 1) { // if admin added new mentor
+              if (students3.length > 1) { // if admin added new student
                 userRes = await axios.post('/api/user/get/fullName', {
                   firstName: students3.substring(0, students3.search(" ")), // extract 2 values since first name and last name are separated by a space
                   lastName: students3.substring(students3.search(" ") + 1)
@@ -398,7 +468,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
               }
               break
             case 5:
-              if (students4.length > 1) { // if admin added new mentor
+              if (students4.length > 1) { // if admin added new student
                 userRes = await axios.post('/api/user/get/fullName', {
                   firstName: students4.substring(0, students4.search(" ")), // extract 2 values since first name and last name are separated by a space
                   lastName: students4.substring(students4.search(" ") + 1)
@@ -418,7 +488,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
               }
               break
             case 6:
-              if (students5.length > 1) { // if admin added new mentor
+              if (students5.length > 1) { // if admin added new student
                 userRes = await axios.post('/api/user/get/fullName', {
                   firstName: students5.substring(0, students5.search(" ")), // extract 2 values since first name and last name are separated by a space
                   lastName: students5.substring(students5.search(" ") + 1)
@@ -438,7 +508,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
               }
               break
             case 7:
-              if (students6.length > 1) { // if admin added new mentor
+              if (students6.length > 1) { // if admin added new student
                 userRes = await axios.post('/api/user/get/fullName', {
                   firstName: students6.substring(0, students6.search(" ")), // extract 2 values since first name and last name are separated by a space
                   lastName: students6.substring(students6.search(" ") + 1)
@@ -485,7 +555,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
         }
         if (isUpdatedReq) {
           for (let i = 0; i < newDetails.RequestItem.length; i++) {
-            updateRequest(details, newDetails, i)
+            updateRequest(reqIndex, details, newDetails, i)
           }
         }
       } catch (error) {
@@ -494,11 +564,13 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
         else console.log(error)
       }
     })
+    setRemainingBudget(Prisma.Decimal.sub(project.startingBudget, project.totalExpenses))
     setReqIDs([]) // reset list of updated request IDs to empty since after save, resets to none have been edited yet
   }
 
-  async function updateRequest(details: RequestDetails, newDetails: RequestDetails, i: number) {
+  async function updateRequest(reqIndex: number, details: RequestDetails, newDetails: RequestDetails, i: number) {
     const res = await axios.post('/api/request-form/update', {
+      projectID: project.projectID,
       requestID: details.requestID,
       itemID: details.RequestItem[i].itemID,
       description: newDetails.RequestItem[i].description, // used new details data in parameters for editable fields
@@ -506,7 +578,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
       partNumber: newDetails.RequestItem[i].partNumber, 
       quantity: newDetails.RequestItem[i].quantity, 
       unitPrice: newDetails.RequestItem[i].unitPrice, 
-      vendorID: newDetails.RequestItem[i].vendorID
+      // totalExpenses: calculateTotalCost(reqIndex) // not updating total expenses now since need to add update order (shipping cost)
     })
     if (res.status === 200) console.log(res.data)
   }
@@ -680,171 +752,171 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
               <div>                
                 {
                   inputValues.map((reqItems, reqIndex) => {
-                    return (
-                <div key={reqIndex}>
-                <Row className='smaller-row'>
-                  <div className='mb-3'></div>
-                {/* Request ID */}
-                <Col xs={12} md={7}>
-                  <h6 className={styles.headingLabel}>Request #{requests[projectIndex][reqIndex].requestID}</h6>
-                  </Col>
-                {/* Request status */}
-                 <Col xs={12} md={3}>
-                  <h6 className={styles.headingLabel}>Status </h6>
-                  <p>
-                  {requests[projectIndex][reqIndex].Process[0].status}
-                  </p>
-                </Col>
-                {/* Order Cost for Request */}
-                <Col xs={12} md={2}>
-                  <h6 className={styles.headingLabel}> Order Subtotal</h6>
-                  <p>
-                  ${requests[projectIndex][reqIndex].RequestItem.reduce(
-                    (total, item) =>
-                      total + item.quantity * (item.unitPrice as any),
-                    0
-                  ).toFixed(4)}
-                  </p>
-                  </Col>
-                </Row>
-
-                {/* REQUEST ITEMS */}
-                <Row className='my-2'>
-                <Form className={styles.requestDetails}>
+                    if ((requests[projectIndex][reqIndex].Process[0].status === Status.APPROVED && processed(requests[projectIndex][reqIndex].requestID) === true) || 
+                    requests[projectIndex][reqIndex].Process[0].status === Status.REJECTED) // only shows requests that are either approved and ordered, or rejected)
                   {
-                  <fieldset disabled={!editable}>
-                    <Table responsive striped>
-                      <thead>
-                        <tr>
-                          <th>#</th>
-                          <th>Description</th>
-                          <th>Vendor</th>
-                          <th>URL</th>
-                          <th>Part #</th>
-                          <th>Qty</th>
-                          <th>Unit Price</th>
-                          <th>Total</th>
-                          <th>Order #</th>
-                          <th>Tracking Info</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {reqItems.map((item, itemIndex) => {
-                          return (
-                            <tr key={itemIndex}>
-                              <td>{itemIndex + 1}</td>
-                              <td>
-                                <Form.Control
-                                  name='description'
-                                  value={item.description}
-                                  onChange={(e) =>
-                                    handleInputChange(
-                                      e as React.ChangeEvent<HTMLInputElement>,
-                                      itemIndex, 
-                                      reqIndex, 
-                                      requests[projectIndex][reqIndex]
-                                    )
-                                  }
-                                />
-                              </td>
-                              <td>
-                                <Form.Control
-                                  name='vendorID'
-                                  value={item.vendorID}
-                                  onChange={(e) =>
-                                    handleInputChange(
-                                      e as React.ChangeEvent<HTMLInputElement>,
-                                      itemIndex, 
-                                      reqIndex, 
-                                      requests[projectIndex][reqIndex]
-                                    )
-                                  }
-                                />
-                              </td>
-                              <td>
-                                <Form.Control
-                                  name='url'
-                                  value={item.url}
-                                  onChange={(e) =>
-                                    handleInputChange(
-                                      e as React.ChangeEvent<HTMLInputElement>,
-                                      itemIndex, 
-                                      reqIndex, 
-                                      requests[projectIndex][reqIndex]
-                                    )
-                                  }
-                                />
-                              </td>
-                              <td>
-                                <Form.Control
-                                  name='partNumber'
-                                  value={item.partNumber}
-                                  onChange={(e) =>
-                                    handleInputChange(
-                                      e as React.ChangeEvent<HTMLInputElement>,
-                                      itemIndex, 
-                                      reqIndex, 
-                                      requests[projectIndex][reqIndex]
-                                    )
-                                  }
-                                />
-                              </td>
-                              <td>
-                                <Form.Control
-                                  name='quantity'
-                                  value={item.quantity}
-                                  onChange={(e) =>
-                                    handleInputChange(
-                                      e as React.ChangeEvent<HTMLInputElement>,
-                                      itemIndex, 
-                                      reqIndex, 
-                                      requests[projectIndex][reqIndex]
-                                    )
-                                  }
-                                />
-                              </td>
-                              <td>
-                                <Form.Control
-                                  name='unitPrice'
-                                  value={item.unitPrice.toString()}
-                                  onChange={(e) =>
-                                    handleInputChange(
-                                      e as React.ChangeEvent<HTMLInputElement>,
-                                      itemIndex, 
-                                      reqIndex, 
-                                      requests[projectIndex][reqIndex]
-                                    )
-                                  }
-                                />
-                              </td>
-                              <td>
-                                <InputGroup>
-                                  <InputGroup.Text>$</InputGroup.Text>
-                                  <Form.Control
-                                    value={(
-                                      item.quantity * (item.unitPrice as any)
-                                    ).toFixed(4)}
-                                    disabled
-                                  />
-                                </InputGroup>
-                              </td>
-                              <td>
-                                <Form.Control />
-                              </td>
-                              <td>
-                                <Form.Control />
-                              </td>
-                            </tr>
+                    return (
+                      <div key={reqIndex}>
+                      <Row className='smaller-row'>
+                        <div className='mb-3'></div>
+                      {/* Request ID */}
+                      <Col xs={12} md={7}>
+                        <h6 className={styles.headingLabel}>Request #{requests[projectIndex][reqIndex].requestID}</h6>
+                        </Col>
+                      {/* Request status */}
+                       <Col xs={12} md={3}>
+                        <h6 className={styles.headingLabel}>Status </h6>
+                        <p>
+                        {requests[projectIndex][reqIndex].Process[0].status}
+                        </p>
+                      </Col>
+                      {/* Order Cost for Request */}
+                      <Col xs={12} md={2}>
+                        <h6 className={styles.headingLabel}> Order Subtotal</h6>
+                        <p>
+                        ${calculateTotalCost(reqIndex).toFixed(4)}
+                        </p>
+                        </Col>
+                      </Row>
+      
+                      {/* REQUEST ITEMS */}
+                      <Row className='my-2'>
+                      <Form className={styles.requestDetails}>
+                        {
+                        <fieldset disabled={!editable}>
+                          <Table responsive striped>
+                            <thead>
+                              <tr>
+                                <th>#</th>
+                                <th>Description</th>
+                                <th>Vendor</th>
+                                <th>URL</th>
+                                <th>Part #</th>
+                                <th>Qty</th>
+                                <th>Unit Price</th>
+                                <th>Total</th>
+                                <th>Order #</th>
+                                <th>Tracking Info</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {reqItems.map((item, itemIndex) => {
+                                return (
+                                  <tr key={itemIndex}>
+                                    <td>{itemIndex + 1}</td>
+                                    <td>
+                                      <Form.Control
+                                        name='description'
+                                        value={item.description}
+                                        onChange={(e) =>
+                                          handleInputChange(
+                                            e as React.ChangeEvent<HTMLInputElement>,
+                                            itemIndex, 
+                                            reqIndex, 
+                                            requests[projectIndex][reqIndex]
+                                          )
+                                        }
+                                      />
+                                    </td>
+                                    <td>
+                                      <Form.Control
+                                        name='vendorID'
+                                        value={item.vendorID}
+                                        onChange={(e) =>
+                                          handleInputChange(
+                                            e as React.ChangeEvent<HTMLInputElement>,
+                                            itemIndex, 
+                                            reqIndex, 
+                                            requests[projectIndex][reqIndex]
+                                          )
+                                        }
+                                      />
+                                    </td>
+                                    <td>
+                                      <Form.Control
+                                        name='url'
+                                        value={item.url}
+                                        onChange={(e) =>
+                                          handleInputChange(
+                                            e as React.ChangeEvent<HTMLInputElement>,
+                                            itemIndex, 
+                                            reqIndex, 
+                                            requests[projectIndex][reqIndex]
+                                          )
+                                        }
+                                      />
+                                    </td>
+                                    <td>
+                                      <Form.Control
+                                        name='partNumber'
+                                        value={item.partNumber}
+                                        onChange={(e) =>
+                                          handleInputChange(
+                                            e as React.ChangeEvent<HTMLInputElement>,
+                                            itemIndex, 
+                                            reqIndex, 
+                                            requests[projectIndex][reqIndex]
+                                          )
+                                        }
+                                      />
+                                    </td>
+                                    <td>
+                                      <Form.Control
+                                        name='quantity'
+                                        value={item.quantity}
+                                        onChange={(e) =>
+                                          handleInputChange(
+                                            e as React.ChangeEvent<HTMLInputElement>,
+                                            itemIndex, 
+                                            reqIndex, 
+                                            requests[projectIndex][reqIndex]
+                                          )
+                                        }
+                                      />
+                                    </td>
+                                    <td>
+                                      <Form.Control
+                                        name='unitPrice'
+                                        value={item.unitPrice.toString()}
+                                        onChange={(e) =>
+                                          handleInputChange(
+                                            e as React.ChangeEvent<HTMLInputElement>,
+                                            itemIndex, 
+                                            reqIndex, 
+                                            requests[projectIndex][reqIndex]
+                                          )
+                                        }
+                                      />
+                                    </td>
+                                    <td>
+                                      <InputGroup>
+                                        <InputGroup.Text>$</InputGroup.Text>
+                                        <Form.Control
+                                          value={(
+                                            item.quantity * (item.unitPrice as any)
+                                          ).toFixed(4)}
+                                          disabled
+                                        />
+                                      </InputGroup>
+                                    </td>
+                                    <td>
+                                      <Form.Control />
+                                    </td>
+                                    <td>
+                                      <Form.Control />
+                                    </td>
+                                  </tr>
+                                )
+                              })}
+                            </tbody>
+                          </Table>
+                        </fieldset>
+                        }
+                      </Form>
+                    </Row>
+                    </div>
                           )
-                        })}
-                      </tbody>
-                    </Table>
-                  </fieldset>
                   }
-                </Form>
-              </Row>
-              </div>
-                    )
                   })
                 }
               </div>
