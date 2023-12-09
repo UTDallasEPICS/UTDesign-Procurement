@@ -23,6 +23,7 @@ interface AdminRequestCardProps {
   project: Project
   details: RequestDetails
   onReject: () => void
+  onSave: () => void
   collapsed: boolean
 }
 
@@ -31,6 +32,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
   project,
   details,
   onReject,
+  onSave,
   collapsed,
 }) => {
   // state for the student that requested the order
@@ -291,6 +293,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
         }
       }
       setOrderTotal(calculateTotalCost())
+      onSave()
     } catch (error) {
       if (axios.isAxiosError(error) || error instanceof Error)
         console.error(error.message)

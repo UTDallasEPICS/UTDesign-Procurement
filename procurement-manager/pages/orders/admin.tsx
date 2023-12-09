@@ -258,6 +258,7 @@ export default function Admin({
                     project={project}
                     details={request}
                     onReject={() => handleReject(request.requestID)}
+                    onSave={() => getAdmin()}
                     collapsed={isOpen[projIndex]}
                   />
                 )
