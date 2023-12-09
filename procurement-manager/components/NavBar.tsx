@@ -56,7 +56,7 @@ export default function NavBar({}: NavbarProps): JSX.Element {
                       <Nav.Link href='/request-form' className='mx-2'>
                         Request Form
                       </Nav.Link>
-                      <Nav.Link href='#reimbursement-form' className='mx-2'>
+                      <Nav.Link href='/reimbursement' className='mx-2'>
                         Reimbursement Form
                       </Nav.Link>
                     </>
