@@ -37,24 +37,16 @@ export default function NavBar({}: NavbarProps): JSX.Element {
                   <Nav.Link href='/orders' className='mx-2'>
                     Orders
                   </Nav.Link>
-                  <Nav.Link href='/order-history' className='mx-2'>
-                    Order History
-                  </Nav.Link>
 
+                  {/* Links seen by Admin */}
                   {(user.roleID === 1) && (
                     <>
-                      <Nav.Link href='/projects' className='mx-2'>
-                    Project Page
-                  </Nav.Link>
-                    </>
-                  )}
-
-                  {/* Links seen by Admin and Mentor */}
-                  {(user.roleID === 1 || user.roleID === 2) && (
-                    <>
-                      <Nav.Link href='/project-updates' className='mx-2'>
-                        Project Updates
-                      </Nav.Link>
+                    <Nav.Link href='/projects' className='mx-2'>
+                      Project Page
+                    </Nav.Link>
+                    <Nav.Link href='/project-updates' className='mx-2'>
+                      Database Updates
+                    </Nav.Link>
                     </>
                   )}
 

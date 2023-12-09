@@ -15,16 +15,20 @@ import {
   Collapse,
 } from 'react-bootstrap'
 import styles from '@/styles/RequestCard.module.scss'
-import { User } from '@prisma/client'
+import { Prisma, User, Project, Vendor, Order } from '@prisma/client'
 import axios from 'axios'
 
 interface AdminRequestCardProps {
+  user: User
+  project: Project
   details: RequestDetails
   onReject: () => void
   collapsed: boolean
 }
 
 const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
+  user,
+  project,
   details,
   onReject,
   collapsed,
@@ -37,13 +41,40 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
   const [collapse, setCollapse] = useState<boolean | undefined>(false)
   // state for editing the request details
   const [editable, setEditable] = useState<boolean>(false)
+  const [vendors, setVendors] = useState<Vendor[]>([])
+  const [reqOrders, setReqOrders] = useState<Order[]>([])
+  const [updateOrders, setUpdateOrders] = useState<boolean>(false)
+ 
+  const [orders, setOrders] = useState([
+    {
+      orderNumber: '',
+      trackingInfo: '',
+      orderDetails: '',
+      shippingCost: new Prisma.Decimal(0),
+    }
+  ])
+  
   // state that contains the values of the input fields in the request card
   const [inputValues, setInputValues] = useState(
     // initialized by the details prop
-    details.RequestItem.map((item) => {
-      return { ...item }
+    details.RequestItem.map((item, itemIndex) => {
+      return { 
+        vendorName: "", 
+        ...item, 
+      }
     })
   )
+  const calculateTotalCost = (): Prisma.Decimal => {
+    let totalCost = 0
+    inputValues.forEach((item) => {
+      totalCost += (Number(item.unitPrice) * item.quantity)
+    })
+    orders.forEach((order) => {
+      totalCost += Number(order.shippingCost)
+    })
+    return new Prisma.Decimal(totalCost);
+  }
+  const [orderTotal, setOrderTotal] = useState<Prisma.Decimal>(calculateTotalCost())
 
   // Show cards by default and rerenders everytime collapsed changes
   useEffect(() => {
@@ -54,7 +85,44 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
   useEffect(() => {
     getStudentThatRequested()
     getMentorThatApproved()
+    getVendors()
+    getOrders()
   }, [])
+
+  useEffect(() => {
+    setInputValues(
+      details.RequestItem.map((item, itemIndex) => {
+        return { 
+          vendorName: (vendors.length > itemIndex ? vendors[itemIndex].vendorName : ""), 
+          ...item, 
+        }
+      })
+    )
+  }, [vendors])
+
+  useEffect(() => {
+    setOrders(reqOrders.length !== 0 ? (
+        reqOrders.map((reqOrder, reqOrderIndex) => {
+          return {
+            orderNumber: reqOrder.orderNumber,
+            trackingInfo: reqOrder.trackingInfo,
+            orderDetails: reqOrder.orderDetails,
+            shippingCost: reqOrder.shippingCost,
+          }
+        })
+      ) : (
+        [
+          {
+            orderNumber: '',
+            trackingInfo: '',
+            orderDetails: '',
+            shippingCost: new Prisma.Decimal(0),
+          }
+        ]
+      )
+    )
+    setOrderTotal(calculateTotalCost())
+  }, [reqOrders])
 
   /**
    * This function provides the data received from our API of the student that requested the order
@@ -90,6 +158,52 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
     }
   }
 
+  async function getVendors() {
+    try 
+    {
+      const response = await axios.get('/api/vendor/get/requestVendors/', {
+        params: {
+          requestID: details.requestID
+        }
+      })
+      if (response.status === 200)
+      {
+        const vendorArr: Vendor[] = response.data.vendors
+        setVendors(vendorArr)
+      }
+    } 
+    catch (error) {
+      if (axios.isAxiosError(error) || error instanceof Error)
+        console.log(error.message)
+      else console.log(error)
+    } 
+  }
+
+  async function getOrders() {
+    try 
+    {
+      const response = await axios.get('/api/orders/get/requestOrders/', {
+        params: {
+          requestID: details.requestID
+        }
+      })
+      if (response.status === 200)
+      {
+        const orderArr: Order[] = response.data.orders
+        
+        if (orderArr.length !== 0) {
+          setReqOrders(orderArr)
+          setUpdateOrders(true)
+        }
+      }
+    } 
+    catch (error) {
+      if (axios.isAxiosError(error) || error instanceof Error)
+        console.log(error.message)
+      else console.log(error)
+    } 
+  }
+
   /**
    * This function handles changes to inputs whenever user is editing the input fields in the request card
    * @param e - the onChange event passed by the input field
@@ -112,6 +226,23 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
     })
   }
 
+  function handleOrderChange(
+    e: React.ChangeEvent<HTMLInputElement>,
+    index: number
+  ) {
+    const { name, value } = e.target
+
+    setOrders((prev) => {
+      return prev.map((order, i) => {
+        if (i !== index) return order
+        return {
+          ...order,
+          [name]: value,
+        }
+      })
+    })
+  }
+
   /**
    * This function handles saving the changes made to the request card
    */
@@ -122,9 +253,29 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
         ...details, // copy the details object
         RequestItem: inputValues, // replace the RequestItem array with the new inputs in each request item
       }
+      const newOrders = orders
+
+      for (let i = 0; i < newOrders.length; i++) {
+        if (!updateOrders)
+        {
+          const response = await axios.post('/api/orders', {
+            dateOrdered: new Date(), // for now, using as if admin updates info on the website after ordering that day
+            orderNumber: newOrders[i].orderNumber,
+            orderDetails: newOrders[i].orderDetails,
+            trackingInfo: newOrders[i].trackingInfo,
+            shippingCost: newOrders[i].shippingCost,
+            requestID: details.requestID,
+            netID: user.netID,
+          })
+          if (response.status === 201) {
+            console.log(response.data)
+          }
+        }
+      }
 
       for (let i = 0; i < newDetails.RequestItem.length; i++) {
         const response = await axios.post('/api/request-form/update', {
+          projectID: project.projectID,
           requestID: details.requestID,
           itemID: details.RequestItem[i].itemID,
           description: newDetails.RequestItem[i].description, // used new details data in parameters for editable fields
@@ -132,9 +283,14 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
           partNumber: newDetails.RequestItem[i].partNumber, 
           quantity: newDetails.RequestItem[i].quantity, 
           unitPrice: newDetails.RequestItem[i].unitPrice, 
+          vendorName: newDetails.RequestItem[i].vendorName,
+          totalExpenses: calculateTotalCost(),
         })
-        if (response.status === 200) console.log(response.data)
+        if (response.status === 200) {
+          console.log(response.data)
+        }
       }
+      setOrderTotal(calculateTotalCost())
     } catch (error) {
       if (axios.isAxiosError(error) || error instanceof Error)
         console.error(error.message)
@@ -192,11 +348,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
                 <h6 className={styles.headingLabel}>Order Subtotal</h6>
                 <p>
                   $
-                  {details.RequestItem.reduce(
-                    (total, item) =>
-                      total + item.quantity * (item.unitPrice as any),
-                    0
-                  ).toFixed(4)}
+                  {orderTotal.toFixed(4)}
                 </p>
               </Col>
 
@@ -270,7 +422,6 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
                             <th>Unit Price</th>
                             <th>Total</th>
                             <th>Order #</th>
-                            <th>Tracking Info</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -290,7 +441,18 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
                                     }
                                   />
                                 </td>
-                                <td>{item.vendorID}</td>
+                                <td>
+                                  <Form.Control
+                                    name='vendorName'
+                                    value={item.vendorName}
+                                    onChange={(e) =>
+                                      handleInputChange(
+                                        e as React.ChangeEvent<HTMLInputElement>,
+                                        itemIndex
+                                      )
+                                    }
+                                  />
+                                </td>
                                 <td>
                                   <Form.Control
                                     name='url'
@@ -353,10 +515,67 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
                                 <td>
                                   <Form.Control />
                                 </td>
-                                <td>
-                                  <Form.Control />
-                                </td>
                               </tr>
+                            )
+                          })}
+                        </tbody>
+                      </Table>
+                      
+                      {/* ORDERS (based on number of vendors) */}
+                      <Table responsive striped>
+                        <thead>
+                          <tr>
+                            <th>Order #</th>
+                            <th>Tracking Info</th>
+                            <th>Order Details</th>
+                            <th>Shipping Cost</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {orders.map((order, orderIndex) => {
+                            return (
+                              <tr key={orderIndex}>
+                              <td>
+                                <Form.Control
+                                  name='orderNumber'
+                                  value={order.orderNumber}
+                                  onChange={(e) => handleOrderChange(
+                                    e as React.ChangeEvent<HTMLInputElement>,
+                                    orderIndex
+                                  )}
+                                />
+                              </td>
+                              <td>
+                                <Form.Control
+                                  name='trackingInfo'
+                                  value={order.trackingInfo}
+                                  onChange={(e) => handleOrderChange(
+                                    e as React.ChangeEvent<HTMLInputElement>,
+                                    orderIndex
+                                  )}
+                                />
+                              </td>
+                              <td>
+                                <Form.Control
+                                  name='orderDetails'
+                                  value={order.orderDetails}
+                                  onChange={(e) => handleOrderChange(
+                                    e as React.ChangeEvent<HTMLInputElement>,
+                                    orderIndex
+                                  )}
+                                />
+                              </td>
+                              <td>
+                                <Form.Control
+                                  name='shippingCost'
+                                  value={Number(order.shippingCost)}
+                                  onChange={(e) => handleOrderChange(
+                                    e as React.ChangeEvent<HTMLInputElement>,
+                                    orderIndex
+                                  )}
+                                />
+                              </td>
+                            </tr>
                             )
                           })}
                         </tbody>
