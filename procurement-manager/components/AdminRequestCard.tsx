@@ -428,7 +428,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
                           {inputValues.map((item, itemIndex) => {
                             return (
                               <tr key={itemIndex}>
-                                <td>{itemIndex + 1}</td>
+                                <td width={20}>{itemIndex + 1}</td>
                                 <td>
                                   <Form.Control
                                     name='description'
@@ -477,7 +477,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
                                     }
                                   />
                                 </td>
-                                <td>
+                                <td width={70}>
                                   <Form.Control
                                     name='quantity'
                                     value={item.quantity}
@@ -489,7 +489,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
                                     }
                                   />
                                 </td>
-                                <td>
+                                <td width={90}>
                                   <Form.Control
                                     name='unitPrice'
                                     value={item.unitPrice.toString()}
