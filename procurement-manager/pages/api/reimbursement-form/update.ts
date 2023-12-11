@@ -7,6 +7,11 @@ export default async function handler(
   res: NextApiResponse
 ) {
   try {
+    if (req.method !== 'POST') {
+      res.status(405).send('Method Not Allowed')
+      return
+    }
+    
     const body = req.body
     let reimbursement
 
@@ -80,101 +85,26 @@ export default async function handler(
       })
     }
 
-    // for now is optional since need to add expense field to reimbursement schema
-    if ('totalExpenses' in body) 
-    {
-        /*
-      // Find the project to get the total expenses
-      let project = await prisma.project.findUnique({
-        where: { projectID: parseInt(body.projectID) },
-      })
-      // Remove the old request expenses before adding the updated expenses to project
-      let updateExpense = await prisma.project.update({
-        where: { projectID: parseInt(body.projectID) },
+    // update with default required params, and total expenses not included for now since need expense field in reimbursement
+    reimbursement = await prisma.reimbursement.update({ 
+      where: {
+        reimbursementID: oldReimbursementForm.reimbursementID
+      },
         data: {
-          totalExpenses: Prisma.Decimal.sub(
-            project?.totalExpenses === undefined
-              ? oldReqExpense
-              : project.totalExpenses,
-            oldReqExpense
-          ),
-        },
-      })
-      project = await prisma.project.findUnique({
-        where: { projectID: parseInt(body.projectID) },
-      })
-      console.log('removed old  - project expenses: ', project?.totalExpenses)
-      
-      // update with default required params and expenses
-      request = await prisma.request.update({ 
-        where: {
-          requestID: oldRequestForm.requestID,
-        },
-          data: {
-            RequestItem: {
-              update: {
-                where: {
-                  itemID: parseInt(body.itemID),
-                },
-                data: {
+          ReimbursementItem: {
+            update: {
+              where: {
+                itemID: parseInt(body.itemID),
+              },
+              data: {
+                  receiptDate: new Date(body.receiptDate),
                   description: String(body.description),
-                  url: String(body.url),
-                  partNumber: String(body.partNumber),
-                  quantity: parseInt(body.quantity),
-                  unitPrice: new Prisma.Decimal(body.unitPrice),
-                },
-              },
-            },
-            expense: new Prisma.Decimal(body.totalExpenses)
-          },
-      })
-      request = await prisma.request.findUnique({
-        where: {
-          requestID: oldRequestForm.requestID
-        }
-      })
-      if (request === null) throw new Error('request not found')
-      console.log('new request expense: ', request.expense)
-
-      // add updated request expenses to project
-      updateExpense = await prisma.project.update({
-        where: { projectID: parseInt(body.projectID) },
-        data: {
-          totalExpenses: Prisma.Decimal.add(
-            project?.totalExpenses === undefined ? 0 : project.totalExpenses,
-            request.expense
-          ),
-        },
-      })
-      project = await prisma.project.findUnique({
-        where: { projectID: parseInt(body.projectID) },
-      })
-      console.log('added new - project expenses: ', project?.totalExpenses)
-      */
-    }
-    else
-    {
-      // update with default required params
-      reimbursement = await prisma.reimbursement.update({ 
-        where: {
-          reimbursementID: oldReimbursementForm.reimbursementID
-        },
-          data: {
-            ReimbursementItem: {
-              update: {
-                where: {
-                  itemID: parseInt(body.itemID),
-                },
-                data: {
-                    receiptDate: new Date(body.receiptDate),
-                    description: String(body.description),
-                    receiptTotal: Number(body.receiptTotal)
-                },
+                  receiptTotal: Number(body.receiptTotal)
               },
             },
           },
-      })
-    }
+        },
+    })
     
     res.status(200).json({ message: 'Reimbursement Form Updated', reimbursement: reimbursement })
   } catch (error) {

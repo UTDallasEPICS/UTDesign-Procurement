@@ -35,7 +35,7 @@ export default async function handler(
     res.status(400).send('Items is missing')
   }
 
-  // POST - create a new request
+  // POST - create a new reimbursement
   try {
     const dateSubmitted = new Date()
     const body = req.body
@@ -50,7 +50,7 @@ export default async function handler(
       body.projectNum = parseInt(body.projectNum)
 
     // FINALLY CREATE THE FORM AND INSERT TO DATABASE
-    const reimbursementForm = await createRequest(body, dateSubmitted, optionalFields)
+    const reimbursementForm = await createReimbursement(body, dateSubmitted, optionalFields)
     const reimbursementID = reimbursementForm.reimbursementID
 
     // INPUT ARRAY OF ITEMS INTO DATABASE
@@ -85,7 +85,7 @@ export default async function handler(
 }
 
 // TODO :: do error handling
-async function createRequest(
+async function createReimbursement(
   body: any,
   dateSubmitted: Date,
   optionalFields: Optionals
@@ -96,7 +96,6 @@ async function createRequest(
         data: {
             dateSubmitted: dateSubmitted,
             project: {
-            // sample project
             connect: { projectNum: body.projectNum },
             },
             student: {
@@ -126,7 +125,7 @@ async function createRequest(
         data: {
         totalExpenses: Prisma.Decimal.add(
             project?.totalExpenses === undefined ? 0 : project.totalExpenses,
-            body.totalExpenses
+            new Prisma.Decimal(body.totalExpenses)
         ),
         },
     })
