@@ -1,5 +1,6 @@
-/**
+/*
  * This endpoint adds a deactivation date to a project given a project number.
+ * The request method is only POST.
  */
 
 import {NextApiRequest, NextApiResponse} from 'next'

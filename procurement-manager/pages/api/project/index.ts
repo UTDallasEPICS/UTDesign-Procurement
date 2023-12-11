@@ -53,7 +53,7 @@ export default async function handler(
       }
     }
   }
-  // API to get all projects from the database
+  // the GET request method API gets all projects from the database based on prisma's findMany method
   else if (req.method === 'GET')
   {
     try {
