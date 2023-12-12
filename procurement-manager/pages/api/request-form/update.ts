@@ -1,3 +1,5 @@
+// API to update fields in request like order, process, vendor, request item, and update project expenses
+
 import { NextApiRequest, NextApiResponse } from 'next'
 import { prisma } from '@/db'
 import { Prisma } from '@prisma/client'
@@ -18,6 +20,8 @@ export default async function handler(
     if (!oldRequestForm) throw new Error('Could not find that request form')
     const oldReqExpense = oldRequestForm.expense
     console.log('old request expense: ', oldReqExpense)
+
+    // TODO:: update multiple request items and orders instead of 1 by passing in objects and validating using interfaces similar to request-form/index API
 
     if ('orderID' in body) { // order details - optional, so only updated if passed in
 
@@ -68,6 +72,7 @@ export default async function handler(
                   processID: parseInt(body.processID)
                 },
                 data: {
+                  // TODO:: use type checking (could allow admin to pass in status string like "approved" and create status using Status.APPROVED, etc. for different ones)
                   status: body.status
                 }
               }

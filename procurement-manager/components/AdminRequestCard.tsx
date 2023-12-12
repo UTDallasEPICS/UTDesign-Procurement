@@ -47,6 +47,8 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
   const [reqOrders, setReqOrders] = useState<Order[]>([])
   const [updateOrders, setUpdateOrders] = useState<boolean>(false)
  
+  // state that contains the values of the fields for each order
+  // TODO:: implement add/delete orders feature similar to add/delete items feature for request-form/index.ts
   const [orders, setOrders] = useState([
     {
       orderNumber: '',
@@ -56,7 +58,8 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
     }
   ])
   
-  // state that contains the values of the input fields in the request card
+  // state that contains the values of the input fields for request items in the request card
+  // TODO:: implement add/delete items feature similar to add/delete items feature for request-form/index.ts
   const [inputValues, setInputValues] = useState(
     // initialized by the details prop
     details.RequestItem.map((item, itemIndex) => {
@@ -66,6 +69,11 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
       }
     })
   )
+
+  /**
+   * this function calculates the total cost for all items in a request
+   * @returns Prisma Decimal value for total request expenses
+   */
   const calculateTotalCost = (): Prisma.Decimal => {
     let totalCost = 0
     inputValues.forEach((item) => {
@@ -91,6 +99,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
     getOrders()
   }, [])
 
+  // set request item and order arrays to data retrieved from request
   useEffect(() => {
     setInputValues(
       details.RequestItem.map((item, itemIndex) => {
@@ -160,6 +169,9 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
     }
   }
 
+  /**
+   * this function is used to retrieve the vendors needed for request 
+   */
   async function getVendors() {
     try 
     {
@@ -181,6 +193,9 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
     } 
   }
 
+  /**
+   * this function is used to retrieve the orders associated with request
+   */
   async function getOrders() {
     try 
     {
@@ -207,7 +222,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
   }
 
   /**
-   * This function handles changes to inputs whenever user is editing the input fields in the request card
+   * This function handles changes to inputs whenever user is editing the input fields in the request card for request item
    * @param e - the onChange event passed by the input field
    * @param index - the index of the request item the input field is in within the request items array
    */
@@ -228,6 +243,11 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
     })
   }
 
+  /**
+   * This function handles changes to inputs whenever user is editing the input fields in the request card for orders
+   * @param e - the onChange event passed by the input field
+   * @param index - the index of the request item the input field is in within the request items array
+   */
   function handleOrderChange(
     e: React.ChangeEvent<HTMLInputElement>,
     index: number
@@ -245,6 +265,10 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
     })
   }
 
+  // TODO:: add form validation to make sure input values follow requirements (no characters for numeric values, etc.)
+  // use this as reference: https://react-bootstrap.netlify.app/docs/forms/validation/
+  // TODO:: add editable field for otherExpenses for a request
+
   /**
    * This function handles saving the changes made to the request card
    */
@@ -261,7 +285,9 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
         if (!updateOrders)
         {
           const response = await axios.post('/api/orders', {
-            dateOrdered: new Date(), // for now, using as if admin updates info on the website after ordering that day
+            // for now, using as if admin updates info on the website after ordering that day
+            // TODO:: allow admin to set date ordered similar to request-form/index
+            dateOrdered: new Date(), 
             orderNumber: newOrders[i].orderNumber,
             orderDetails: newOrders[i].orderDetails,
             trackingInfo: newOrders[i].trackingInfo,
@@ -459,7 +485,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
                                 <td>
                                   <Form.Control
                                     name='url'
-                                    value={item.url}
+                                    value={item.url} // TODO:: make item url shown as clickable link
                                     onChange={(e) =>
                                       handleInputChange(
                                         e as React.ChangeEvent<HTMLInputElement>,

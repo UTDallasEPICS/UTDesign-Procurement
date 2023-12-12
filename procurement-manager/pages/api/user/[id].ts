@@ -1,6 +1,6 @@
 /*
 if get request then returns user for userID query param
-if post request then returns all users in a project for projectID query param
+if post request then returns all users in a project for projectID query param (current and past users since worksOn schema was updated)
 */
 
 import { NextApiRequest, NextApiResponse } from 'next'

@@ -1,3 +1,5 @@
+// API to update fields in request like process, vendor, reimbursement item, and update project expenses
+
 import { NextApiRequest, NextApiResponse } from 'next'
 import { prisma } from '@/db'
 import { Prisma } from '@prisma/client'
@@ -22,6 +24,8 @@ export default async function handler(
     })
     if (!oldReimbursementForm) throw new Error('Could not find that reimbursement form')
 
+    // TODO:: update multiple reimbursement items and orders instead of 1 by passing in objects and validating using interfaces similar to reimbursement-form/index API
+
     if ('processID' in body) { 
       let process = await prisma.process.findUnique({
         where: {
@@ -42,6 +46,7 @@ export default async function handler(
                   processID: parseInt(body.processID)
                 },
                 data: {
+                  // TODO:: use type checking (could allow admin to pass in status string like "approved" and create status using Status.APPROVED, etc. for different ones)
                   status: body.status
                 }
               }
@@ -85,7 +90,7 @@ export default async function handler(
       })
     }
 
-    // update with default required params, and total expenses not included for now since need expense field in reimbursement
+    // update with default required params, and total expenses not included for now since need expense field in reimbursement, then implement update similar to request-form/update API
     reimbursement = await prisma.reimbursement.update({ 
       where: {
         reimbursementID: oldReimbursementForm.reimbursementID

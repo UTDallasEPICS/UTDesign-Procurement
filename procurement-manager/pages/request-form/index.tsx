@@ -69,7 +69,9 @@ const StudentRequest = ({ session, user, listOfProjects, vendors }: StudentReque
   // State and handlers
   const [date, setDate] = useState('')
   const [additionalInfo, setAdditionalInfo] = useState('')
+  // remaining budget before adding any items
   const [remainingBeforeItem, setRemainingBeforeItem] = useState<Prisma.Decimal>(Prisma.Decimal.sub(new Prisma.Decimal(listOfProjects[0].startingBudget), new Prisma.Decimal(listOfProjects[0].totalExpenses)))
+  // remaining budget that updates every time item is added/deleted
   const [remainingAfterItem, setRemainingAfterItem] = useState<Prisma.Decimal>(Prisma.Decimal.sub(new Prisma.Decimal(listOfProjects[0].startingBudget), new Prisma.Decimal(listOfProjects[0].totalExpenses)))
   const [totalExpenses, setTotalExpenses] = useState<Prisma.Decimal>(new Prisma.Decimal(listOfProjects[0].totalExpenses))
   const [items, setItems] = useState([
@@ -89,6 +91,8 @@ const StudentRequest = ({ session, user, listOfProjects, vendors }: StudentReque
   const [selectedProject, setSelectedProject] = useState(listOfProjects[0].projectNum)
   const router = useRouter()
   
+// TODO:: update tooltip whenever item is added or deleted
+
   /**
    * This function handles updating the tooltips whenever the input fields are changed
    * THIS SHOULD BE IMPROVE SINCE IT IS USING VANILLA JS AND THE DOM, NOT REACT
@@ -238,6 +242,8 @@ const StudentRequest = ({ session, user, listOfProjects, vendors }: StudentReque
 
     setItems(newItems)
   }
+
+  // TODO:: change vendorID to vendorName similar to AdminRequestCard
 
   /**
    * This function is what handles submitting the form and calls our API to update the database
@@ -663,6 +669,7 @@ const StudentRequest = ({ session, user, listOfProjects, vendors }: StudentReque
           </Col>
         </Row>
 
+        {/* TODO:: store uploaded files in the cloud and update DB */}
         <Row className='my-4'>
           <Form.Group controlId='fileUpload'>
             <Form.Label>

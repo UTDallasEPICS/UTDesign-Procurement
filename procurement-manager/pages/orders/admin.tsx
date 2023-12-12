@@ -171,7 +171,9 @@ export default function Admin({
     })
   }
 
-  // function to get all requests that were processed (have orders)
+  /**
+   * this function is used to retrieve the orders associated with each request in the project, and if a request has an order then the request is processed
+   */
   async function getProcessedReqs() {
     try
     {
@@ -208,7 +210,12 @@ export default function Admin({
     }
   }
 
-  // function to check if a request is processed, use to display request cards for only unprocessed requests 
+  /**
+   * this function checks if a request is processed or not (has orders) by using its request ID
+   * @param ID the index of the project
+   * @param reqID the requestID of the request
+   * @returns boolean value depending on the request associated with that ID is processed or not
+   */
   function processed (projIndex: number, reqID: number) 
   {
     if (projectReqsWithOrders !== undefined) {
@@ -250,7 +257,8 @@ export default function Admin({
             {projectRequests[projIndex].length > 0 ? (
               projectRequests[projIndex].map((request, reqIndex) => {
                 // TODO:: only show request cards if approved and not processed, works using an if and 'processed' function but resolve rendering issue:
-                // when you open or refresh orders page, it still tries to display the request cards of processed requests, then the cards disappear
+                // i.e. when you open or refresh orders page, it still tries to display the request cards of processed requests, then the cards disappear
+                // maybe try getting processed requests and update the request array in getServerSideProps() instead of in the component
                 return (
                   <AdminRequestCard
                     key={reqIndex}
@@ -258,7 +266,7 @@ export default function Admin({
                     project={project}
                     details={request}
                     onReject={() => handleReject(request.requestID)}
-                    onSave={() => getAdmin()}
+                    onSave={() => getAdmin()} // since after adding orders and updating project expenses in AdminRequestCard this function call will show the updated project info after querying DB
                     collapsed={isOpen[projIndex]}
                   />
                 )

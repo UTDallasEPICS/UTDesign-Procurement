@@ -1,5 +1,5 @@
 /**
- * This component is seen in the Orders Page right before the cards. This can be reused in the Orders History Page.
+ * This component is seen in the Projects & Order History Page right before the cards.
  */
 
 import { Prisma } from '@prisma/client'

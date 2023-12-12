@@ -55,6 +55,8 @@ export default async function handler(
           request: true,
         },
       })
+      
+      // undo expense for rejected request
       if (status === Status.REJECTED) {
         const project = await prisma.project.findUnique({
           where: { projectID: request.projectID },

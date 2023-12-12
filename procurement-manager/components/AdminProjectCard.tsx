@@ -1,5 +1,5 @@
 /**
- * This component is the card that the Admin will see in the Orders Page
+ * This component is the card displayed for each project that the Admin will see in the Projects & Order History Page
  */
 import React, { useEffect, useState } from 'react'
 import { prisma } from '@/db'
@@ -34,6 +34,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
 
   const [collapse, setCollapse] = useState<boolean | undefined>(false)
   const [editable, setEditable] = useState<boolean>(false) // state for editing the request details
+  // arrays used to store information from API for mentors and students currently working on the project
   const [mentorArr, setMentorArr] = useState<User[]>([])
   const [studentArr, setStudentArr] = useState<User[]>([])
 
@@ -48,21 +49,22 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
     setCollapse(collapsed)
   }, [collapsed])
 
-  const [projectNumber, setProjectNumber] = useState(project.projectNum);
+  const [projectNumber, setProjectNumber] = useState(project.projectNum); // sets the project number to the project number of the project passed in to the project card
   const [projectTitle, setProjectTitle] = useState(project.projectTitle);
   const [totalBudget, setTotalBudget] = useState(project.startingBudget);
   const [remainingBudget, setRemainingBudget] = useState(Prisma.Decimal.sub(project.startingBudget, project.totalExpenses)); // subtract values of decimal data type
   const [mentors, setMentors] = useState<string[]>([""])
   const [students, setStudents] = useState<string[]>([""])
-  const [updatedMentors, setUpdatedMentors] = useState<boolean[]>([false]) // track which of the mentors were edited by admin
+  // arrays are used track which of the mentors and studentsthat were edited by admin before saving
+  const [updatedMentors, setUpdatedMentors] = useState<boolean[]>([false]) 
   const [updatedStudents, setUpdatedStudents] = useState<boolean[]>([false])
-  const [reqIDs, setReqIDs] = useState<number[]>([]) // track which of the requests were edited by admin using request IDs of updated requests
-  const [processedReqs, setProcessedReqs] = useState<RequestDetails[]>([]) // track which of the approved requests have orders, i.e. are completed
-  const [requestOrders, setRequestOrders] = useState<Order[][]>([])
+  const [reqIDs, setReqIDs] = useState<number[]>([]) // track which of the requests in the project were edited by admin using request IDs of those updated requests
+  const [processedReqs, setProcessedReqs] = useState<RequestDetails[]>([]) // track which of the approved requests have orders, i.e. are completed so they are displayed
+  const [requestOrders, setRequestOrders] = useState<Order[][]>([]) // stores the orders for each request in the project
 
-  // state that contains the values of the input fields in the request card
+  // state that contains the values of the input fields for items for each request of the project
+  // TODO:: implement add/delete items feature similar to add/delete items feature for request-form/index.ts
   const [inputValues, setInputValues] = useState(
-    // for each request in a project, store the request items for those requests
     requests[projectIndex].map((request) => {
       return request.RequestItem.map((item) => {
       return { 
@@ -72,6 +74,10 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
     })
   )
 
+  // state that contains the values of the fields for each order
+  // TODO:: use requestOrders array to set the orders array so that it shows the orders in each request before editing
+  // TODO:: use orders array to implement editing for order data similar AdminRequestCard except updating
+  // TODO:: implement add/delete orders feature similar to add/delete items feature for request-form/index.ts
   const [orders, setOrders] = useState(
       requests[projectIndex].map((request) => {
         return [
@@ -86,7 +92,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
     )
   )
 
-  // sets default values based on existing works on user info and rerenders if works on users change
+  // sets default values based on existing works on user info from getProjectMembers() and rerenders as data fetched from that function changes
   useEffect(() => {
     let newMentors = mentorArr.map((mentor) => {
       return (mentor.firstName + " " + mentor.lastName)
@@ -99,11 +105,12 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
     setMentors(newMentors)
     setUpdatedMentors(
       newMentors.map((mentor) => {
-        return false
+        return false // initially sets update status of users to false since user data was just retrieved
       })
     )
   }, [mentorArr]) 
 
+  // sets default values based on existing works on user info from getProjectMembers() and rerenders as data fetched from that function changes
   useEffect(() => {
     let newStudents = studentArr.map((student) => {
       return (student.firstName + " " + student.lastName)
@@ -116,11 +123,15 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
     setStudents(newStudents)
     setUpdatedStudents(
       newStudents.map((student) => {
-        return false
+        return false // initially sets update status to false since the user data was just retrieved
       })
     )
   }, [studentArr])
 
+  /**
+   * this function is used to retrieve current users in a project using the currentUsers worksOn API and updates the mentor and student arrays
+   * containing initial project users
+   */
   async function getProjectMembers() {
     let mentors: User[] = []
     let students: User[] = []
@@ -137,7 +148,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
             console.log("user " + users[i].userID + ": " + users[i].firstName + ", role: " + users[i].roleID)
 
             if (users[i].roleID === 2) {
-              mentors.push(users[i])
+              mentors.push(users[i]) // updates user arrays based on role
             }
             else if (users[i].roleID === 3) {
               students.push(users[i])
@@ -156,6 +167,9 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
     }
   }
 
+  /**
+   * this function is used to retrieve the orders associated with each request in the project, and if a request has an order then the request is processed
+   */
   async function getProcessedReqs() {
     try
     {
@@ -189,6 +203,11 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
     }
   }
 
+  /**
+   * this function checks if a request is processed or not (has orders) by using its request ID
+   * @param ID the request ID of the request
+   * @returns boolean value depending on the request associated with that ID is processed or not
+   */
   function processed (ID: number) 
   {
     for (const req of processedReqs) {
@@ -199,6 +218,11 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
     return false
   }
 
+  /**
+   * these functions modify the updated mentors/students array to track the update status of a user based on admin input
+   * @param index index of the mentors/students array (same index for updated mentors/students boolean array since same length)
+   * @param value boolean value depending on if updated or not
+   */
   const updateMentorAtIndex = (index: number, value: boolean) => {
     const newUpdatedMentors = [...updatedMentors];
     newUpdatedMentors[index] = value; // Update the value at the specified index
@@ -211,6 +235,11 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
     setUpdatedStudents(newUpdatedStudents); // Set the state with the new array
   };
 
+  /**
+   * these functions update the mentor and student input arrays with new values entered by admin
+   * @param newMentor stores name of mentor/student that was added by admin
+   * @param mentorIndex stores index of mentor/student array that the edited field corresponds to
+   */
   function handleMentorChange (newMentor: string, mentorIndex: number) 
   {
     const newMentors = mentors
@@ -229,7 +258,9 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
   /**
    * This function handles changes to inputs whenever user is editing the input fields in the request card
    * @param e - the onChange event passed by the input field
-   * @param index - the index of the request item the input field is in within the request items array
+   * @param itemIndex - the index of the request item the input field is in within the request items array
+   * @param requestIndex - index of the request that the items are in
+   * @param details - object holding request that the items are in and other related info
    */
 
   function handleInputChange(
@@ -247,20 +278,29 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
           if (i !== itemIndex) return item
           return {
             ...item,
-            [name]: value,
+            [name]: value, // only modify item at index with admin entered value for that input field name
           }
         })
       })
     })
-    updateReqIDs(details.requestID) // add the request ID to list of updated request IDs
+    updateReqIDs(details.requestID) // add the request ID of the request that the items are in to updated request IDs
   }
 
+  /**
+   * this function adds a request ID for any updated request data to the list of updated request IDs
+   * @param value request ID for request data that admin edited
+   */
   const updateReqIDs = (value: number) => {
     const storeReqIDs = [...reqIDs]
     storeReqIDs.push(value) // add new value to array
     setReqIDs(storeReqIDs) // Set the state with the updated array
   };
 
+  /**
+   * this function calculates the total cost for all items in a request
+   * @param reqIndex index of request to calculate total item cost for
+   * @returns Prisma Decimal value for total request expenses
+   */
   const calculateTotalCost = (reqIndex: number): Prisma.Decimal => {
     let totalCost = 0
     inputValues[reqIndex].forEach((item) => {
@@ -269,8 +309,13 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
     return new Prisma.Decimal(totalCost);
   }
 
+  // TODO:: add form validation to make sure input values follow requirements (no characters for numeric values, etc.)
+  // use this as reference: https://react-bootstrap.netlify.app/docs/forms/validation/
+  // TODO:: add editable field for otherExpenses for a request
+
   /**
-   * This function handles saving the changes made to the request card
+   * This function handles saving the changes made to the project card (project, project member, and project request data) by calling the APIs 
+   * for project update, worksOn deactivate (to remove a user from project), worksOn (to add a new user), and request update
    */
   async function handleSave() 
   {
@@ -303,13 +348,13 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
       {
         if (updatedMentors[mentorIndex] === true)
         {
-          if (mentorArr.length >= 1) { // if existing mentor array had an initial value for mentor but now admin removed initial mentor
+          if (mentorArr.length >= 1) { // if existing mentor array had an initial value for mentor but now admin removed initial mentor since that mentor field was edited
             worksOnRes = await axios.get('/api/worksOn/currentProjects/', {
               params: {
                 userID: mentorArr[mentorIndex].userID,
             }})
             if (worksOnRes.status === 200) { // first get worksOn entry to access start date, then deactivate initial user
-              console.log("found current projects of mentor 1")
+              console.log("found current projects of mentor")
               console.log(worksOnRes.data)
             }
             worksOns = worksOnRes.data.worksOn
@@ -321,7 +366,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
             startDate: projectWorksOn[0].startDate,
             })
             if (deactivateRes.status === 200) {
-              console.log("deactivated mentor 1")
+              console.log("deactivated mentor")
               console.log(deactivateRes.data)
             } 
           }
@@ -331,7 +376,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
               lastName: mentors[mentorIndex].substring(mentors[mentorIndex].search(" ") + 1)
             })
             if (userRes.status === 200) { // first validate the entered user then add to project
-              console.log("found new user entered as mentor 1")
+              console.log("found new user entered as mentor")
               console.log(userRes.data)
             }
             worksOnRes = await axios.post('/api/worksOn/', {
@@ -339,7 +384,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
               projectNum: newProject.projectNum,
             })
             if (worksOnRes.status === 201) {
-              console.log("added new user as mentor 1")
+              console.log("added new user as mentor")
               console.log(worksOnRes.data)
             }
           }
@@ -350,13 +395,13 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
       {
         if (updatedStudents[studentIndex] === true)
         {
-          if (studentArr.length >= 1) { // if existing mentor array had an initial value for mentor but now admin removed initial mentor
+          if (studentArr.length >= 1) { // if existing student array had an initial value for student but now admin removed initial student since student field was edited
             worksOnRes = await axios.get('/api/worksOn/currentProjects/', {
               params: {
                 userID: studentArr[studentIndex].userID,
             }})
             if (worksOnRes.status === 200) { // first get worksOn entry to access start date, then deactivate initial user
-              console.log("found current projects of mentor 1")
+              console.log("found current projects of student")
               console.log(worksOnRes.data)
             }
             worksOns = worksOnRes.data.worksOn
@@ -368,17 +413,17 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
             startDate: projectWorksOn[0].startDate,
             })
             if (deactivateRes.status === 200) {
-              console.log("deactivated mentor 1")
+              console.log("deactivated student")
               console.log(deactivateRes.data)
             } 
           }
-          if (students[studentIndex].length > 1) { // if admin added new mentor
+          if (students[studentIndex].length > 1) { // if admin added new student
             userRes = await axios.post('/api/user/get/fullName', {
               firstName: students[studentIndex].substring(0, students[studentIndex].search(" ")), // extract 2 values since first name and last name are separated by a space
               lastName: students[studentIndex].substring(students[studentIndex].search(" ") + 1)
             })
             if (userRes.status === 200) { // first validate the entered user then add to project
-              console.log("found new user entered as mentor 1")
+              console.log("found new user entered as student")
               console.log(userRes.data)
             }
             worksOnRes = await axios.post('/api/worksOn/', {
@@ -386,7 +431,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
               projectNum: newProject.projectNum,
             })
             if (worksOnRes.status === 201) {
-              console.log("added new user as mentor 1")
+              console.log("added new user as student")
               console.log(worksOnRes.data)
             }
           }
@@ -431,6 +476,13 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
     setReqIDs([]) // reset list of updated request IDs to empty since after save, resets to none have been edited yet
   }
 
+  /**
+   * this function updates items for the updated request
+   * @param reqIndex index of updated request
+   * @param details object holding old data of updated request
+   * @param newDetails object holding new data of updated request
+   * @param i index of item in request item array
+   */
   async function updateRequest(reqIndex: number, details: RequestDetails, newDetails: RequestDetails, i: number) {
     const res = await axios.post('/api/request-form/update', {
       projectID: project.projectID,
@@ -441,7 +493,8 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
       partNumber: newDetails.RequestItem[i].partNumber, 
       quantity: newDetails.RequestItem[i].quantity, 
       unitPrice: newDetails.RequestItem[i].unitPrice, 
-      // totalExpenses: calculateTotalCost(reqIndex) // not updating total expenses now since need to add update order (shipping cost)
+      // totalExpenses: calculateTotalCost(reqIndex) // not updating total expenses now since need to add update order (shipping cost) that will affect project expenses
+      // since updating project expenses will subtract old expenses (including old order expenses) and add new expenses passed in
     })
     if (res.status === 200) console.log(res.data)
   }
@@ -582,11 +635,20 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
 
             {/* COLLAPSED ROW */}
             <Collapse in={collapse}>
-              <div>                
+              <div>
+                {
+                  // TODO:: make status editable
+                  // TODO:: change processed order status from approved to ordered
+                  // for change status could change process/update API to also accept params as string like "approved" and then update status object
+                  // TODO:: show admin and mentor comments for request using process of request and make admin comments editable
+                  // TODO:: make request additional info editable using request/update API 
+                  // TODO:: change option to update vendorID to vendorName similar to orders/admin
+                }                
                 {
                   inputValues.map((reqItems, reqIndex) => {
+                    // only shows processed requests for order history - i.e. were approved and ordered, or were rejected
                     if ((requests[projectIndex][reqIndex].Process[0].status === Status.APPROVED && processed(requests[projectIndex][reqIndex].requestID) === true) || 
-                    requests[projectIndex][reqIndex].Process[0].status === Status.REJECTED) // only shows requests that are either approved and ordered, or rejected)
+                    requests[projectIndex][reqIndex].Process[0].status === Status.REJECTED) 
                   {
                     return (
                       <div key={reqIndex}>
@@ -594,6 +656,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
                         <div className='mb-3'></div>
                       {/* Request ID */}
                       <Col xs={12} md={7}>
+                        {/* first find the request list for the project passed in, then find the specific reques index and access its request data like ID */}
                         <h6 className={styles.headingLabel}>Request #{requests[projectIndex][reqIndex].requestID}</h6>
                         </Col>
                       {/* Request status */}
@@ -646,7 +709,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
                                             e as React.ChangeEvent<HTMLInputElement>,
                                             itemIndex, 
                                             reqIndex, 
-                                            requests[projectIndex][reqIndex]
+                                            requests[projectIndex][reqIndex] // to access the specific request object with request and other data, for the item
                                           )
                                         }
                                       />
@@ -668,7 +731,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
                                     <td>
                                       <Form.Control
                                         name='url'
-                                        value={item.url}
+                                        value={item.url} // TODO:: make item url shown as clickable link
                                         onChange={(e) =>
                                           handleInputChange(
                                             e as React.ChangeEvent<HTMLInputElement>,

@@ -1,5 +1,5 @@
 /**
- * This is the Admin View for the Orders Page
+ * This is the Admin View for the Projects & Order History Page
  */
 
 import React, { useEffect, useState } from 'react'
@@ -143,7 +143,7 @@ export default function Admin({
             <AdminProjectCard
             projectIndex={projIndex}
             project={project}
-            requests={projectRequests}
+            requests={projectRequests} // array of requests for multiple projects so use project index to access request list for a project
             collapsed={isOpen[projIndex]}
             />
           </Row>

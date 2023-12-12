@@ -26,7 +26,6 @@ export default function index({ title }: { title: string }) {
   if (session) {
     if (user.roleID === 1) router.push('/projects/admin')
     else if (user.roleID === 2) router.push('/projects/mentor')
-    else if (user.roleID === 3) router.push('/projects/student')
   } else
     return (
       <>
