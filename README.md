@@ -32,6 +32,8 @@ You must have the following tools installed:
 
 ## 🛠️ Setting up local environment 🛠️
 
+- [Windows Setup Video (or follow steps below)](https://drive.google.com/file/d/1rfLeheG1CDICo-jMk1RkD016VDWC-fqK/view?usp=drive_link)
+  
 1. Install all the required softwares specified above.
 2. Check if you have git and npm installed by typing in your terminal: `git --version` and `npm --version`
 3. If you haven't learned how to use the terminal, please do so first to your respective operating system. Some basics are: `cd` and `mkdir`

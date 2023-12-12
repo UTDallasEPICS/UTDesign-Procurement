@@ -1,84 +1,225 @@
+// API to update fields in request like order, process, vendor, request item, and update project expenses
+
 import { NextApiRequest, NextApiResponse } from 'next'
 import { prisma } from '@/db'
+import { Prisma } from '@prisma/client'
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  // TODO:: Add validation
-  // TODO:: Add error handling
-  // TODO:: Type safety
-  // Right now, if there is anything in the req.body, then it will be updated
   try {
-    const { requestID, requestDetails } = req.body
-    console.log(requestDetails.RequestItem)
+    const body = req.body
+    let request
+
     const oldRequestForm = await prisma.request.findUnique({
       where: {
-        requestID: requestID,
+        requestID: parseInt(body.requestID),
       },
     })
     if (!oldRequestForm) throw new Error('Could not find that request form')
-    const request = await prisma.request.update({
+    const oldReqExpense = oldRequestForm.expense
+    console.log('old request expense: ', oldReqExpense)
+
+    // TODO:: update multiple request items and orders instead of 1 by passing in objects and validating using interfaces similar to request-form/index API
+
+    if ('orderID' in body) { // order details - optional, so only updated if passed in
+
+      let order = await prisma.order.findUnique({
+        where: {
+          orderID: parseInt(body.orderID)
+        }
+      })
+      if (!order) throw new Error('Could not find order')
+
+      request = await prisma.request.update({
+        where: {
+          requestID: oldRequestForm.requestID
+        },
+        data: {
+          Order: {
+            update: {
+              where: {
+                orderID: parseInt(body.orderID)
+              },
+              data: {
+                orderNumber: String(body.orderNumber),
+                trackingInfo: String(body.trackingInfo),
+                shippingCost: new Prisma.Decimal(body.shippingCost)
+              }
+            }
+          }
+        }
+      })
+    }
+    if ('processID' in body) { 
+      let process = await prisma.process.findUnique({
+        where: {
+          processID: parseInt(body.processID)
+        }
+      })
+      if (!process) throw new Error('Could not find process')
+
+      if ('status' in body) {
+        request = await prisma.request.update({
+          where: {
+            requestID: oldRequestForm.requestID,
+          },
+          data: {
+            Process: {
+              update: {
+                where: {
+                  processID: parseInt(body.processID)
+                },
+                data: {
+                  // TODO:: use type checking (could allow admin to pass in status string like "approved" and create status using Status.APPROVED, etc. for different ones)
+                  status: body.status
+                }
+              }
+            }
+          },
+        })
+      }
+    }
+    let requestItem = await prisma.requestItem.findUnique({
       where: {
-        requestID: oldRequestForm.requestID,
-      },
-      data: {
-        ...requestDetails,
-      },
-      // data: {
-      //   // Updating Request
-      //   dateOrdered: req.body.dateOrdered,
-      //   dateReceived: req.body.dateReceived,
-      //   dateApproved: req.body.dateApproved,
-      //   // fix where if there is req.body.justification or additionalInfo is null, just keep what it was before
-      //   justification: req.body.justification,
-      //   additionalInfo: req.body.additionalInfo,
-      //   Order: {
-      //     updateMany: {
-      //       where: { requestID: req.body.requestID },
-      //       data: {
-      //         dateOrdered: req.body.dateOrdered,
-      //         orderNumber: req.body.orderNumber,
-      //         orderDetails: req.body.orderDetails,
-      //         trackingInfo: req.body.trackingInfo,
-      //         shippingCost: req.body.shippingCost,
-      //       },
-      //     },
-      //   },
-      //   // Updating Request Items
-      //   RequestItem: {
-      //     updateMany: {
-      //       where: {
-      //         requestID: req.body.requestID,
-      //       },
-      //       data: {
-      //         itemID: req.body.itemID,
-      //         quantity: req.body.quantity,
-      //         description: req.body.description,
-      //       },
-      //     },
-      //   },
-      //   // Updating Other Expenses
-      //   OtherExpense: {
-      //     updateMany: {
-      //       where: {
-      //         requestID: req.body.requestID,
-      //       },
-      //       data: {
-      //         expenseID: req.body.expenseID,
-      //         expenseAmount: req.body.expenseAmount,
-      //         expenseComments: req.body.expenseComments,
-      //       },
-      //     },
-      //   },
-      // },
+        itemID: parseInt(body.itemID)
+      }
     })
+    if (!requestItem) throw new Error('Could not find request item')
+
+    if ('vendorName' in body)
+    {
+      let vendor = await prisma.vendor.findFirst({
+        where: {
+          vendorName: String(body.vendorName)
+        }
+      })
+      if (vendor === null) throw new Error('could not find vendor')
+
+      request = await prisma.request.update({ 
+        where: {
+          requestID: oldRequestForm.requestID,
+        },
+          data: {
+            RequestItem: {
+              update: {
+                where: {
+                  itemID: parseInt(body.itemID),
+                },
+                data: {
+                  vendorID: vendor.vendorID
+                },
+              },
+            },
+          },
+      })
+    }
+
+    // for now is optional since need to add update order in project page
+    if ('totalExpenses' in body) 
+    {
+      // Find the project to get the total expenses
+      let project = await prisma.project.findUnique({
+        where: { projectID: parseInt(body.projectID) },
+      })
+      // Remove the old request expenses before adding the updated expenses to project
+      let updateExpense = await prisma.project.update({
+        where: { projectID: parseInt(body.projectID) },
+        data: {
+          totalExpenses: Prisma.Decimal.sub(
+            project?.totalExpenses === undefined
+              ? oldReqExpense
+              : project.totalExpenses,
+            oldReqExpense
+          ),
+        },
+      })
+      project = await prisma.project.findUnique({
+        where: { projectID: parseInt(body.projectID) },
+      })
+      console.log('removed old  - project expenses: ', project?.totalExpenses)
+      
+      // update with default required params and expenses
+      request = await prisma.request.update({ 
+        where: {
+          requestID: oldRequestForm.requestID,
+        },
+          data: {
+            RequestItem: {
+              update: {
+                where: {
+                  itemID: parseInt(body.itemID),
+                },
+                data: {
+                  description: String(body.description),
+                  url: String(body.url),
+                  partNumber: String(body.partNumber),
+                  quantity: parseInt(body.quantity),
+                  unitPrice: new Prisma.Decimal(body.unitPrice),
+                },
+              },
+            },
+            expense: new Prisma.Decimal(body.totalExpenses)
+          },
+      })
+      request = await prisma.request.findUnique({
+        where: {
+          requestID: oldRequestForm.requestID
+        }
+      })
+      if (request === null) throw new Error('request not found')
+      console.log('new request expense: ', request.expense)
+
+      // add updated request expenses to project
+      updateExpense = await prisma.project.update({
+        where: { projectID: parseInt(body.projectID) },
+        data: {
+          totalExpenses: Prisma.Decimal.add(
+            project?.totalExpenses === undefined ? 0 : project.totalExpenses,
+            request.expense
+          ),
+        },
+      })
+      project = await prisma.project.findUnique({
+        where: { projectID: parseInt(body.projectID) },
+      })
+      console.log('added new - project expenses: ', project?.totalExpenses)
+    }
+    else
+    {
+      // update with default required params
+      request = await prisma.request.update({ 
+        where: {
+          requestID: oldRequestForm.requestID,
+        },
+          data: {
+            RequestItem: {
+              update: {
+                where: {
+                  itemID: parseInt(body.itemID),
+                },
+                data: {
+                  description: String(body.description),
+                  url: String(body.url),
+                  partNumber: String(body.partNumber),
+                  quantity: parseInt(body.quantity),
+                  unitPrice: new Prisma.Decimal(body.unitPrice),
+                },
+              },
+            },
+          },
+      })
+    }
+    
     res.status(200).json({ message: 'Request Form Updated', request: request })
-  } catch (err) {
-    if (err instanceof Error)
-      res
-        .status(500)
-        .json({ message: 'Internal Server Error', error: err.message })
-    else res.status(500).json({ message: 'Internal Server Error', error: err })
+  } catch (error) {
+    console.log(error)
+    if (error instanceof Error)
+    res.status(500).json({
+        message: error.message,
+        error: error,
+    })
+    else res.status(500).send(error)
   }
 }

@@ -1,3 +1,5 @@
+// NOTE: Already created combined page for projects & order history so might not need this
+
 /**
  * This file is a redirector for the Order History Page.
  * TODO :: This should have a similar code to orders/index.tsx

@@ -265,12 +265,15 @@ model DepartmentUser {
 
 // This signifies what projects a user is working on
 model WorksOn {
-  user      User    @relation(fields: [userID], references: [userID]) // the user to connect to
-  userID    Int
-  project   Project @relation(fields: [projectID], references: [projectID]) // the project to connect to
+  user      User      @relation(fields: [userID], references: [userID]) // the user to connect to
+  userID    Int // since @@id defines composite ID (unique combination of userID & projectID), no unique constraint
+  project   Project   @relation(fields: [projectID], references: [projectID]) // the project to connect to
   projectID Int
+  startDate DateTime // start date for user in project
+  endDate   DateTime? // end date for user in project, optional (so if null then current user otherwise past user)
+  comments  String? // comments (ex. why user stopped working on project)
 
-  @@id([userID, projectID])
+  @@id([userID, projectID, startDate])
 }
 
 // This signifies what departments a project is in
