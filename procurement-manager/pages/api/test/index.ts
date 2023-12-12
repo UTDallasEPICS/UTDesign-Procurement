@@ -62,6 +62,19 @@ export default async function handler(
         activationDate: new Date(),
       },
     })
+
+    // create sample project
+    await prisma.project.create({
+      data: {
+        projectType: 'EPICS',
+        projectNum: 2000,
+        projectTitle: 'Sample Project 2',
+        startingBudget: 1000.0,
+        sponsorCompany: 'Sample Company 1',
+        activationDate: new Date(),
+      },
+    })
+
     //create sample request
     // await prisma.request.create({
     //   data: {
@@ -80,19 +93,30 @@ export default async function handler(
     //   },
     // })
 
-    // Connect student to a project
+    // Connect student to project 1
     await prisma.worksOn.create({
       data: {
         user: { connect: { netID: 'abc000000' } },
         project: { connect: { projectNum: 1000 } },
+        startDate: new Date()
       },
     })
 
-    // Connect mentor to a project
+    // Connect mentor to project 1
     await prisma.worksOn.create({
       data: {
         user: { connect: { netID: 'def000000' } },
         project: { connect: { projectNum: 1000 } },
+        startDate: new Date()
+      },
+    })
+
+    // Connect mentor to project 2
+    await prisma.worksOn.create({
+      data: {
+        user: { connect: { netID: 'def000000' } },
+        project: { connect: { projectNum: 2000 } },
+        startDate: new Date()
       },
     })
 

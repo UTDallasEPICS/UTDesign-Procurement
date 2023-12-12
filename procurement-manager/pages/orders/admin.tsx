@@ -9,7 +9,7 @@ import ProjectHeader from '@/components/ProjectHeader'
 import ReimbursementCard from '@/components/AdminReimbursementCard'
 import { prisma } from '@/db'
 import { RequestDetails } from '@/lib/types'
-import { Prisma, Project, Status, User } from '@prisma/client'
+import { Prisma, Project, Status, User, Order } from '@prisma/client'
 import RejectionModal from '@/components/RejectionModal'
 import axios from 'axios'
 import { Session, getServerSession } from 'next-auth'
@@ -83,9 +83,11 @@ export default function Admin({
     useState<RequestDetails[][]>(reqs)
   // state for the projects associated to the user
   const [projects, setProjects] = useState<Project[]>(projs)
+  const [projectReqsWithOrders, setProjectReqsWithOrders] = useState<RequestDetails[][]>()
 
   // Opens all the cards by default
   useEffect(() => {
+    getProcessedReqs()
     setIsOpen(projects.map(() => true))
   }, [])
 
@@ -104,6 +106,7 @@ export default function Admin({
     ])
     setProjects(projects)
     setProjectRequests(requestsOfMultipleProjects)
+    getProcessedReqs()
     setIsOpen(projects.map(() => true))
   }
 
@@ -168,6 +171,61 @@ export default function Admin({
     })
   }
 
+  /**
+   * this function is used to retrieve the orders associated with each request in the project, and if a request has an order then the request is processed
+   */
+  async function getProcessedReqs() {
+    try
+    {
+      let projectReqs: RequestDetails[][] = []
+      let reqsWithOrders: RequestDetails[] = []
+
+      for (let projectIndex = 0; projectIndex < projects.length; projectIndex++)
+      {
+        reqsWithOrders = []
+        for (const request of projectRequests[projectIndex]) 
+        {
+          const response = await axios.get('/api/orders/get/requestOrders/', {
+            params: {
+              requestID: request.requestID
+          }})
+
+          if (response.status === 200) 
+          {
+            const orders: Order[] = response.data.orders
+            if (orders.length !== 0) {
+              reqsWithOrders.push(request)
+            }
+          }
+        }
+        if (reqsWithOrders.length !== 0) projectReqs.push(reqsWithOrders)
+      }
+      setProjectReqsWithOrders(projectReqs)
+    }
+    catch (error) {
+      if (error instanceof Error) console.log(error.message)
+      else if (axios.isAxiosError(error))
+        console.log(error.message, error.status)
+      else console.log(error)
+    }
+  }
+
+  /**
+   * this function checks if a request is processed or not (has orders) by using its request ID
+   * @param ID the index of the project
+   * @param reqID the requestID of the request
+   * @returns boolean value depending on the request associated with that ID is processed or not
+   */
+  function processed (projIndex: number, reqID: number) 
+  {
+    if (projectReqsWithOrders !== undefined) {
+      for (const req of projectReqsWithOrders[projIndex]) {
+        if (reqID === req.requestID) return true
+      }
+    }
+    return false
+  }
+
   return (
     <>
       <Row className='my-4'>
@@ -198,11 +256,17 @@ export default function Admin({
             {/* <div> */}
             {projectRequests[projIndex].length > 0 ? (
               projectRequests[projIndex].map((request, reqIndex) => {
+                // TODO:: only show request cards if approved and not processed, works using an if and 'processed' function but resolve rendering issue:
+                // i.e. when you open or refresh orders page, it still tries to display the request cards of processed requests, then the cards disappear
+                // maybe try getting processed requests and update the request array in getServerSideProps() instead of in the component
                 return (
                   <AdminRequestCard
                     key={reqIndex}
+                    user={user}
+                    project={project}
                     details={request}
                     onReject={() => handleReject(request.requestID)}
+                    onSave={() => getAdmin()} // since after adding orders and updating project expenses in AdminRequestCard this function call will show the updated project info after querying DB
                     collapsed={isOpen[projIndex]}
                   />
                 )

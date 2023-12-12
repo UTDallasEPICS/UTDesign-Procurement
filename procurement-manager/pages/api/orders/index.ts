@@ -10,6 +10,7 @@
  */
 import { NextApiRequest, NextApiResponse } from 'next'
 import { prisma } from '@/db'
+import { Prisma } from '@prisma/client'
 
 //Define a new API route handler function for handling GET requests to retrieve all orders:
 /**
@@ -42,11 +43,11 @@ the client with the newly created order as JSON data. */
   //export default async function handleOrders(req: NextApiRequest, res: NextApiResponse) {
   else if (req.method === 'POST') {
     //post method as we are getting info
-    const { netID, processID, comment, status } = req.body
+
     // first get user's netID ??? from req.body
     const user = await prisma.user.findUnique({
       where: {
-        netID: netID,
+        netID: req.body.netID,
       },
     })
 
@@ -61,25 +62,15 @@ the client with the newly created order as JSON data. */
       //user.roleID is admin so update the comment and status given by admin
       if (user.roleID === 1) {
         //if user is admin
-        const {
-          dateOrdered,
-          orderNumber,
-          orderDetails,
-          trackingInfo,
-          shippingCost,
-          requestID,
-          adminID,
-        } = req.body
-
         const newOrder = await prisma.order.create({
           data: {
-            dateOrdered,
-            orderNumber,
-            orderDetails,
-            trackingInfo,
-            shippingCost,
-            request: { connect: { requestID } },
-            admin: { connect: { netID } },
+            dateOrdered: new Date(req.body.dateOrdered),
+            orderNumber: req.body.orderNumber,
+            orderDetails: req.body.orderDetails,
+            trackingInfo: req.body.trackingInfo,
+            shippingCost: new Prisma.Decimal(req.body.shippingCost),
+            request: { connect: { requestID: parseInt(req.body.requestID) } },
+            admin: { connect: { netID: user.netID } },
           },
         })
 

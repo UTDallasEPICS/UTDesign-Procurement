@@ -18,11 +18,41 @@ import { prisma } from '@/db'
 export async function getServerSideProps(context: any) {
   const session = await getServerSession(context.req, context.res, authOptions)
   const user = session?.user as User
+  let projects = null
+  let listOfProjects = null
+  try {
+    projects = await prisma.project.findMany({
+      where: {
+        WorksOn: {
+          some: {
+            userID: user.userID,
+          },
+        },
+      },
+      select: {
+        projectNum: true,
+        projectTitle: true,
+        startingBudget: true,
+        totalExpenses: true,
+      },
+    })
+    listOfProjects = projects.map((project) => {
+      return {
+        projectNum: project.projectNum,
+        projectTitle: project.projectTitle,
+        startingBudget: project.startingBudget.toNumber(),
+        totalExpenses: project.totalExpenses.toNumber(),
+      }
+    })
+  } catch (error) {
+    console.log('project error: ', error)
+  }
   let vendors = await prisma.vendor.findMany({})
   return {
     props: {
       session: session,
       user: user,
+      listOfProjects: listOfProjects,
       vendors: vendors,
     },
   }
@@ -31,22 +61,19 @@ export async function getServerSideProps(context: any) {
 interface StudentRequestProps {
   session: Session | null
   user: User
+  listOfProjects: Project[]
   vendors: Vendor[]
 }
 
-const StudentRequest = ({ session, user, vendors }: StudentRequestProps) => {
+const StudentRequest = ({ session, user, listOfProjects, vendors }: StudentRequestProps) => {
   // State and handlers
   const [date, setDate] = useState('')
   const [additionalInfo, setAdditionalInfo] = useState('')
-  const [remainingBudget, setRemainingBudget] = useState<Prisma.Decimal>(
-    new Prisma.Decimal(1000)
-  )
-  const [startingBudget, setStartingBudget] = useState<Prisma.Decimal>(
-    new Prisma.Decimal(1000)
-  )
-  const [totalExpenses, setTotalExpenses] = useState<Prisma.Decimal>(
-    new Prisma.Decimal(0)
-  )
+  // remaining budget before adding any items
+  const [remainingBeforeItem, setRemainingBeforeItem] = useState<Prisma.Decimal>(Prisma.Decimal.sub(new Prisma.Decimal(listOfProjects[0].startingBudget), new Prisma.Decimal(listOfProjects[0].totalExpenses)))
+  // remaining budget that updates every time item is added/deleted
+  const [remainingAfterItem, setRemainingAfterItem] = useState<Prisma.Decimal>(Prisma.Decimal.sub(new Prisma.Decimal(listOfProjects[0].startingBudget), new Prisma.Decimal(listOfProjects[0].totalExpenses)))
+  const [totalExpenses, setTotalExpenses] = useState<Prisma.Decimal>(new Prisma.Decimal(listOfProjects[0].totalExpenses))
   const [items, setItems] = useState([
     {
       sequence: 1,
@@ -60,9 +87,11 @@ const StudentRequest = ({ session, user, vendors }: StudentRequestProps) => {
     },
   ])
   const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null)
-  const [projects, setProjects] = useState<Project[]>([])
-  const [selectedProject, setSelectedProject] = useState(0)
+  const [projects, setProjects] = useState<Project[]>(listOfProjects)
+  const [selectedProject, setSelectedProject] = useState(listOfProjects[0].projectNum)
   const router = useRouter()
+  
+// TODO:: update tooltip whenever item is added or deleted
 
   /**
    * This function handles updating the tooltips whenever the input fields are changed
@@ -88,32 +117,6 @@ const StudentRequest = ({ session, user, vendors }: StudentRequestProps) => {
       }
     }
   }
-
-  async function getProjects() {
-    try {
-      const res = await axios.post('/api/project/get', {
-        netID: user.netID,
-      })
-      const proj: Project[] = await res.data.projects
-      setProjects(proj)
-      setSelectedProject(proj[0].projectNum)
-      findBudget(proj[0].projectNum, proj)
-      setTotalExpenses(proj[0].totalExpenses)
-      setRemainingBudget(
-        Prisma.Decimal.sub(
-          Prisma.Decimal.sub(startingBudget, totalExpenses),
-          calculateTotalCost()
-        )
-      )
-    } catch (error) {
-      console.log(error)
-    }
-  }
-
-  // get projects
-  useEffect(() => {
-    getProjects()
-  }, [])
 
   // Initialize the first RequestItem
   useEffect(() => {
@@ -155,13 +158,18 @@ const StudentRequest = ({ session, user, vendors }: StudentRequestProps) => {
 
   // Dynamically update the budget remaining
   useEffect(() => {
-    setRemainingBudget(
+    let proj = projects.filter((project) => (project.projectNum === selectedProject))
+    setRemainingAfterItem(
       Prisma.Decimal.sub(
-        Prisma.Decimal.sub(startingBudget, totalExpenses),
+        (Prisma.Decimal.sub(new Prisma.Decimal(proj[0].startingBudget), new Prisma.Decimal(proj[0].totalExpenses))),
         calculateTotalCost()
       )
     )
   }, [items])
+
+  useEffect(() => {
+    findBudget(selectedProject, listOfProjects)
+  }, [selectedProject])
 
   // Input handling
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -173,13 +181,13 @@ const StudentRequest = ({ session, user, vendors }: StudentRequestProps) => {
     setAdditionalInfo(e.target.value)
   }
 
-  const calculateTotalCost = () => {
+  const calculateTotalCost = (): Prisma.Decimal => {
     let totalCost = 0
     items.forEach((item) => {
       totalCost +=
         (parseFloat(item.unitCost) || 0) * (parseInt(item.quantity) || 0)
     })
-    return totalCost
+    return new Prisma.Decimal(totalCost);
   }
 
   /**
@@ -235,6 +243,8 @@ const StudentRequest = ({ session, user, vendors }: StudentRequestProps) => {
     setItems(newItems)
   }
 
+  // TODO:: change vendorID to vendorName similar to AdminRequestCard
+
   /**
    * This function is what handles submitting the form and calls our API to update the database
    * @param e
@@ -244,7 +254,7 @@ const StudentRequest = ({ session, user, vendors }: StudentRequestProps) => {
     e.preventDefault()
 
     // Check if the remaining budget is negative
-    if (remainingBudget < new Prisma.Decimal(0)) {
+    if (remainingAfterItem < new Prisma.Decimal(0)) {
       alert(
         'Your remaining budget cannot be negative. Please review your items.'
       )
@@ -272,7 +282,7 @@ const StudentRequest = ({ session, user, vendors }: StudentRequestProps) => {
       selectedFiles,
       selectedProject: selectedProject,
       user: user.email,
-      totalExpenses: Prisma.Decimal.sub(startingBudget, remainingBudget),
+      totalExpenses: calculateTotalCost(),
     })
 
     // Call the API
@@ -283,7 +293,7 @@ const StudentRequest = ({ session, user, vendors }: StudentRequestProps) => {
         studentEmail: user.email,
         items: itemsToSend,
         additionalInfo: additionalInfo,
-        totalExpenses: Prisma.Decimal.sub(startingBudget, remainingBudget),
+        totalExpenses: calculateTotalCost(),
       })
       if (newRequest.status === 200) {
         // Redirects to the orders page (which will redirect to the student view)
@@ -322,10 +332,11 @@ const StudentRequest = ({ session, user, vendors }: StudentRequestProps) => {
     let budget: Prisma.Decimal = new Prisma.Decimal(0)
     proj.forEach((project) => {
       if (project.projectNum === projectNum) {
-        budget = project.startingBudget
+        budget = new Prisma.Decimal(Prisma.Decimal.sub(project.startingBudget, project.totalExpenses))
       }
     })
-    setStartingBudget(budget)
+    setRemainingBeforeItem(budget)
+    setRemainingAfterItem(budget)
     return budget
   }
 
@@ -341,7 +352,7 @@ const StudentRequest = ({ session, user, vendors }: StudentRequestProps) => {
           </p>
           <p>
             <span>
-              ${new Prisma.Decimal(startingBudget).toFixed(4).toString()}
+              ${new Prisma.Decimal(remainingBeforeItem).toFixed(4).toString()}
             </span>
           </p>
         </Col>
@@ -350,7 +361,7 @@ const StudentRequest = ({ session, user, vendors }: StudentRequestProps) => {
             <strong>Remaining: </strong>
           </p>
           <p>
-            <span>${remainingBudget.toFixed(4).toString()}</span>
+            <span>${remainingAfterItem.toFixed(4).toString()}</span>
           </p>
         </Col>
       </Row>
@@ -396,6 +407,7 @@ const StudentRequest = ({ session, user, vendors }: StudentRequestProps) => {
               <Form.Select
                 onChange={(e) => {
                   setSelectedProject(parseInt(e.target.value))
+                  findBudget(selectedProject, listOfProjects)
                   console.log('selectedProject = ', selectedProject)
                 }}
               >
@@ -657,6 +669,7 @@ const StudentRequest = ({ session, user, vendors }: StudentRequestProps) => {
           </Col>
         </Row>
 
+        {/* TODO:: store uploaded files in the cloud and update DB */}
         <Row className='my-4'>
           <Form.Group controlId='fileUpload'>
             <Form.Label>

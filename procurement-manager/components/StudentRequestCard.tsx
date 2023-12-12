@@ -35,6 +35,7 @@ const StudentRequestCard: React.FC<RequestCardProps> = ({
   // state for the collapse for request details
   const [collapse, setCollapse] = useState<boolean | undefined>(false)
   // state for editing the request details
+  // TODO:: integrate editing with request-form/update API similar to AdminRequestCard and reset status to under review for resubmit
   const [editable, setEditable] = useState<boolean>(false)
   const [resubmit, setResubmit] = useState<boolean>(false)
   // state that contains the values of the input fields in the request card

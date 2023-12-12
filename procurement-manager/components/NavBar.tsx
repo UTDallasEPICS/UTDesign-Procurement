@@ -37,15 +37,17 @@ export default function NavBar({}: NavbarProps): JSX.Element {
                   <Nav.Link href='/orders' className='mx-2'>
                     Orders
                   </Nav.Link>
-                  <Nav.Link href='/order-history' className='mx-2'>
-                    Order History
-                  </Nav.Link>
 
-                  {/* Links seen by Admin and Mentor */}
+                  {/* Links seen by Admin */}
                   {user.roleID === 1 && (
                     <>
-                      <Nav.Link href='/project-updates' className='mx-2'>
-                        Project Updates
+                      <Nav.Link href='/projects' className='mx-2'>
+                        {' '}
+                        {/* for now only admin can use projects/order history page */}
+                        Projects & Order History
+                      </Nav.Link>
+                      <Nav.Link href='/database-updates' className='mx-2'>
+                        Database Updates
                       </Nav.Link>
                     </>
                   )}
@@ -56,22 +58,16 @@ export default function NavBar({}: NavbarProps): JSX.Element {
                       <Nav.Link href='/request-form' className='mx-2'>
                         Request Form
                       </Nav.Link>
-                      <Nav.Link href='#reimbursement-form' className='mx-2'>
+                      <Nav.Link href='/reimbursement' className='mx-2'>
                         Reimbursement Form
                       </Nav.Link>
                     </>
                   )}
 
-                  {user.roleID === 2 ||
-                    (user.roleID === 3 && (
-                      <>
-                        <Nav.Link href='/project-updates' className='mx-2'>
-                          Projects
-                        </Nav.Link>
-                      </>
-                    ))}
-
-                  <Button variant='secondary' onClick={() => signOut()}>
+                  <Button
+                    variant='secondary'
+                    onClick={() => signOut({ callbackUrl: '/' })}
+                  >
                     Log Out
                   </Button>
                 </>

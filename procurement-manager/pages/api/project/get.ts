@@ -1,5 +1,5 @@
 /**
- * This endpoint gives the projects associated with a user.
+ * This endpoint gives the projects associated with a user (both past and present projects since worksOn schema was updated).
  */
 
 import { NextApiRequest, NextApiResponse } from 'next'

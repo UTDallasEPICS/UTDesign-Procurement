@@ -19,7 +19,7 @@ export default async function handler(
   res: NextApiResponse
 ) {
   const method = req.method
-  let id = req.query?.projectNum
+  let num = req.query?.projectNum
   let result
   /* The `if` statement is checking if the HTTP method of the incoming request is a GET request. If it
  is a GET request, the function retrieves a project from a Prisma database based on its ID using the
@@ -28,7 +28,7 @@ export default async function handler(
   if (req.method === 'GET') {
     result = await prisma.project.findUnique({
       where: {
-        projectID: Number(id),
+        projectNum: Number(num),
       },
     })
     res.json({ result, message: 'message' })

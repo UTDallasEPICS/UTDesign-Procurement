@@ -1,3 +1,5 @@
+// NOTE: Already created combined page for projects & order history so might not need this
+
 /**
  * This is a static version of the Order History Page for the Admin.
  * May not have been updated to reflect the latest changes of the components that it is using

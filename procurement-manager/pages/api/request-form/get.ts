@@ -1,13 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import { prisma } from '@/db'
-import {
-  OtherExpense,
-  Process,
-  Project,
-  Request,
-  RequestItem,
-  Status,
-} from '@prisma/client'
+import { Project, Status } from '@prisma/client'
 import { RequestDetails } from '@/lib/types'
 
 export default async function handler(
@@ -29,6 +22,13 @@ export default async function handler(
     if (!user) {
       throw new Error('Could not find that user')
     }
+
+    let worksOn = await prisma.worksOn.findMany({
+      where:{ 
+          userID: user.userID,
+          endDate: null // if no end date then user is still in projects, so current projects
+      }
+  })
 
     // this will be the array of Request Forms that will be sent
     let requestsOfMultipleProjects: RequestDetails[][] = []
@@ -68,49 +68,53 @@ export default async function handler(
     }
 
     // first find requests associated with a project
-    for (const project of user.WorksOn) {
-      const [requests, theProject] = await Promise.all([
-        prisma.request.findMany({
-          where: { projectID: project.projectID },
-          include: {
-            RequestItem: true,
-            Process: true,
-            OtherExpense: true,
-            project: true,
-          },
-        }),
-        prisma.project.findUnique({
-          where: {
-            projectID: project.projectID,
-          },
-        }),
-      ])
-
-      let filteredRequests: RequestDetails[]
-
-      // filters the request based on the status and user's roleID
-      // admin can see all requests that are APPROVED
-      if (user.roleID === 1) {
-        filteredRequests = requests.filter(
-          (request) => request.Process[0].status === Status.APPROVED
-        )
+    if (worksOn) 
+    {
+      for (const project of worksOn) {
+        const [requests, theProject] = await Promise.all([
+          prisma.request.findMany({
+            where: { projectID: project.projectID },
+            include: {
+              RequestItem: true,
+              Process: true,
+              OtherExpense: true,
+              project: true,
+            },
+          }),
+          prisma.project.findUnique({
+            where: {
+              projectID: project.projectID,
+            },
+          }),
+        ])
+  
+        let filteredRequests: RequestDetails[]
+  
+        // filters the request based on the status and user's roleID
+        // admin can see all requests that are APPROVED
+        if (user.roleID === 1) {
+          filteredRequests = requests.filter(
+            (request) => request.Process[0].status === Status.APPROVED
+          )
+        }
+        // mentor can see all requests that are UNDER_REVIEW
+        else if (user.roleID === 2) {
+          filteredRequests = requests.filter(
+            (request) => request.Process[0].status === Status.UNDER_REVIEW
+          )
+        }
+        // Students can see all requests ???
+        else {
+          filteredRequests = requests
+        }
+        requestsOfMultipleProjects.push(filteredRequests)
+  
+        // add the project to the list of projects
+        if (!theProject) throw new Error('Could not find the project')
+        listOfProjects.push(theProject)
       }
-      // mentor can see all requests that are UNDER_REVIEW
-      else if (user.roleID === 2) {
-        filteredRequests = requests.filter(
-          (request) => request.Process[0].status === Status.UNDER_REVIEW
-        )
-      }
-      // Students can see all requests ???
-      else {
-        filteredRequests = requests
-      }
-      requestsOfMultipleProjects.push(filteredRequests)
-
-      // add the project to the list of projects
-      if (!theProject) throw new Error('Could not find the project')
-      listOfProjects.push(theProject)
     }
+
     console.debug('Requests associated with user: ', requestsOfMultipleProjects)
     res.status(200).json({
       userRole: user.roleID,
