@@ -10,13 +10,14 @@ You must have the following tools installed:
 - [Node.js (needed for npm)](https://nodejs.org/en/download/)
 - [Git](https://git-scm.com/)
 - [Git Installing Guide & Customizing](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
+- [Docker (For Mac users only!)](https://docs.docker.com/get-docker/)
 
 ### 💾 Database stuff 💾
 
 #### Watch these first (just the installation part):
 
 - [BroCode](https://youtu.be/5OdVJbNCSso?t=142)
-- [Mosh](https://youtu.be/7S_tz1z_5bA?t=292)
+- [Mosh (The mac setup will be slightly different than in this video)](https://youtu.be/7S_tz1z_5bA?t=292)
 - **IMPORTANT: REMEMBER THE PASSWORD**
 
 #### 🔗 Download Links: 🔗
@@ -66,7 +67,10 @@ Downlading and setting up mySQL is required first. mySQL Workbench is used then 
 
 7. First, we have to create a **.env** file inside of the **procurement-manager** folder.
 8. In the **.env** file, type `DATABASE_URL="mysql://root:password@localhost:3306/procurement"` but change the password to your password when initially setting up mySQL.
-9. To sync your database with the project schema type `npx prisma migrate dev` (make sure your in the procurement-manager folder).
+9. (Mac Only) Run this command in the terminal to set up the intial docker container `docker run -d -e MYSQL_ROOT_PASSWORD=password -p 3306:3306 mysql mysqld --lower_case_table_names=1` (refer to this [video](https://youtu.be/piekR2i6nRQ) if you are having difficulties)
+10. To sync your database with the project schema type `npx prisma migrate dev` (make sure your in the procurement-manager folder).
+
+Mac users will see a new docker container in docker desktop and you can run the database server by pressing the start button in the future.
 
 The prisma file under the prisma folder has the schema setup and can be edited to change the database.
 After making any changes to the database, running `npx prisma migrate dev` will also update the database
