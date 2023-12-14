@@ -59,12 +59,17 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
   const [updatedMentors, setUpdatedMentors] = useState<boolean[]>([false]) 
   const [updatedStudents, setUpdatedStudents] = useState<boolean[]>([false])
   const [reqIDs, setReqIDs] = useState<number[]>([]) // track which of the requests in the project were edited by admin using request IDs of those updated requests
+  const [itemIDs, setItemIDs] = useState<number[][]>(
+    requests[projectIndex].map((request) => {
+      return []
+    })
+  ) // track which items in each request were edited by admin
   const [processedReqs, setProcessedReqs] = useState<RequestDetails[]>([]) // track which of the approved requests have orders, i.e. are completed so they are displayed
   const [requestOrders, setRequestOrders] = useState<Order[][]>([]) // stores the orders for each request in the project
 
   // state that contains the values of the input fields for items for each request of the project
   // TODO:: implement add/delete items feature similar to add/delete items feature for request-form/index.ts
-  const [inputValues, setInputValues] = useState(
+  const [items, setItems] = useState(
     requests[projectIndex].map((request) => {
       return request.RequestItem.map((item) => {
       return { 
@@ -263,7 +268,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
    * @param details - object holding request that the items are in and other related info
    */
 
-  function handleInputChange(
+  function handleItemChange(
     e: React.ChangeEvent<HTMLInputElement>,
     itemIndex: number,
     requestIndex: number,
@@ -271,11 +276,12 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
   ) {
     const { name, value } = e.target
 
-    setInputValues((prevRequestItemList) => {
+    setItems((prevRequestItemList) => {
       return prevRequestItemList.map((reqItems, reqItemsIndex) => {
         if (reqItemsIndex !== requestIndex) return reqItems
         return reqItems.map((item, i) => {
           if (i !== itemIndex) return item
+          updateItemIDs(requestIndex, item.itemID) // add itemID to list if index matches updated item index
           return {
             ...item,
             [name]: value, // only modify item at index with admin entered value for that input field name
@@ -297,13 +303,26 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
   };
 
   /**
+   * this function adds a item ID for any updated request data to the list of updated item IDs
+   * @param requestIndex request index for the item edited
+   * @param itemID item ID for request data that admin edited
+   */
+  const updateItemIDs = (requestIndex: number, itemID: number) => {
+    const storeReqItemIDs = [...itemIDs] // stores item update status for all requests, and then go to specific request
+    const storeItemIDs = storeReqItemIDs[requestIndex] 
+    storeItemIDs.push(itemID) 
+    storeReqItemIDs[requestIndex] = storeItemIDs // update the list for all requests
+    setItemIDs(storeReqItemIDs) 
+  };
+
+  /**
    * this function calculates the total cost for all items in a request
    * @param reqIndex index of request to calculate total item cost for
    * @returns Prisma Decimal value for total request expenses
    */
   const calculateTotalCost = (reqIndex: number): Prisma.Decimal => {
     let totalCost = 0
-    inputValues[reqIndex].forEach((item) => {
+    items[reqIndex].forEach((item) => {
       totalCost += (Number(item.unitPrice) * item.quantity)
     })
     return new Prisma.Decimal(totalCost);
@@ -333,7 +352,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
         console.log(projectRes.data)
       }
       let newProject: Project = projectRes.data.project
-      setRemainingBudget(Prisma.Decimal.sub(totalBudget, project.totalExpenses))
+      project = newProject
       let userRes, worksOnRes, worksOns: WorksOn[], projectWorksOn: WorksOn[], deactivateRes
 
       console.log("array of update status")
@@ -452,7 +471,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
       try {
         const newDetails = {
           ...details, // copy the details object
-          RequestItem: inputValues[reqIndex], // replace the RequestItem array with the new inputs in each request item
+          RequestItem: items[reqIndex], // replace the RequestItem array with the new inputs in each request item
         }
         let isUpdatedReq: boolean = false
         for (const id of reqIDs) {
@@ -462,9 +481,29 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
           }
         }
         if (isUpdatedReq) {
+          let updatedItemArr = []
+
           for (let i = 0; i < newDetails.RequestItem.length; i++) {
-            updateRequest(reqIndex, details, newDetails, i)
+            for (const id of itemIDs[reqIndex]) {
+              if (newDetails.RequestItem[i].itemID === id) {
+                updatedItemArr.push(newDetails.RequestItem[i])
+                console.log("updated item id: ", newDetails.RequestItem[i].itemID)
+              }
+            }
           }
+          // only sending updated items and the edited data types to API
+          const itemsToSend = updatedItemArr.map((item) => {
+            return {
+              itemID: item.itemID,
+              description: item.description,
+              url: item.url,
+              partNumber: item.partNumber,
+              quantity: item.quantity,
+              unitPrice: item.unitPrice,
+              vendorID: item.vendorID
+            }
+          })
+          updateRequest(details, itemsToSend)
         }
       } catch (error) {
         if (axios.isAxiosError(error) || error instanceof Error)
@@ -474,25 +513,19 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
     })
     setRemainingBudget(Prisma.Decimal.sub(project.startingBudget, project.totalExpenses))
     setReqIDs([]) // reset list of updated request IDs to empty since after save, resets to none have been edited yet
+    setItemIDs([]) // reset list to none edited once done
   }
 
   /**
    * this function updates items for the updated request
-   * @param reqIndex index of updated request
    * @param details object holding old data of updated request
-   * @param newDetails object holding new data of updated request
-   * @param i index of item in request item array
+   * @param itemsToSend object holding new data of updated items in request
    */
-  async function updateRequest(reqIndex: number, details: RequestDetails, newDetails: RequestDetails, i: number) {
+  async function updateRequest(details: RequestDetails, itemsToSend: {}[]) {
     const res = await axios.post('/api/request-form/update', {
       projectID: project.projectID,
       requestID: details.requestID,
-      itemID: details.RequestItem[i].itemID,
-      description: newDetails.RequestItem[i].description, // used new details data in parameters for editable fields
-      url: newDetails.RequestItem[i].url, 
-      partNumber: newDetails.RequestItem[i].partNumber, 
-      quantity: newDetails.RequestItem[i].quantity, 
-      unitPrice: newDetails.RequestItem[i].unitPrice, 
+      items: itemsToSend
       // totalExpenses: calculateTotalCost(reqIndex) // not updating total expenses now since need to add update order (shipping cost) that will affect project expenses
       // since updating project expenses will subtract old expenses (including old order expenses) and add new expenses passed in
     })
@@ -645,7 +678,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
                   // TODO:: change option to update vendorID to vendorName similar to orders/admin
                 }                
                 {
-                  inputValues.map((reqItems, reqIndex) => {
+                  items.map((reqItems, reqIndex) => {
                     // only shows processed requests for order history - i.e. were approved and ordered, or were rejected
                     if ((requests[projectIndex][reqIndex].Process[0].status === Status.APPROVED && processed(requests[projectIndex][reqIndex].requestID) === true) || 
                     requests[projectIndex][reqIndex].Process[0].status === Status.REJECTED) 
@@ -705,7 +738,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
                                         name='description'
                                         value={item.description}
                                         onChange={(e) =>
-                                          handleInputChange(
+                                          handleItemChange(
                                             e as React.ChangeEvent<HTMLInputElement>,
                                             itemIndex, 
                                             reqIndex, 
@@ -717,9 +750,9 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
                                     <td>
                                       <Form.Control
                                         name='vendorID'
-                                        value={item.vendorID}
+                                        value={item.vendorID} // TODO:: change vendorID to vendorName, similar to AdminRequestCard.tsx
                                         onChange={(e) =>
-                                          handleInputChange(
+                                          handleItemChange(
                                             e as React.ChangeEvent<HTMLInputElement>,
                                             itemIndex, 
                                             reqIndex, 
@@ -733,7 +766,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
                                         name='url'
                                         value={item.url} // TODO:: make item url shown as clickable link
                                         onChange={(e) =>
-                                          handleInputChange(
+                                          handleItemChange(
                                             e as React.ChangeEvent<HTMLInputElement>,
                                             itemIndex, 
                                             reqIndex, 
@@ -747,7 +780,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
                                         name='partNumber'
                                         value={item.partNumber}
                                         onChange={(e) =>
-                                          handleInputChange(
+                                          handleItemChange(
                                             e as React.ChangeEvent<HTMLInputElement>,
                                             itemIndex, 
                                             reqIndex, 
@@ -761,7 +794,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
                                         name='quantity'
                                         value={item.quantity}
                                         onChange={(e) =>
-                                          handleInputChange(
+                                          handleItemChange(
                                             e as React.ChangeEvent<HTMLInputElement>,
                                             itemIndex, 
                                             reqIndex, 
@@ -775,7 +808,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
                                         name='unitPrice'
                                         value={item.unitPrice.toString()}
                                         onChange={(e) =>
-                                          handleInputChange(
+                                          handleItemChange(
                                             e as React.ChangeEvent<HTMLInputElement>,
                                             itemIndex, 
                                             reqIndex, 

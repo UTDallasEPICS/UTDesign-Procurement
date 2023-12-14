@@ -2,7 +2,30 @@
 
 import { NextApiRequest, NextApiResponse } from 'next'
 import { prisma } from '@/db'
-import { Prisma } from '@prisma/client'
+import { Prisma, Vendor } from '@prisma/client'
+
+// used for type checking items and orders passed in so that each attribute is valid
+interface Item
+{
+  itemID: number,
+  description: string,
+  url: string,
+  partNumber: string,
+  quantity: number,
+  unitPrice: number,
+  vendorID: number | undefined,
+  vendorName: string | undefined // only vendorName should be passed in but project page not updated so for now made ID and name optional and pass in 1
+}
+
+interface Order
+{
+  orderID: number,
+  dateOrdered: Date,
+  orderNumber: string,
+  trackingInfo: string,
+  orderDetails: string,
+  shippingCost: number
+}
 
 export default async function handler(
   req: NextApiRequest,
@@ -23,35 +46,15 @@ export default async function handler(
 
     // TODO:: update multiple request items and orders instead of 1 by passing in objects and validating using interfaces similar to request-form/index API
 
-    if ('orderID' in body) { // order details - optional, so only updated if passed in
-
-      let order = await prisma.order.findUnique({
-        where: {
-          orderID: parseInt(body.orderID)
-        }
-      })
-      if (!order) throw new Error('Could not find order')
-
-      request = await prisma.request.update({
-        where: {
-          requestID: oldRequestForm.requestID
-        },
-        data: {
-          Order: {
-            update: {
-              where: {
-                orderID: parseInt(body.orderID)
-              },
-              data: {
-                orderNumber: String(body.orderNumber),
-                trackingInfo: String(body.trackingInfo),
-                shippingCost: new Prisma.Decimal(body.shippingCost)
-              }
-            }
-          }
-        }
+    if ('orders' in body) // order details - optional, so only updated if passed in
+    { 
+      const orders = req.body.orders
+      // makes sure each property in order matches the order type before updating
+      orders.forEach(async (order: Order) => {
+        await updateOrder(order)
       })
     }
+
     if ('processID' in body) { 
       let process = await prisma.process.findUnique({
         where: {
@@ -81,40 +84,12 @@ export default async function handler(
         })
       }
     }
-    let requestItem = await prisma.requestItem.findUnique({
-      where: {
-        itemID: parseInt(body.itemID)
-      }
+
+    const items = req.body.items
+    // makes sure each property in item matches the request item type before updating
+    items.forEach(async (item: Item) => {
+      await updateItem(item)
     })
-    if (!requestItem) throw new Error('Could not find request item')
-
-    if ('vendorName' in body)
-    {
-      let vendor = await prisma.vendor.findFirst({
-        where: {
-          vendorName: String(body.vendorName)
-        }
-      })
-      if (vendor === null) throw new Error('could not find vendor')
-
-      request = await prisma.request.update({ 
-        where: {
-          requestID: oldRequestForm.requestID,
-        },
-          data: {
-            RequestItem: {
-              update: {
-                where: {
-                  itemID: parseInt(body.itemID),
-                },
-                data: {
-                  vendorID: vendor.vendorID
-                },
-              },
-            },
-          },
-      })
-    }
 
     // for now is optional since need to add update order in project page
     if ('totalExpenses' in body) 
@@ -140,26 +115,12 @@ export default async function handler(
       })
       console.log('removed old  - project expenses: ', project?.totalExpenses)
       
-      // update with default required params and expenses
+      // update with total expenses (from items, orders, etc in request)
       request = await prisma.request.update({ 
         where: {
           requestID: oldRequestForm.requestID,
         },
           data: {
-            RequestItem: {
-              update: {
-                where: {
-                  itemID: parseInt(body.itemID),
-                },
-                data: {
-                  description: String(body.description),
-                  url: String(body.url),
-                  partNumber: String(body.partNumber),
-                  quantity: parseInt(body.quantity),
-                  unitPrice: new Prisma.Decimal(body.unitPrice),
-                },
-              },
-            },
             expense: new Prisma.Decimal(body.totalExpenses)
           },
       })
@@ -186,31 +147,6 @@ export default async function handler(
       })
       console.log('added new - project expenses: ', project?.totalExpenses)
     }
-    else
-    {
-      // update with default required params
-      request = await prisma.request.update({ 
-        where: {
-          requestID: oldRequestForm.requestID,
-        },
-          data: {
-            RequestItem: {
-              update: {
-                where: {
-                  itemID: parseInt(body.itemID),
-                },
-                data: {
-                  description: String(body.description),
-                  url: String(body.url),
-                  partNumber: String(body.partNumber),
-                  quantity: parseInt(body.quantity),
-                  unitPrice: new Prisma.Decimal(body.unitPrice),
-                },
-              },
-            },
-          },
-      })
-    }
     
     res.status(200).json({ message: 'Request Form Updated', request: request })
   } catch (error) {
@@ -221,5 +157,100 @@ export default async function handler(
         error: error,
     })
     else res.status(500).send(error)
+  }
+}
+
+/**
+ * This function first checks if the item vendor and itemID are valid and then updates the data fields for the request item
+ * @param item request item from request item array passed in to API (after type checking)
+ */
+async function updateItem(item: Item)
+{
+  try
+  {
+    let vendor
+
+    if (item.vendorName)
+    {
+      vendor = await prisma.vendor.findFirst({
+        where: 
+        {
+          vendorName: item.vendorName
+        }
+      })
+      if (!vendor) throw new Error('invalid vendor for item')
+    }
+
+    if (item.vendorID)
+    {
+      vendor = await prisma.vendor.findUnique({
+        where: 
+        {
+          vendorID: Number(item.vendorID)
+        }
+      })
+      if (!vendor) throw new Error('invalid vendor for item')
+    }
+
+    const reqItem = await prisma.requestItem.findUnique({
+      where: {
+        itemID: item.itemID
+      }
+    })
+    if (!reqItem) throw new Error('request item not found')
+
+    const newItem = await prisma.requestItem.update({
+      where: {
+        itemID: reqItem.itemID,
+      },
+      data: {
+        description: item.description,
+        url: item.url,
+        partNumber: item.partNumber,
+        quantity: item.quantity,
+        unitPrice: item.unitPrice,
+        vendorID: vendor?.vendorID
+      }
+    })
+  }
+  catch(error) {
+    console.log(error)
+    if (error instanceof Error)
+      console.log(error.message)
+  }
+}
+
+/**
+ * This function first checks if the orderID is valid and then updates the data fields for the order
+ * @param order order from orders array passed in to API (after type checking)
+ */
+async function updateOrder( order: Order)
+{
+  try
+  {
+    const reqOrder = await prisma.order.findUnique({
+      where: {
+        orderID: order.orderID
+      }
+    })
+    if (!reqOrder) throw new Error('order not found')
+
+    const newOrder = await prisma.order.update({
+      where: {
+        orderID: reqOrder.orderID,
+      },
+      data: {
+        dateOrdered: order.dateOrdered,
+        orderNumber: order.orderNumber,
+        trackingInfo: order.trackingInfo,
+        orderDetails: order.orderDetails,
+        shippingCost: new Prisma.Decimal(order.shippingCost)
+      }
+    })
+  }
+  catch(error) {
+    console.log(error)
+    if (error instanceof Error)
+      console.log(error.message)
   }
 }
