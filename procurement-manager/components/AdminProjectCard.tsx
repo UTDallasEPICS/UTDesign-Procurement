@@ -308,8 +308,11 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
    * @param itemID item ID for request data that admin edited
    */
   const updateItemIDs = (requestIndex: number, itemID: number) => {
-    const storeReqItemIDs = [...itemIDs] // stores item update status for all requests, and then go to specific request
-    const storeItemIDs = storeReqItemIDs[requestIndex] 
+    let storeReqItemIDs = [...itemIDs] // stores item update status for all requests, and then go to specific request
+    let storeItemIDs = storeReqItemIDs[requestIndex] 
+    if (storeItemIDs === undefined || storeItemIDs.length === 0) {
+      storeItemIDs = []
+    }
     storeItemIDs.push(itemID) 
     storeReqItemIDs[requestIndex] = storeItemIDs // update the list for all requests
     setItemIDs(storeReqItemIDs) 
