@@ -33,7 +33,9 @@ export default function index({ title }: { title: string }) {
         </Head>
         <Row className='w-100 d-flex justify-content-center'>
           <Spinner animation='border' role='status'>
-            <span className='visually-hidden'>Loading...</span>
+            <span className='visually-hidden'>
+              You are not authorized for this page.
+            </span>
           </Spinner>
         </Row>
       </>
