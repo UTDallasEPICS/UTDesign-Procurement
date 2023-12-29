@@ -32,3 +32,35 @@ export enum InvalidReason {
   FILE_TYPE = 'Invalid file type. Please upload .xlsx files only.',
   DUPLICATE_NAME = 'There are duplicate file names. Please rename the files and try again.',
 }
+
+export interface StudentFileData {
+  ['Deactivation Date']: number
+  ['Email']: string
+  ['First Name']: string
+  ['Last Name']: string
+  ['Project Number']: number
+  ['Project Type']: string
+  ['__rowNum__']: number
+}
+
+export interface NonStudentFileData {
+  ['Faculty Email']: string
+  ['First Name']: string
+  ['Last Name']: string
+  ['__rowNum__']: number
+}
+
+export interface ProjectFileData {
+  ['Company']: string
+  ['Dept']: string
+  ['Project End']: number
+  ['Project Number']: number
+  ['Project Start']: number
+  ['Project Type']: string
+  ['Title']: string
+  ['TM First Name']: string
+  ['TM Last Name']: string
+  ['__rowNum__']: number
+  // Not found in sample files but required in the database
+  ['Starting Budget']: number
+}

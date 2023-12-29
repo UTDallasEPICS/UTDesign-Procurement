@@ -7,7 +7,7 @@ const prisma = new PrismaClient()
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse
+  res: NextApiResponse,
 ) {
   try {
     // create roles
@@ -55,7 +55,7 @@ export default async function handler(
     await prisma.project.create({
       data: {
         projectType: 'EPICS',
-        projectNum: 1000,
+        projectNum: 10000, // Changed because Sample Files to be uploaded have projects greater than 1000
         projectTitle: 'Sample Project 1',
         startingBudget: 1000.0,
         sponsorCompany: 'Sample Company 1',
@@ -67,7 +67,7 @@ export default async function handler(
     await prisma.project.create({
       data: {
         projectType: 'EPICS',
-        projectNum: 2000,
+        projectNum: 20000, // Changed because Sample Files to be uploaded have projects greater than 1000
         projectTitle: 'Sample Project 2',
         startingBudget: 1000.0,
         sponsorCompany: 'Sample Company 1',
@@ -97,8 +97,8 @@ export default async function handler(
     await prisma.worksOn.create({
       data: {
         user: { connect: { netID: 'abc000000' } },
-        project: { connect: { projectNum: 1000 } },
-        startDate: new Date()
+        project: { connect: { projectNum: 10000 } },
+        startDate: new Date(),
       },
     })
 
@@ -106,8 +106,8 @@ export default async function handler(
     await prisma.worksOn.create({
       data: {
         user: { connect: { netID: 'def000000' } },
-        project: { connect: { projectNum: 1000 } },
-        startDate: new Date()
+        project: { connect: { projectNum: 10000 } },
+        startDate: new Date(),
       },
     })
 
@@ -115,8 +115,8 @@ export default async function handler(
     await prisma.worksOn.create({
       data: {
         user: { connect: { netID: 'def000000' } },
-        project: { connect: { projectNum: 2000 } },
-        startDate: new Date()
+        project: { connect: { projectNum: 20000 } },
+        startDate: new Date(),
       },
     })
 

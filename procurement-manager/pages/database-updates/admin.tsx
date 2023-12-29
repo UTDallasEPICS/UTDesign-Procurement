@@ -29,9 +29,20 @@ export async function getServerSideProps() {
 
 async function handleSubmit(files: FileWithValid[]) {
   try {
-    const newUploads = await axios.post('/api/db-upload', { files: files })
-    if (newUploads.status === 200) alert('Upload successful!')
-    else alert('Upload failed. Please try again.')
+    const formData = new FormData()
+    files.forEach((file) => {
+      formData.append('files', file)
+    })
+    const res = await fetch('/api/db-upload', {
+      method: 'POST',
+      body: formData,
+    })
+
+    if (res.status === 200) {
+      alert('Upload successful!')
+    } else {
+      alert('Upload failed. Please try again.')
+    }
   } catch (error) {
     console.error(error)
   }
@@ -39,11 +50,13 @@ async function handleSubmit(files: FileWithValid[]) {
 
 async function handleUpload(
   files: FileWithValid[],
-  setShowLoading: React.Dispatch<React.SetStateAction<boolean>>
+  setShowLoading: React.Dispatch<React.SetStateAction<boolean>>,
+  setShowModal: React.Dispatch<React.SetStateAction<boolean>>,
 ) {
   setShowLoading(true)
-  // await handleSubmit(files)
-  // setShowLoading(false)
+  await handleSubmit(files)
+  setShowLoading(false)
+  setShowModal(false)
 }
 
 export default function admin({ title }: { title: string }) {
@@ -67,12 +80,12 @@ export default function admin({ title }: { title: string }) {
 
       <DragAndDrop files={files} setFiles={setFiles} />
 
-      <Row className='my-4'>
+      <Row className="my-4">
         <Col>
           {files.length > 0 ? (
             <>
               <h2>Files to be uploaded:</h2>
-              <ListGroup className='mb-4'>
+              <ListGroup className="mb-4">
                 {/* Makes a list of the files selected by the user */}
                 {files.map((file: FileWithValid) => (
                   <ListGroupItem
@@ -83,21 +96,21 @@ export default function admin({ title }: { title: string }) {
                         : 'list-group-item-danger'
                     }
                   >
-                    <div className='d-flex justify-content-between align-items-center'>
+                    <div className="d-flex justify-content-between align-items-center">
                       <span>{file.name}</span>
-                      <div className='d-flex align-items-center'>
+                      <div className="d-flex align-items-center">
                         {/* <Button variant='warning' className='mx-2'>
                         </Button> */}
                         <label
-                          className='btn btn-warning mx-2'
-                          htmlFor='changeFile'
+                          className="btn btn-warning mx-2"
+                          htmlFor="changeFile"
                         >
                           Change
                         </label>
                         <input
-                          type='file'
-                          name='changeFile'
-                          id='changeFile'
+                          type="file"
+                          name="changeFile"
+                          id="changeFile"
                           className={styles['change-file-input']}
                           onChange={(e) => {
                             // This function updates the file list when the user changes a file
@@ -119,7 +132,7 @@ export default function admin({ title }: { title: string }) {
                                 // Check if other files have the same name
                                 if (
                                   files.some(
-                                    (file) => file.name === newFile.name
+                                    (file) => file.name === newFile.name,
                                   )
                                 ) {
                                   v.valid = false
@@ -133,11 +146,11 @@ export default function admin({ title }: { title: string }) {
                           }}
                         />
                         <Button
-                          variant='danger'
+                          variant="danger"
                           onClick={() => {
                             // This function removes a file from the list
                             const newFiles = files.filter(
-                              (f) => f.name !== file.name
+                              (f) => f.name !== file.name,
                             )
                             setFiles(newFiles)
                           }}
@@ -150,7 +163,7 @@ export default function admin({ title }: { title: string }) {
                 ))}
               </ListGroup>
               <Button
-                className='mb-4'
+                className="mb-4"
                 disabled={files.some((file) => !file.validity.valid)}
                 onClick={handleModalShow}
               >
@@ -166,9 +179,9 @@ export default function admin({ title }: { title: string }) {
       <Modal
         show={showModal}
         onHide={handleModalClose}
-        backdrop='static'
+        backdrop="static"
         keyboard={false}
-        size='lg'
+        size="lg"
         centered
       >
         <Modal.Header>
@@ -177,13 +190,13 @@ export default function admin({ title }: { title: string }) {
 
         <Modal.Body>
           <>
-            <Row className='mb-4'>
+            <Row className="mb-4">
               <Col>
                 <p>Are you sure you want to upload these files?</p>
               </Col>
             </Row>
 
-            <Row className='my-4'>
+            <Row className="my-4">
               <Col>
                 <ListGroup>
                   {files.map((file) => (
@@ -194,14 +207,14 @@ export default function admin({ title }: { title: string }) {
             </Row>
 
             {showLoading && (
-              <Row className='mt-4'>
-                <Col className='d-flex flex-column justify-content-center align-items-center'>
+              <Row className="mt-4">
+                <Col className="d-flex flex-column justify-content-center align-items-center">
                   <p>
                     Please don't refresh the page while database is being
                     updated
                   </p>
-                  <Spinner animation='border' role='status'>
-                    <span className='visually-hidden'>Loading...</span>
+                  <Spinner animation="border" role="status">
+                    <span className="visually-hidden">Loading...</span>
                   </Spinner>
                 </Col>
               </Row>
@@ -211,7 +224,7 @@ export default function admin({ title }: { title: string }) {
 
         <Modal.Footer>
           <Button
-            variant='secondary'
+            variant="secondary"
             disabled={showLoading}
             onClick={handleModalClose}
           >
@@ -219,9 +232,9 @@ export default function admin({ title }: { title: string }) {
           </Button>
           <Button
             disabled={showLoading}
-            variant='primary'
+            variant="primary"
             onClick={() => {
-              handleUpload(files, setShowLoading)
+              handleUpload(files, setShowLoading, setShowModal)
             }}
           >
             Upload
