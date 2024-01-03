@@ -1,4 +1,4 @@
-These are the APIs that we have done
+These are the APIs that we have done.
 There are some things listed in the .docx file that might have been done already so please make sure there are no duplicated methods, code, etc.
 
 ## auth
@@ -22,9 +22,6 @@ There are some things listed in the .docx file that might have been done already
 
 - `POST project/` - create a new project (need to be improved)
 - `GET project/` - gets all projects from the database
-- `POST project/get` - returns all the projects associated to a user
-  - body params: `{netID}`
-
 - `POST project/[projectNum]` - returns a project based on query parameter of `[projectNum]`
 - `POST project/deactivate/delete` - updates a project with a deactivation date given a project number
   - body params: `{projectNum}`
@@ -36,8 +33,8 @@ There are some things listed in the .docx file that might have been done already
   - body params: `{dateNeeded, projectNum, studentEmail, additionalInfo, items with fields: {description, url, partNumber, quantity, unitPrice, upload, vendorID}}`
 - `POST request-form/get` - returns the requests in a project that is associated to a user
   - body params: `{netID}`
-- `POST request-form/update` - updates information in a request and the project expenses after changes in request expenses (includes more optional params like orderID, processID, etc.)
-  - body params: `{requestID, itemID, description, URL, partNumber, quantity, unitPrice}`
+- `POST request-form/update` - updates request information and project expenses after changes in request total expenses (includes more optional params like orders, status, etc.)
+  - body params: `{projectID, requestID, items with fields: {itemID, description, url, partNumber, quantity, unitPrice, vendorName or vendorID}, totalExpenses}`
 
 ## test
 
@@ -49,7 +46,7 @@ There are some things listed in the .docx file that might have been done already
 - `POST /user` - creates a new user
   - body params: `{firstName, lastName, email, responsibilities?, roleID}`
 - `GET user/[id]` - returns a user based on query parameter of `[id]`
-- `GET user/get/fullName` - gets a user given their first and last name
+- `POST user/get/fullName` - returns a user given their first and last name
   - body params: `{firstName, lastName}`
 
 ## vendor
@@ -73,8 +70,9 @@ There are some things listed in the .docx file that might have been done already
   - query params: `projectID`
 
 ## reimbursement-form
-- `GET /reimbursement-form` - gives the projects and reimbursements associated with a user
+- `POST /reimbursement-form/get` - gives the projects and reimbursements associated with a user
+  - body params: `{netID}`
 - `POST /reimbursement-form` - creates a new reimbursement entry, new reimbursement items for every component in the submission, and updates the status of the reimbursement to under review after a student submits the reimbursement form
   - body params: `{dateNeeded, projectNum, studentEmail, additionalInfo, items with fields: {description, vendorID, receiptDate, receiptTotal}}`
-- `POST/reimbursement-form/update` - updates fields in a reimbursement entry, a reimbursement item in that entry, and the status of the reimbursement (status and vendorName are optional params)
-  - body params: `{requestID, itemID, description, receiptDate, receiptTotal}`
+- `POST/reimbursement-form/update` - updates information in a reimbursement (status is optional param)
+  - body params: `{reimbursementID, items with fields: {itemID, description, vendorName, receiptDate, receiptTotal}}`

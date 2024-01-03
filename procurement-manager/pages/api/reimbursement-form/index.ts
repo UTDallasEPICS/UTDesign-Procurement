@@ -12,7 +12,7 @@ interface Optionals {
 }
 
 interface Item {
-  receiptDate: string
+  receiptDate: Date
   description: string
   receiptTotal: number
   vendorID: number
