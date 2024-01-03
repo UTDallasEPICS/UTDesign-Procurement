@@ -32,3 +32,17 @@ $overlay: rgba(215, 215, 215, 0.5);
   position: absolute;
   z-index: -1;
 }
+
+.header-btns-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.upload-btn-container {
+  display: flex;
+  justify-content: end;
+  align-items: center;
+  margin-bottom: 1rem;
+}
