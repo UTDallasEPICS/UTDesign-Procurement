@@ -4,6 +4,15 @@ import { NextApiRequest, NextApiResponse } from 'next'
 import { prisma } from '@/db'
 import { Prisma } from '@prisma/client'
 
+// used for type checking items and orders passed in so that each attribute is valid
+interface Item {
+  itemID: number
+  receiptDate: Date
+  description: string
+  receiptTotal: number
+  vendorName: string
+}
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
@@ -55,61 +64,14 @@ export default async function handler(
         })
       }
     }
-    let reimbursementItem = await prisma.reimbursementItem.findUnique({
-      where: {
-        itemID: parseInt(body.itemID)
-      }
+    
+    const items = req.body.items
+    // makes sure each property in item matches the reimbursement item type before updating
+    items.forEach(async (item: Item) => {
+      await updateItem(item)
     })
-    if (!reimbursementItem) throw new Error('Could not find reimbursement item')
 
-    if ('vendorName' in body)
-    {
-      let vendor = await prisma.vendor.findFirst({
-        where: {
-          vendorName: String(body.vendorName)
-        }
-      })
-      if (vendor === null) throw new Error('could not find vendor')
-
-      reimbursement = await prisma.reimbursement.update({ 
-        where: {
-          reimbursementID: oldReimbursementForm.reimbursementID
-        },
-          data: {
-            ReimbursementItem: {
-              update: {
-                where: {
-                  itemID: parseInt(body.itemID),
-                },
-                data: {
-                  vendorID: vendor.vendorID
-                },
-              },
-            },
-          },
-      })
-    }
-
-    // update with default required params, and total expenses not included for now since need expense field in reimbursement, then implement update similar to request-form/update API
-    reimbursement = await prisma.reimbursement.update({ 
-      where: {
-        reimbursementID: oldReimbursementForm.reimbursementID
-      },
-        data: {
-          ReimbursementItem: {
-            update: {
-              where: {
-                itemID: parseInt(body.itemID),
-              },
-              data: {
-                  receiptDate: new Date(body.receiptDate),
-                  description: String(body.description),
-                  receiptTotal: Number(body.receiptTotal)
-              },
-            },
-          },
-        },
-    })
+    // total expenses not included for now since need expense field in reimbursement, then implement update similar to request-form/update API
     
     res.status(200).json({ message: 'Reimbursement Form Updated', reimbursement: reimbursement })
   } catch (error) {
@@ -120,5 +82,48 @@ export default async function handler(
         error: error,
     })
     else res.status(500).send(error)
+  }
+}
+
+/**
+ * This function first checks if the item vendor and itemID are valid and then updates the data fields for the reimbursement item
+ * @param item item from reimbursement item array passed in to API (after type checking)
+ */
+async function updateItem(item: Item)
+{
+  try
+  {
+    let vendor = await prisma.vendor.findFirst({
+      where: 
+      {
+        vendorName: item.vendorName
+      }
+    })
+    if (!vendor) throw new Error('invalid vendor for item')
+    
+    const reimbursementItem = await prisma.reimbursementItem.findUnique({
+      where: {
+        itemID: item.itemID
+      }
+    })
+    if (!reimbursementItem) throw new Error('reimbursement item not found')
+
+    const newItem = await prisma.reimbursementItem.update({
+      where: {
+        itemID: reimbursementItem.itemID,
+      },
+      data: {
+        itemID: item.itemID,
+        receiptDate: item.receiptDate,
+        description: item.description,
+        receiptTotal: new Prisma.Decimal(item.receiptTotal),
+        vendorID: vendor.vendorID
+      }
+    })
+  }
+  catch(error) {
+    console.log(error)
+    if (error instanceof Error)
+      console.log(error.message)
   }
 }

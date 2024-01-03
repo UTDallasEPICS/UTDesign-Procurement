@@ -15,7 +15,7 @@ import {
   Collapse,
 } from 'react-bootstrap'
 import styles from '@/styles/RequestCard.module.scss'
-import { Prisma, User, Project, Vendor, Order } from '@prisma/client'
+import { Prisma, User, Project, Vendor, Order, RequestItem } from '@prisma/client'
 import axios from 'axios'
 
 interface AdminRequestCardProps {
@@ -44,8 +44,8 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
   // state for editing the request details
   const [editable, setEditable] = useState<boolean>(false)
   const [vendors, setVendors] = useState<Vendor[]>([])
-  const [reqOrders, setReqOrders] = useState<Order[]>([])
-  const [updateOrders, setUpdateOrders] = useState<boolean>(false)
+  // using for now since haven't removed processed (ordered) requests from orders page yet so once fixed no need to use orders in a request
+  const [reqOrders, setReqOrders] = useState<Order[]>([]) 
  
   // state that contains the values of the fields for each order
   // TODO:: implement add/delete orders feature similar to add/delete items feature for request-form/index.ts
@@ -60,7 +60,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
   
   // state that contains the values of the input fields for request items in the request card
   // TODO:: implement add/delete items feature similar to add/delete items feature for request-form/index.ts
-  const [inputValues, setInputValues] = useState(
+  const [items, setItems] = useState(
     // initialized by the details prop
     details.RequestItem.map((item, itemIndex) => {
       return { 
@@ -69,6 +69,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
       }
     })
   )
+  const [itemIDs, setItemIDs] = useState<number[]>([]) // track which of the items were updated
 
   /**
    * this function calculates the total cost for all items in a request
@@ -76,7 +77,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
    */
   const calculateTotalCost = (): Prisma.Decimal => {
     let totalCost = 0
-    inputValues.forEach((item) => {
+    items.forEach((item) => {
       totalCost += (Number(item.unitPrice) * item.quantity)
     })
     orders.forEach((order) => {
@@ -101,7 +102,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
 
   // set request item and order arrays to data retrieved from request
   useEffect(() => {
-    setInputValues(
+    setItems(
       details.RequestItem.map((item, itemIndex) => {
         return { 
           vendorName: (vendors.length > itemIndex ? vendors[itemIndex].vendorName : ""), 
@@ -210,7 +211,6 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
         
         if (orderArr.length !== 0) {
           setReqOrders(orderArr)
-          setUpdateOrders(true)
         }
       }
     } 
@@ -226,15 +226,16 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
    * @param e - the onChange event passed by the input field
    * @param index - the index of the request item the input field is in within the request items array
    */
-  function handleInputChange(
+  function handleItemChange(
     e: React.ChangeEvent<HTMLInputElement>,
     index: number
   ) {
     const { name, value } = e.target
 
-    setInputValues((prev) => {
+    setItems((prev) => {
       return prev.map((item, i) => {
         if (i !== index) return item
+        updateItemIDs(item.itemID) // update if item is at updated index
         return {
           ...item,
           [name]: value,
@@ -242,6 +243,16 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
       })
     })
   }
+
+   /**
+   * this function adds a item ID for any updated item data to the list of updated item IDs
+   * @param value item ID for item data that admin edited
+   */
+   const updateItemIDs = (value: number) => {
+    const storeItemIDs = [...itemIDs]
+    storeItemIDs.push(value) // add new value to array
+    setItemIDs(storeItemIDs) // Set the state with the updated array
+  };
 
   /**
    * This function handles changes to inputs whenever user is editing the input fields in the request card for orders
@@ -277,49 +288,62 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
     try {
       const newDetails = {
         ...details, // copy the details object
-        RequestItem: inputValues, // replace the RequestItem array with the new inputs in each request item
+        RequestItem: items, // replace the RequestItem array with the new inputs in each request item
       }
       const newOrders = orders
 
-      for (let i = 0; i < newOrders.length; i++) {
-        if (!updateOrders)
-        {
-          const response = await axios.post('/api/orders', {
-            // for now, using as if admin updates info on the website after ordering that day
-            // TODO:: allow admin to set date ordered similar to request-form/index
-            dateOrdered: new Date(), 
-            orderNumber: newOrders[i].orderNumber,
-            orderDetails: newOrders[i].orderDetails,
-            trackingInfo: newOrders[i].trackingInfo,
-            shippingCost: newOrders[i].shippingCost,
-            requestID: details.requestID,
-            netID: user.netID,
-          })
-          if (response.status === 201) {
-            console.log(response.data)
+      for (let i = 0; i < newOrders.length; i++) 
+      {
+        const response = await axios.post('/api/orders', {
+          // for now, using as if admin updates info on the website after ordering that day
+          // TODO:: allow admin to set date ordered similar to request-form/index
+          dateOrdered: new Date(), 
+          orderNumber: newOrders[i].orderNumber,
+          orderDetails: newOrders[i].orderDetails,
+          trackingInfo: newOrders[i].trackingInfo,
+          shippingCost: newOrders[i].shippingCost,
+          requestID: details.requestID,
+          netID: user.netID,
+        })
+        if (response.status === 201) {
+          console.log(response.data) 
+        }
+      }
+      let updatedItemArr = []
+
+      for (let i = 0; i < newDetails.RequestItem.length; i++) {
+        for (const id of itemIDs) {
+          if (newDetails.RequestItem[i].itemID === id) {
+            updatedItemArr.push(newDetails.RequestItem[i])
+            console.log("updated item id: ", newDetails.RequestItem[i].itemID)
           }
         }
       }
 
-      for (let i = 0; i < newDetails.RequestItem.length; i++) {
-        const response = await axios.post('/api/request-form/update', {
-          projectID: project.projectID,
-          requestID: details.requestID,
-          itemID: details.RequestItem[i].itemID,
-          description: newDetails.RequestItem[i].description, // used new details data in parameters for editable fields
-          url: newDetails.RequestItem[i].url, 
-          partNumber: newDetails.RequestItem[i].partNumber, 
-          quantity: newDetails.RequestItem[i].quantity, 
-          unitPrice: newDetails.RequestItem[i].unitPrice, 
-          vendorName: newDetails.RequestItem[i].vendorName,
-          totalExpenses: calculateTotalCost(),
-        })
-        if (response.status === 200) {
-          console.log(response.data)
+      // only sending updated items and the edited data types to API
+      const itemsToSend = updatedItemArr.map((item) => {
+        return {
+          itemID: item.itemID,
+          description: item.description,
+          url: item.url,
+          partNumber: item.partNumber,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
+          vendorName: item.vendorName
         }
+      })
+      const response = await axios.post('/api/request-form/update', {
+        projectID: project.projectID,
+        requestID: details.requestID,
+        items: itemsToSend,
+        totalExpenses: calculateTotalCost(),
+      })
+      if (response.status === 200) {
+        console.log(response.data)
       }
       setOrderTotal(calculateTotalCost())
-      onSave()
+      onSave() // used to update project data after edits
+      setItemIDs([]) // reset list to none edited once done
     } catch (error) {
       if (axios.isAxiosError(error) || error instanceof Error)
         console.error(error.message)
@@ -454,7 +478,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
                           </tr>
                         </thead>
                         <tbody>
-                          {inputValues.map((item, itemIndex) => {
+                          {items.map((item, itemIndex) => {
                             return (
                               <tr key={itemIndex}>
                                 <td width={20}>{itemIndex + 1}</td>
@@ -463,7 +487,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
                                     name='description'
                                     value={item.description}
                                     onChange={(e) =>
-                                      handleInputChange(
+                                      handleItemChange(
                                         e as React.ChangeEvent<HTMLInputElement>,
                                         itemIndex
                                       )
@@ -475,7 +499,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
                                     name='vendorName'
                                     value={item.vendorName}
                                     onChange={(e) =>
-                                      handleInputChange(
+                                      handleItemChange(
                                         e as React.ChangeEvent<HTMLInputElement>,
                                         itemIndex
                                       )
@@ -487,7 +511,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
                                     name='url'
                                     value={item.url} // TODO:: make item url shown as clickable link
                                     onChange={(e) =>
-                                      handleInputChange(
+                                      handleItemChange(
                                         e as React.ChangeEvent<HTMLInputElement>,
                                         itemIndex
                                       )
@@ -499,7 +523,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
                                     name='partNumber'
                                     value={item.partNumber}
                                     onChange={(e) =>
-                                      handleInputChange(
+                                      handleItemChange(
                                         e as React.ChangeEvent<HTMLInputElement>,
                                         itemIndex
                                       )
@@ -511,7 +535,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
                                     name='quantity'
                                     value={item.quantity}
                                     onChange={(e) =>
-                                      handleInputChange(
+                                      handleItemChange(
                                         e as React.ChangeEvent<HTMLInputElement>,
                                         itemIndex
                                       )
@@ -523,7 +547,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
                                     name='unitPrice'
                                     value={item.unitPrice.toString()}
                                     onChange={(e) =>
-                                      handleInputChange(
+                                      handleItemChange(
                                         e as React.ChangeEvent<HTMLInputElement>,
                                         itemIndex
                                       )
