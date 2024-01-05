@@ -64,3 +64,20 @@ export interface ProjectFileData {
   // Not found in sample files but required in the database
   ['Starting Budget']: number
 }
+
+export interface StudentFileDataError extends StudentFileData {
+  ['Reason']: string
+}
+
+export interface NonStudentFileDataError extends NonStudentFileData {
+  ['Reason']: string
+}
+
+export interface ProjectFileDataError extends ProjectFileData {
+  ['Reason']: string
+}
+
+export type FileDataError =
+  | StudentFileDataError
+  | NonStudentFileDataError
+  | ProjectFileDataError

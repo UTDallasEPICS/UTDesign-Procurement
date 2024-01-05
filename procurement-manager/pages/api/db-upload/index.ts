@@ -1,3 +1,13 @@
+/**
+ * This API endpoint is used to upload XLSX files and update the database accordingly.
+ * It specifically handles students, mentors, and projects.
+ * TODOS:
+ * - Add more error handling
+ * - Handle the case where a student is now a mentor
+ * - Handle uploading of vendors, sponsors, non-students (admins, mentors, etc.)
+ * - There is no limit to the number of files that can be uploaded nor the size, so I am not sure how to handle that
+ */
+
 import { NextApiRequest, NextApiResponse } from 'next'
 import formidable, { IncomingForm } from 'formidable'
 import PersistentFile from 'formidable/PersistentFile'
@@ -11,6 +21,10 @@ import {
   StudentFileData,
   NonStudentFileData,
   ProjectFileData,
+  FileDataError,
+  StudentFileDataError,
+  NonStudentFileDataError,
+  ProjectFileDataError,
 } from '@/lib/types'
 
 // Needed for XLSX to work with the filesystem
@@ -39,21 +53,11 @@ export default async function handler(
       return
     }
 
-    // Directory where the files will be uploaded
-    const uploadDir = join(
-      process.env.ROOT_DIR || process.cwd(),
-      'uploads/files',
-    )
-    // First check if the directory exists, if not, create it
-    try {
-      await stat(uploadDir)
-    } catch (e: any) {
-      if (e.code === 'ENOENT') {
-        await mkdir(uploadDir, { recursive: true })
-      } else {
-        console.error(e)
-      }
-    }
+    // This will create the directories if they do not exist
+    const { uploadDir, exportDir } = await createDirectories()
+
+    // Because we are handling multiple file uplaods
+    const errorDataFiles: FileDataError[][] = []
 
     // Get the form from the request and parse using formidable
     interface ReturnData {
@@ -105,18 +109,30 @@ export default async function handler(
       file.originalFilename.includes('Student'),
     )
     for (const file of nonStudentFiles) {
-      await analyzeFile(file)
+      await analyzeFile(file, errorDataFiles)
     }
     for (const file of projectFiles) {
-      await analyzeFile(file)
+      await analyzeFile(file, errorDataFiles)
     }
     for (const file of studentFiles) {
-      await analyzeFile(file)
+      await analyzeFile(file, errorDataFiles)
     }
 
-    res.status(200).json({ status: 'ok' })
+    // If there are no errors in the uploaded files, send a 200 status without sending a error report file
+    if (errorDataFiles[0].length === 0) res.status(200).json({ status: 'ok' })
+    // If there are errors in the uploaded files, send a 200 status with the error report file
+    else {
+      const reportFilePath = await createResponseFile(errorDataFiles, exportDir)
+      let checkReportFileDir = fs.statSync(reportFilePath)
+      res.writeHead(200, {
+        'Content-type': 'application/xlsx',
+        'Content-Disposition': 'attachment; filename=report.xlsx',
+      })
+      const readStream = fs.createReadStream(reportFilePath)
+      readStream.pipe(res)
+    }
   } catch (error) {
-    console.log(error)
+    console.error(error)
     res.status(500).json({ status: 'error', message: 'Internal Server Error' })
   }
 }
@@ -134,7 +150,10 @@ enum FILE_TYPE {
  * and should be changed if we want to keep the files**
  * @param file File to be parsed and analyzed
  */
-async function analyzeFile(file: PersistentFile) {
+async function analyzeFile(
+  file: PersistentFile,
+  errorDataFiles: FileDataError[][],
+) {
   try {
     //@ts-ignore
     const workbook = XLSX.readFile(file.filepath, { cellDates: true })
@@ -167,13 +186,19 @@ async function analyzeFile(file: PersistentFile) {
           data.map((student) => {
             student['Project Number'] = Number(student['Project Number'])
           })
-          await handleStudentFile(data as StudentFileData[])
+          errorDataFiles.push(
+            await handleStudentFile(data as StudentFileData[]),
+          )
           break
         case FILE_TYPE.NON_STUDENT:
-          await handleNonStudentFile(data as NonStudentFileData[])
+          errorDataFiles.push(
+            await handleNonStudentFile(data as NonStudentFileData[]),
+          )
           break
         case FILE_TYPE.PROJECT:
-          await handleProjectFile(data as ProjectFileData[])
+          errorDataFiles.push(
+            await handleProjectFile(data as ProjectFileData[]),
+          )
           break
         default:
           break
@@ -197,6 +222,8 @@ async function analyzeFile(file: PersistentFile) {
  */
 async function handleStudentFile(data: StudentFileData[]) {
   let index = 0 // used for finding the index of the student that is causing an error
+  const dataWithError: StudentFileDataError[] = [] // used for storing the any students with errors
+
   for (const student of data) {
     try {
       // First check if the student is already in the database
@@ -245,8 +272,8 @@ async function handleStudentFile(data: StudentFileData[]) {
           })
         } else {
           // Case 2
-          console.warn(
-            'Duplicated Row: This student is already working on this project',
+          throw new Error(
+            'Duplicated Row in File: This student is already working on this project',
           )
         }
 
@@ -307,18 +334,33 @@ async function handleStudentFile(data: StudentFileData[]) {
       index++
     } catch (e) {
       console.error(`Found an error at row #${index}`)
+      index++
 
       if (e instanceof Prisma.PrismaClientKnownRequestError) {
         if (e.code === 'P2002') {
           console.error(
             'There is a unique constraint violation, a new user cannot be created with this email',
           )
+          dataWithError.push({
+            ...student,
+            ['Reason']:
+              'There is a unique constraint violation, a new user cannot be created with this email',
+          })
         }
       } else {
-        console.error(e)
+        try {
+          dataWithError.push({
+            ...student,
+            ['Reason']: (e as Error).message,
+          })
+        } catch (error) {
+          console.error(error)
+        }
       }
     }
   }
+
+  return dataWithError
 }
 
 /**
@@ -328,6 +370,8 @@ async function handleStudentFile(data: StudentFileData[]) {
  */
 async function handleNonStudentFile(data: NonStudentFileData[]) {
   let index = 0 // used for finding the index of the non-student that is causing an error
+  const dataWithError: NonStudentFileDataError[] = [] // used for storing any non-students with errors
+
   for (const nonStudent of data) {
     try {
       // First check if the non-student is already in the database
@@ -351,13 +395,26 @@ async function handleNonStudentFile(data: NonStudentFileData[]) {
 
       // If the non-student does not exist, create a new non-student
       else {
+        // First validate email and netID
+        const netIDFormat = /^[a-zA-Z]{3}\d{6}$/
+        const netID = nonStudent['Faculty Email'].toLowerCase().split('@')[0]
+        const emailOrg = nonStudent['Faculty Email'].toLowerCase().split('@')[1]
+        if (!netIDFormat.test(netID))
+          throw new Error(
+            'Invalid netID. NetID must be in the format of three letters and six numbers (abc123456)',
+          )
+        if (emailOrg !== 'utdallas.edu')
+          throw new Error(
+            'Invalid email. Non-students must have a UTD email address',
+          )
+
         // TODO: Change the roleID to the correct one
         const user = await prisma.user.create({
           data: {
             firstName: nonStudent['First Name'],
             lastName: nonStudent['Last Name'],
             email: nonStudent['Faculty Email'].toLowerCase(),
-            netID: nonStudent['Faculty Email'].toLowerCase().split('@')[0],
+            netID: netID,
             active: true,
             role: {
               connect: {
@@ -367,6 +424,8 @@ async function handleNonStudentFile(data: NonStudentFileData[]) {
           },
         })
       }
+
+      index++
     } catch (e) {
       console.error(`Found an error at row #${index}`)
 
@@ -375,12 +434,23 @@ async function handleNonStudentFile(data: NonStudentFileData[]) {
           console.error(
             'There is a unique constraint violation, a new user cannot be created with this email',
           )
+          dataWithError.push({
+            ...nonStudent,
+            ['Reason']:
+              'There is a unique constraint violation, a new user cannot be created with this email',
+          })
         }
       } else {
         console.error(e)
+        dataWithError.push({
+          ...nonStudent,
+          ['Reason']: (e as Error).message,
+        })
       }
     }
   }
+
+  return dataWithError
 }
 
 /**
@@ -390,6 +460,8 @@ async function handleNonStudentFile(data: NonStudentFileData[]) {
  */
 async function handleProjectFile(data: ProjectFileData[]) {
   let index = 0 // used for finding the index of the project that is causing an error
+  const dataWithError: ProjectFileDataError[] = [] // used for storing any projects with errors
+
   for (const project of data) {
     try {
       // First check if project exists in the database
@@ -459,14 +531,77 @@ async function handleProjectFile(data: ProjectFileData[]) {
       if (e instanceof Prisma.PrismaClientKnownRequestError) {
         if (e.code === 'P2002') {
           console.error(
-            'There is a unique constraint violation, a new project cannot be created with this project number',
+            'There is a unique constraint violation, a new user cannot be created with this email',
           )
+          dataWithError.push({
+            ...project,
+            ['Reason']:
+              'There is a unique constraint violation, a new user cannot be created with this email',
+          })
         }
       } else {
         console.error(e)
+        dataWithError.push({
+          ...project,
+          ['Reason']: (e as Error).message,
+        })
       }
     }
   }
+
+  return dataWithError
+}
+
+/**
+ * Creates the upload and export directories if they do not exist
+ * @returns The upload and export directories as strings
+ */
+async function createDirectories() {
+  // Directory where the files will be uploaded
+  const uploadDir = join(process.env.ROOT_DIR || process.cwd(), 'uploads/files')
+  const exportDir = join(process.env.ROOT_DIR || process.cwd(), 'exports/files')
+  // First check if the directory exists, if not, create it
+  try {
+    await stat(uploadDir)
+  } catch (e: any) {
+    if (e.code === 'ENOENT') {
+      await mkdir(uploadDir, { recursive: true })
+    } else {
+      console.error(e)
+    }
+  }
+  try {
+    await stat(exportDir)
+  } catch (e: any) {
+    if (e.code === 'ENOENT') {
+      await mkdir(exportDir, { recursive: true })
+    }
+  }
+
+  return { uploadDir, exportDir }
+}
+
+/**
+ * Each file that was uploaded will have its own sheet in the response file
+ * @param dataWithError
+ * @returns The Workbook
+ */
+async function createResponseFile(
+  dataWithError: FileDataError[][],
+  exportDir: string,
+) {
+  const workbook = XLSX.utils.book_new()
+  let fileNum = 1
+  for (const file of dataWithError) {
+    const worksheet = XLSX.utils.json_to_sheet(file)
+    XLSX.utils.book_append_sheet(workbook, worksheet, `Error Report ${fileNum}`)
+    fileNum++
+  }
+  XLSX.writeFile(workbook, join(exportDir, 'report.xlsx'), {
+    compression: true,
+  })
+
+  return join(exportDir, 'report.xlsx')
 }
 
 // Disable body parser so that we can parse the form data

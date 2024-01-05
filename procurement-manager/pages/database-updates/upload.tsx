@@ -1,7 +1,6 @@
 import DragAndDrop from '@/components/DragAndDrop'
 import { FileWithValid, ValidFile, InvalidReason } from '@/lib/types'
 import Head from 'next/head'
-import { title } from 'process'
 import { useState } from 'react'
 import {
   Row,
@@ -23,7 +22,17 @@ export async function getServerSideProps() {
   }
 }
 
-async function handleSubmit(files: FileWithValid[]) {
+/**
+ * This function handles the upload of the files to the server when the Upload button is clicked
+ * @param files
+ * @param setErrorFileURL
+ * @param setStatus
+ */
+async function handleSubmit(
+  files: FileWithValid[],
+  setErrorFileURL: React.Dispatch<React.SetStateAction<string>>,
+  setStatus: React.Dispatch<React.SetStateAction<string>>,
+) {
   try {
     const formData = new FormData()
     files.forEach((file) => {
@@ -35,33 +44,65 @@ async function handleSubmit(files: FileWithValid[]) {
     })
 
     if (res.status === 200) {
-      alert('Upload successful!')
+      /**
+       * The API returns the file or a JSON object but only one way to parse the response (either res.blob() or res.json())
+       * but to get the error file, we need to parse the response as a blob and to get the status of the upload, we need to parse the response as a JSON object
+       * The solution is to parse the response as a blob and then check the type of the blob to see if it is a JSON object or not
+       */
+      const resData = await res.blob()
+      if (resData.type.includes('application/json')) {
+        // This will just give the user insight whether the upload was successful without any errors
+        const text = await new Response(resData).text()
+        const jsonResults = JSON.parse(text)
+        if (jsonResults.status && jsonResults.status === 'ok')
+          setStatus('Upload successful. No errors found in the uploaded files')
+      } else {
+        // This will give the user the error file to download
+        const errorFile = new Blob([resData])
+        const errorFileURL = URL.createObjectURL(errorFile)
+        setErrorFileURL(errorFileURL)
+        setStatus(
+          'Upload successful, but there were errors found in the uploaded files. Here is a file containing all the errors.',
+        )
+      }
     } else {
-      alert('Upload failed. Please try again.')
+      setStatus('Upload failed. Please try again.')
     }
-  } catch (error) {
-    console.error(error)
+  } catch (e) {
+    console.error(e)
   }
 }
 
+/**
+ * This is just a wrapper function to handle the loading animation
+ * @param files
+ * @param setShowLoading
+ * @param setErrorFileURL
+ * @param setStatus
+ */
 async function handleUpload(
   files: FileWithValid[],
   setShowLoading: React.Dispatch<React.SetStateAction<boolean>>,
-  setShowModal: React.Dispatch<React.SetStateAction<boolean>>,
+  setErrorFileURL: React.Dispatch<React.SetStateAction<string>>,
+  setStatus: React.Dispatch<React.SetStateAction<string>>,
 ) {
   setShowLoading(true)
-  await handleSubmit(files)
+  await handleSubmit(files, setErrorFileURL, setStatus)
   setShowLoading(false)
-  setShowModal(false)
 }
 
 export default function Upload({ title }: { title: string }) {
   const [files, setFiles] = useState<FileWithValid[]>([])
   const [showModal, setShowModal] = useState<boolean>(false)
   const [showLoading, setShowLoading] = useState<boolean>(false)
+  const [errorFileURL, setErrorFileURL] = useState<string>('')
+  const [status, setStatus] = useState<string>('')
 
   function handleModalClose() {
     setShowModal(false)
+    setStatus('')
+    setErrorFileURL('')
+    URL.revokeObjectURL(errorFileURL)
   }
 
   function handleModalShow() {
@@ -95,8 +136,6 @@ export default function Upload({ title }: { title: string }) {
                     <div className='d-flex justify-content-between align-items-center'>
                       <span>{file.name}</span>
                       <div className='d-flex align-items-center'>
-                        {/* <Button variant='warning' className='mx-2'>
-                        </Button> */}
                         <label
                           className='btn btn-warning mx-2'
                           htmlFor='changeFile'
@@ -181,26 +220,34 @@ export default function Upload({ title }: { title: string }) {
         centered
       >
         <Modal.Header>
-          <Modal.Title>Confirm Upload</Modal.Title>
+          <Modal.Title>
+            {status === '' ? 'Confirm Upload' : 'Upload Status'}
+          </Modal.Title>
         </Modal.Header>
 
         <Modal.Body>
           <>
-            <Row className='mb-4'>
-              <Col>
-                <p>Are you sure you want to upload these files?</p>
-              </Col>
-            </Row>
+            {status === '' && (
+              <>
+                <Row className='mb-4'>
+                  <Col>
+                    <p>Are you sure you want to upload these files?</p>
+                  </Col>
+                </Row>
 
-            <Row className='my-4'>
-              <Col>
-                <ListGroup>
-                  {files.map((file) => (
-                    <ListGroupItem key={file.name}>{file.name}</ListGroupItem>
-                  ))}
-                </ListGroup>
-              </Col>
-            </Row>
+                <Row className='my-4'>
+                  <Col>
+                    <ListGroup>
+                      {files.map((file) => (
+                        <ListGroupItem key={file.name}>
+                          {file.name}
+                        </ListGroupItem>
+                      ))}
+                    </ListGroup>
+                  </Col>
+                </Row>
+              </>
+            )}
 
             {showLoading && (
               <Row className='mt-4'>
@@ -215,26 +262,55 @@ export default function Upload({ title }: { title: string }) {
                 </Col>
               </Row>
             )}
+
+            {
+              // Show status of upload
+              status !== '' && (
+                <Row className='mt-4'>
+                  <Col className='d-flex flex-column justify-content-center align-items-center'>
+                    <p>{status}</p>
+                  </Col>
+                </Row>
+              )
+            }
+
+            {/* Show download link to error file */}
+            {errorFileURL !== '' && (
+              <Row className='mt-4'>
+                <Col className='d-flex flex-column justify-content-center align-items-center'>
+                  <p>
+                    <a href={errorFileURL} download='report.xlsx'>
+                      Download Error File
+                    </a>
+                  </p>
+                </Col>
+              </Row>
+            )}
           </>
         </Modal.Body>
 
         <Modal.Footer>
+          {/* A button that shows Cancel before uploading and Close after uploading */}
           <Button
             variant='secondary'
             disabled={showLoading}
             onClick={handleModalClose}
           >
-            Cancel
+            {status === '' ? 'Cancel' : 'Close'}
           </Button>
-          <Button
-            disabled={showLoading}
-            variant='primary'
-            onClick={() => {
-              handleUpload(files, setShowLoading, setShowModal)
-            }}
-          >
-            Upload
-          </Button>
+
+          {/* An upload button that shows before uploading and disappears after uploading to prevent reuploads */}
+          {status === '' && (
+            <Button
+              disabled={showLoading}
+              variant='primary'
+              onClick={() => {
+                handleUpload(files, setShowLoading, setErrorFileURL, setStatus)
+              }}
+            >
+              Upload
+            </Button>
+          )}
         </Modal.Footer>
       </Modal>
     </>
