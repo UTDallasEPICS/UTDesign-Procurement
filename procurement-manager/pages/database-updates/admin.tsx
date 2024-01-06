@@ -2,7 +2,7 @@
  * This is the Admin View for the Database Updates Page
  */
 
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Button, Col, Row } from 'react-bootstrap'
 import { prisma } from '@/db'
 import { Project, Request, User } from '@prisma/client'
@@ -10,6 +10,9 @@ import CustomTable from '@/components/Table'
 import Link from 'next/link'
 import Head from 'next/head'
 import styles from '@/styles/DatabaseUpdate.module.scss'
+import { AgGridReact } from 'ag-grid-react'
+import 'ag-grid-community/styles/ag-grid.css' // Core CSS
+import 'ag-grid-community/styles/ag-theme-quartz.css' // Theme
 
 export async function getServerSideProps() {
   const users = await prisma.user.findMany()
@@ -35,6 +38,11 @@ interface AdminProps {
   requests: Request[]
 }
 
+type AgGridColumn = {
+  headerName: string
+  field: string
+}
+
 export default function admin({
   title,
   description,
@@ -43,6 +51,43 @@ export default function admin({
   requests,
 }: AdminProps): JSX.Element {
   const [tableType, setTableType] = useState<string>('user') // either user or project
+  const [colData, setColData] = useState<any>([])
+  const [defaultColDef, setDefaultColDef] = useState<any>({
+    editable: true,
+    filter: true,
+  })
+
+  useEffect(() => {
+    if (tableType === 'user') {
+      console.log(users)
+      setColData([
+        { field: 'userID' },
+        { field: 'netID' },
+        { field: 'firstName' },
+        { field: 'lastName' },
+        { field: 'email' },
+        { field: 'roleID' },
+        { field: 'active' },
+        { field: 'responsibilities' },
+        { field: 'deactivationDate' },
+      ])
+    } else if (tableType === 'project') {
+      console.log(projects)
+      setColData([
+        { field: 'projectID' },
+        { field: 'projectTitle' },
+        { field: 'projectNum' },
+        { field: 'startingBudget' },
+        { field: 'totalExpenses' },
+        { field: 'projectType' },
+        { field: 'sponsorCompany' },
+        { field: 'activationDate' },
+        { field: 'deactivationDate' },
+        { field: 'additionalInfo' },
+        { field: 'costCenter' },
+      ])
+    }
+  }, [tableType])
 
   return (
     <>
@@ -51,31 +96,56 @@ export default function admin({
         <meta name='description' content={description.toString()} />
       </Head>
       <Row>
-        {/* Users Dropdown (maybe, hopefully) & Projects Button*/}
-        <Col xs={3}>
+        <Col>
           <div className={styles['header-btns-container']}>
-            <Button onClick={() => setTableType('user')} className='mr-2'>
-              Users
-            </Button>
-            <Button onClick={() => setTableType('project')}>Projects</Button>
-          </div>
-        </Col>
+            {/* Users Dropdown (maybe, hopefully) & Projects Button*/}
+            <div>
+              <Button onClick={() => setTableType('user')}>Users</Button>
+              <Button onClick={() => setTableType('project')} className='mx-2'>
+                Projects
+              </Button>
+            </div>
 
-        {/* Upload Button */}
-        <Col xs={9} className={styles['upload-btn-container']}>
-          <Link href={'/database-updates/upload'}>
-            <Button>Upload Files</Button>
-          </Link>
+            {/* Upload Button */}
+            <Link href={'/database-updates/upload'}>
+              <Button>Upload Files</Button>
+            </Link>
+          </div>
         </Col>
       </Row>
 
       {/* Tables Component */}
       <Row>
         <Col>
-          <CustomTable
+          <div
+            className='ag-theme-quartz'
+            style={{
+              width: '100%',
+              height: '75vh',
+            }}
+          >
+            {tableType === 'user' ? (
+              <AgGridReact
+                rowData={users}
+                columnDefs={colData}
+                defaultColDef={defaultColDef}
+                autoSizeStrategy={{ type: 'fitCellContents' }}
+                pagination={true}
+              />
+            ) : (
+              <AgGridReact
+                rowData={projects}
+                columnDefs={colData}
+                defaultColDef={defaultColDef}
+                autoSizeStrategy={{ type: 'fitCellContents' }}
+                pagination={true}
+              />
+            )}
+          </div>
+          {/* <CustomTable
             type={tableType}
             data={tableType == 'user' ? users : projects}
-          ></CustomTable>
+          ></CustomTable> */}
         </Col>
       </Row>
     </>
