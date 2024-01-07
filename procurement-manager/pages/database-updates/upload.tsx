@@ -313,7 +313,9 @@ export default function Upload({ title }: { title: string }) {
                       variant='danger'
                       as='a'
                       href={errorFileURL}
-                      download={'report.xlsx'}
+                      download={`database_update_report-${new Date()
+                        .toISOString()
+                        .substring(0, 19)}.xlsx`}
                     >
                       Download Error File
                     </Button>
@@ -334,6 +336,7 @@ export default function Upload({ title }: { title: string }) {
               className='mx-4'
               checked={emailErrorFile}
               onChange={(e) => setEmailErrorFile(e.target.checked)}
+              disabled={showLoading}
             />
           )}
           {/* A button that shows Cancel before uploading and Close after uploading */}

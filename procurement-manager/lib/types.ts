@@ -9,6 +9,7 @@ import {
   RequestItem,
   Project,
 } from '@prisma/client'
+import PersistentFile from 'formidable/PersistentFile'
 
 // This is the type of the request object that will be sent to the frontend (in orders page)
 export interface RequestDetails extends Request {
@@ -81,3 +82,12 @@ export type FileDataError =
   | StudentFileDataError
   | NonStudentFileDataError
   | ProjectFileDataError
+
+export type FileDataErrorWithName = {
+  errorDataFile: FileDataError[]
+  originalFilename: string
+}
+
+export interface PersistentFileWithName extends PersistentFile {
+  originalFilename: string
+}

@@ -10,7 +10,6 @@
 
 import { NextApiRequest, NextApiResponse } from 'next'
 import formidable, { IncomingForm } from 'formidable'
-import PersistentFile from 'formidable/PersistentFile'
 import * as XLSX from 'xlsx'
 import * as fs from 'fs'
 import { join } from 'path'
@@ -21,10 +20,11 @@ import {
   StudentFileData,
   NonStudentFileData,
   ProjectFileData,
-  FileDataError,
   StudentFileDataError,
   NonStudentFileDataError,
   ProjectFileDataError,
+  PersistentFileWithName,
+  FileDataErrorWithName,
 } from '@/lib/types'
 import { sendEmail } from '@/lib/emailService'
 
@@ -40,7 +40,9 @@ XLSX.set_fs(fs)
  *   in Next.js
  * - Formidable is used to parse the form data and upload the files to the server
  * - Then, the files are parsed using XLSX to convert the .xlsx files to JSON
- * - Finally, the JSON data is processed and the database is updated
+ * - The JSON data is processed and the database is updated
+ * - If there are any errors, a report file is created and sent back to the client
+ * - If the client wants to send an email to the admins, the report file is sent to the admins
  * @param req
  * @param res
  */
@@ -58,7 +60,7 @@ export default async function handler(
     const { uploadDir, exportDir } = await createDirectories()
 
     // Because we are handling multiple file uplaods
-    const errorDataFiles: FileDataError[][] = []
+    const errorDataFiles: FileDataErrorWithName[] = []
 
     // Get the form from the request and parse using formidable
     interface ReturnData {
@@ -83,7 +85,7 @@ export default async function handler(
       },
     )
 
-    const filesToAnalyze = data.files.files as PersistentFile[]
+    const filesToAnalyze = data.files.files as PersistentFileWithName[]
     /**
      * The files are needed to be analyzed in a specific order:
      * 1) Non-student files
@@ -97,17 +99,14 @@ export default async function handler(
      *   so the Mentor must exist to create a WorksOn for the Mentor to the project
      *
      */
-    const nonStudentFiles = filesToAnalyze.filter((file) =>
-      // @ts-ignore
-      file.originalFilename.includes('Mentor'),
+    const nonStudentFiles = filesToAnalyze.filter((f) =>
+      f.originalFilename.includes('Mentor'),
     )
-    const projectFiles = filesToAnalyze.filter((file) =>
-      // @ts-ignore
-      file.originalFilename.includes('Project'),
+    const projectFiles = filesToAnalyze.filter((f) =>
+      f.originalFilename.includes('Project'),
     )
-    const studentFiles = filesToAnalyze.filter((file) =>
-      // @ts-ignore
-      file.originalFilename.includes('Student'),
+    const studentFiles = filesToAnalyze.filter((f) =>
+      f.originalFilename.includes('Student'),
     )
     for (const file of nonStudentFiles) {
       await analyzeFile(file, errorDataFiles)
@@ -120,7 +119,8 @@ export default async function handler(
     }
 
     // If there are no errors in the uploaded files, send a 200 status without sending a error report file
-    if (errorDataFiles[0].length === 0) res.status(200).json({ status: 'ok' })
+    if (errorDataFiles[0].errorDataFile.length === 0)
+      res.status(200).json({ status: 'ok' })
     // If there are errors in the uploaded files, send a 200 status and send back error report file
     else {
       const reportFilePath = await createResponseFile(errorDataFiles, exportDir)
@@ -142,7 +142,10 @@ export default async function handler(
         //   `<p>Attached is the error report for the database upload</p>`,
         //   reportFilePath,
         // )
-        await sendEmailToAdmins(reportFilePath)
+        sendEmailToAdmins(reportFilePath).then(() => {
+          // delete the file after sending the email
+          fs.unlinkSync(reportFilePath)
+        })
       }
     }
   } catch (error) {
@@ -165,8 +168,8 @@ enum FILE_TYPE {
  * @param file File to be parsed and analyzed
  */
 async function analyzeFile(
-  file: PersistentFile,
-  errorDataFiles: FileDataError[][],
+  file: PersistentFileWithName,
+  errorDataFiles: FileDataErrorWithName[],
 ) {
   try {
     //@ts-ignore
@@ -179,7 +182,7 @@ async function analyzeFile(
 
       let fileType = ''
 
-      // Check type of file
+      // Check type of file (student, non-student, project)
       for (let i = 0; i < data.length; i++) {
         if (data[i]['Email'] && data[i]['Project Number']) {
           fileType = FILE_TYPE.STUDENT
@@ -200,19 +203,24 @@ async function analyzeFile(
           data.map((student) => {
             student['Project Number'] = Number(student['Project Number'])
           })
-          errorDataFiles.push(
-            await handleStudentFile(data as StudentFileData[]),
-          )
+          errorDataFiles.push({
+            errorDataFile: await handleStudentFile(data as StudentFileData[]),
+            originalFilename: file.originalFilename,
+          })
           break
         case FILE_TYPE.NON_STUDENT:
-          errorDataFiles.push(
-            await handleNonStudentFile(data as NonStudentFileData[]),
-          )
+          errorDataFiles.push({
+            errorDataFile: await handleNonStudentFile(
+              data as NonStudentFileData[],
+            ),
+            originalFilename: file.originalFilename,
+          })
           break
         case FILE_TYPE.PROJECT:
-          errorDataFiles.push(
-            await handleProjectFile(data as ProjectFileData[]),
-          )
+          errorDataFiles.push({
+            errorDataFile: await handleProjectFile(data as ProjectFileData[]),
+            originalFilename: file.originalFilename,
+          })
           break
         default:
           break
@@ -378,6 +386,25 @@ async function handleStudentFile(data: StudentFileData[]) {
 }
 
 /**
+ * This function takes the email of the non-student and validates that the netID and the address
+ * @param nonStudent
+ * @returns NetID of the non-student
+ */
+function validateEmailAndReturn(nonStudent: NonStudentFileData) {
+  const netIDFormat = /^[a-zA-Z]{3}\d{6}$/
+  const netID = nonStudent['Faculty Email'].toLowerCase().split('@')[0]
+  const emailOrg = nonStudent['Faculty Email'].toLowerCase().split('@')[1]
+  if (emailOrg !== 'utdallas.edu')
+    throw new Error('Invalid email. Non-students must have a UTD email address')
+  if (!netIDFormat.test(netID))
+    throw new Error(
+      'Invalid netID found from email, should be in the format abc123456',
+    )
+
+  return netID
+}
+
+/**
  * Handles the non-student file by iterating over the rows of the non-student file
  * and updating the database accordingly
  * @param data
@@ -396,6 +423,9 @@ async function handleNonStudentFile(data: NonStudentFileData[]) {
       })
 
       if (exists) {
+        // First validate email and netID
+        const netID = validateEmailAndReturn(nonStudent)
+
         const modify = await prisma.user.update({
           where: {
             email: nonStudent['Faculty Email'],
@@ -410,17 +440,7 @@ async function handleNonStudentFile(data: NonStudentFileData[]) {
       // If the non-student does not exist, create a new non-student
       else {
         // First validate email and netID
-        const netIDFormat = /^[a-zA-Z]{3}\d{6}$/
-        const netID = nonStudent['Faculty Email'].toLowerCase().split('@')[0]
-        const emailOrg = nonStudent['Faculty Email'].toLowerCase().split('@')[1]
-        if (!netIDFormat.test(netID))
-          throw new Error(
-            'Invalid netID. NetID must be in the format of three letters and six numbers (abc123456)',
-          )
-        if (emailOrg !== 'utdallas.edu')
-          throw new Error(
-            'Invalid email. Non-students must have a UTD email address',
-          )
+        const netID = validateEmailAndReturn(nonStudent)
 
         // TODO: Change the roleID to the correct one
         const user = await prisma.user.create({
@@ -446,9 +466,9 @@ async function handleNonStudentFile(data: NonStudentFileData[]) {
 
       if (e instanceof Prisma.PrismaClientKnownRequestError) {
         if (e.code === 'P2002') {
-          console.error(
-            'There is a unique constraint violation, a new user cannot be created with this email',
-          )
+          // console.error(
+          //   'There is a unique constraint violation, a new user cannot be created with this email',
+          // )
           dataWithError.push({
             ...nonStudent,
             ['Reason']:
@@ -456,7 +476,7 @@ async function handleNonStudentFile(data: NonStudentFileData[]) {
           })
         }
       } else {
-        console.error(e)
+        // console.error(e)
         dataWithError.push({
           ...nonStudent,
           ['Reason']: (e as Error).message,
@@ -546,9 +566,9 @@ async function handleProjectFile(data: ProjectFileData[]) {
 
       if (e instanceof Prisma.PrismaClientKnownRequestError) {
         if (e.code === 'P2002') {
-          console.error(
-            'There is a unique constraint violation, a new user cannot be created with this email',
-          )
+          // console.error(
+          //   'There is a unique constraint violation, a new user cannot be created with this email',
+          // )
           dataWithError.push({
             ...project,
             ['Reason']:
@@ -556,7 +576,7 @@ async function handleProjectFile(data: ProjectFileData[]) {
           })
         }
       } else {
-        console.error(e)
+        // console.error(e)
         dataWithError.push({
           ...project,
           ['Reason']: (e as Error).message,
@@ -603,14 +623,19 @@ async function createDirectories() {
  * @returns The Workbook
  */
 async function createResponseFile(
-  dataWithError: FileDataError[][],
+  dataWithError: FileDataErrorWithName[],
   exportDir: string,
 ) {
   const workbook = XLSX.utils.book_new()
   let fileNum = 1
   for (const file of dataWithError) {
-    const worksheet = XLSX.utils.json_to_sheet(file)
-    XLSX.utils.book_append_sheet(workbook, worksheet, `Error Report ${fileNum}`)
+    // Apparently the sheet name cannot be longer than 31 characters
+    const fileName = file.originalFilename
+    let sheetName = fileName.substring(0, fileName.length - 5) // Remove the .xlsx
+    if (fileName.length > 31) sheetName = sheetName.substring(0, 31)
+
+    const worksheet = XLSX.utils.json_to_sheet(file.errorDataFile)
+    XLSX.utils.book_append_sheet(workbook, worksheet, sheetName)
     fileNum++
   }
   XLSX.writeFile(workbook, join(exportDir, 'report.xlsx'), {
