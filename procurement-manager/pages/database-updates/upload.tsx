@@ -10,6 +10,7 @@ import {
   Button,
   Modal,
   Spinner,
+  Form,
 } from 'react-bootstrap'
 import styles from '@/styles/DatabaseUpdate.module.scss'
 
@@ -32,9 +33,11 @@ async function handleSubmit(
   files: FileWithValid[],
   setErrorFileURL: React.Dispatch<React.SetStateAction<string>>,
   setStatus: React.Dispatch<React.SetStateAction<string>>,
+  emailErrorFile: boolean,
 ) {
   try {
     const formData = new FormData()
+    formData.set('emailOption', emailErrorFile ? 'true' : 'false')
     files.forEach((file) => {
       formData.append('files', file)
     })
@@ -61,9 +64,15 @@ async function handleSubmit(
         const errorFile = new Blob([resData])
         const errorFileURL = URL.createObjectURL(errorFile)
         setErrorFileURL(errorFileURL)
-        setStatus(
-          'Upload successful, but there were errors found in the uploaded files. Here is a file containing all the errors.',
-        )
+
+        if (emailErrorFile)
+          setStatus(
+            'Upload successful, but there were errors found in the uploaded files. Here is a file containing all the errors. Error file has been emailed to admins.',
+          )
+        else
+          setStatus(
+            'Upload successful, but there were errors found in the uploaded files. Here is a file containing all the errors.',
+          )
       }
     } else {
       setStatus('Upload failed. Please try again.')
@@ -85,9 +94,10 @@ async function handleUpload(
   setShowLoading: React.Dispatch<React.SetStateAction<boolean>>,
   setErrorFileURL: React.Dispatch<React.SetStateAction<string>>,
   setStatus: React.Dispatch<React.SetStateAction<string>>,
+  emailErrorFile: boolean,
 ) {
   setShowLoading(true)
-  await handleSubmit(files, setErrorFileURL, setStatus)
+  await handleSubmit(files, setErrorFileURL, setStatus, emailErrorFile)
   setShowLoading(false)
 }
 
@@ -97,15 +107,17 @@ export default function Upload({ title }: { title: string }) {
   const [showLoading, setShowLoading] = useState<boolean>(false)
   const [errorFileURL, setErrorFileURL] = useState<string>('')
   const [status, setStatus] = useState<string>('')
+  const [emailErrorFile, setEmailErrorFile] = useState<boolean>(false)
 
   function handleModalClose() {
-    setShowModal(false)
-    setStatus('')
-    setErrorFileURL('')
     URL.revokeObjectURL(errorFileURL)
+    setShowModal(false)
   }
 
   function handleModalShow() {
+    setStatus('')
+    setErrorFileURL('')
+    setEmailErrorFile(false)
     setShowModal(true)
   }
 
@@ -121,89 +133,107 @@ export default function Upload({ title }: { title: string }) {
         <Col>
           {files.length > 0 ? (
             <>
-              <h2>Files to be uploaded:</h2>
-              <ListGroup className='mb-4'>
-                {/* Makes a list of the files selected by the user */}
-                {files.map((file: FileWithValid) => (
-                  <ListGroupItem
-                    key={file.name}
-                    className={
-                      file.validity.valid
-                        ? 'list-group-item-success'
-                        : 'list-group-item-danger'
-                    }
-                  >
-                    <div className='d-flex justify-content-between align-items-center'>
-                      <span>{file.name}</span>
-                      <div className='d-flex align-items-center'>
-                        <label
-                          className='btn btn-warning mx-2'
-                          htmlFor='changeFile'
-                        >
-                          Change
-                        </label>
-                        <input
-                          type='file'
-                          name='changeFile'
-                          id='changeFile'
-                          className={styles['change-file-input']}
-                          onChange={(e) => {
-                            // This function updates the file list when the user changes a file
-                            const newFiles = files.map((f) => {
-                              if (f.name === file.name) {
-                                if (e.target.files === null) return f
-                                const newFile = e.target
-                                  .files[0] as FileWithValid
-                                let v: ValidFile = { valid: true, reason: '' }
+              <Row>
+                <Col>
+                  <h2>Files to be uploaded:</h2>
+                </Col>
+              </Row>
+              <Row>
+                <Col>
+                  <ListGroup className='mb-4'>
+                    {/* Makes a list of the files selected by the user */}
+                    {files.map((file: FileWithValid) => (
+                      <ListGroupItem
+                        key={file.name}
+                        className={
+                          file.validity.valid
+                            ? 'list-group-item-success'
+                            : 'list-group-item-danger'
+                        }
+                      >
+                        <div className='d-flex justify-content-between align-items-center'>
+                          <span>{file.name}</span>
+                          <div className='d-flex align-items-center'>
+                            <label
+                              className='btn btn-warning mx-2'
+                              htmlFor='changeFile'
+                            >
+                              Change
+                            </label>
+                            <input
+                              type='file'
+                              name='changeFile'
+                              id='changeFile'
+                              className={styles['change-file-input']}
+                              onChange={(e) => {
+                                // This function updates the file list when the user changes a file
+                                const newFiles = files.map((f) => {
+                                  if (f.name === file.name) {
+                                    if (e.target.files === null) return f
+                                    const newFile = e.target
+                                      .files[0] as FileWithValid
+                                    let v: ValidFile = {
+                                      valid: true,
+                                      reason: '',
+                                    }
 
-                                // Check for file type
-                                if (
-                                  !newFile.name.toLowerCase().endsWith('.xlsx')
-                                ) {
-                                  v.valid = false
-                                  v.reason = InvalidReason.FILE_TYPE
-                                }
+                                    // Check for file type
+                                    if (
+                                      !newFile.name
+                                        .toLowerCase()
+                                        .endsWith('.xlsx')
+                                    ) {
+                                      v.valid = false
+                                      v.reason = InvalidReason.FILE_TYPE
+                                    }
 
-                                // Check if other files have the same name
-                                if (
-                                  files.some(
-                                    (file) => file.name === newFile.name,
-                                  )
-                                ) {
-                                  v.valid = false
-                                  v.reason = InvalidReason.DUPLICATE_NAME
-                                }
-                                newFile.validity = v
-                                return newFile
-                              } else return f
-                            })
-                            setFiles(newFiles)
-                          }}
-                        />
-                        <Button
-                          variant='danger'
-                          onClick={() => {
-                            // This function removes a file from the list
-                            const newFiles = files.filter(
-                              (f) => f.name !== file.name,
-                            )
-                            setFiles(newFiles)
-                          }}
-                        >
-                          Remove
-                        </Button>
-                      </div>
-                    </div>
-                  </ListGroupItem>
-                ))}
-              </ListGroup>
-              <Button
-                className='mb-4'
-                disabled={files.some((file) => !file.validity.valid)}
-                onClick={handleModalShow}
-              >
-                Upload
-              </Button>
+                                    // Check if other files have the same name
+                                    if (
+                                      files.some(
+                                        (file) => file.name === newFile.name,
+                                      )
+                                    ) {
+                                      v.valid = false
+                                      v.reason = InvalidReason.DUPLICATE_NAME
+                                    }
+                                    newFile.validity = v
+                                    return newFile
+                                  } else return f
+                                })
+                                setFiles(newFiles)
+                              }}
+                            />
+                            <Button
+                              variant='danger'
+                              onClick={() => {
+                                // This function removes a file from the list
+                                const newFiles = files.filter(
+                                  (f) => f.name !== file.name,
+                                )
+                                setFiles(newFiles)
+                              }}
+                            >
+                              Remove
+                            </Button>
+                          </div>
+                        </div>
+                      </ListGroupItem>
+                    ))}
+                  </ListGroup>
+                </Col>
+              </Row>
+              <Row>
+                <Col>
+                  <div className='d-flex align-items-center'>
+                    <Button
+                      disabled={files.some((file) => !file.validity.valid)}
+                      onClick={handleModalShow}
+                    >
+                      Upload
+                    </Button>
+                  </div>
+                </Col>
+              </Row>
             </>
           ) : (
             <></>
@@ -279,9 +309,14 @@ export default function Upload({ title }: { title: string }) {
               <Row className='mt-4'>
                 <Col className='d-flex flex-column justify-content-center align-items-center'>
                   <p>
-                    <a href={errorFileURL} download='report.xlsx'>
+                    <Button
+                      variant='danger'
+                      as='a'
+                      href={errorFileURL}
+                      download={'report.xlsx'}
+                    >
                       Download Error File
-                    </a>
+                    </Button>
                   </p>
                 </Col>
               </Row>
@@ -290,6 +325,17 @@ export default function Upload({ title }: { title: string }) {
         </Modal.Body>
 
         <Modal.Footer>
+          {status === '' && (
+            <Form.Check
+              inline
+              label='Email error file to admins'
+              name='emailErrorFile'
+              id='emailErrorFile'
+              className='mx-4'
+              checked={emailErrorFile}
+              onChange={(e) => setEmailErrorFile(e.target.checked)}
+            />
+          )}
           {/* A button that shows Cancel before uploading and Close after uploading */}
           <Button
             variant='secondary'
@@ -305,7 +351,13 @@ export default function Upload({ title }: { title: string }) {
               disabled={showLoading}
               variant='primary'
               onClick={() => {
-                handleUpload(files, setShowLoading, setErrorFileURL, setStatus)
+                handleUpload(
+                  files,
+                  setShowLoading,
+                  setErrorFileURL,
+                  setStatus,
+                  emailErrorFile,
+                )
               }}
             >
               Upload

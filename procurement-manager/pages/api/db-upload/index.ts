@@ -26,6 +26,7 @@ import {
   NonStudentFileDataError,
   ProjectFileDataError,
 } from '@/lib/types'
+import { sendEmail } from '@/lib/emailService'
 
 // Needed for XLSX to work with the filesystem
 XLSX.set_fs(fs)
@@ -120,7 +121,7 @@ export default async function handler(
 
     // If there are no errors in the uploaded files, send a 200 status without sending a error report file
     if (errorDataFiles[0].length === 0) res.status(200).json({ status: 'ok' })
-    // If there are errors in the uploaded files, send a 200 status with the error report file
+    // If there are errors in the uploaded files, send a 200 status and send back error report file
     else {
       const reportFilePath = await createResponseFile(errorDataFiles, exportDir)
       let checkReportFileDir = fs.statSync(reportFilePath)
@@ -130,6 +131,19 @@ export default async function handler(
       })
       const readStream = fs.createReadStream(reportFilePath)
       readStream.pipe(res)
+
+      // Send an email to the admin with the report file only if the email option from client is true
+      if (data.fields.emailOption && data.fields.emailOption[0] === 'true') {
+        // Test Email
+        // const email = await sendEmail(
+        //   'PUT_EMAIL_HERE',
+        //   'Database Upload Error Report',
+        //   'Attached is the error report for the database upload',
+        //   `<p>Attached is the error report for the database upload</p>`,
+        //   reportFilePath,
+        // )
+        await sendEmailToAdmins(reportFilePath)
+      }
     }
   } catch (error) {
     console.error(error)
@@ -333,7 +347,7 @@ async function handleStudentFile(data: StudentFileData[]) {
       }
       index++
     } catch (e) {
-      console.error(`Found an error at row #${index}`)
+      // console.error(`Found an error at row #${index}`)
       index++
 
       if (e instanceof Prisma.PrismaClientKnownRequestError) {
@@ -427,7 +441,8 @@ async function handleNonStudentFile(data: NonStudentFileData[]) {
 
       index++
     } catch (e) {
-      console.error(`Found an error at row #${index}`)
+      // console.error(`Found an error at row #${index}`)
+      index++
 
       if (e instanceof Prisma.PrismaClientKnownRequestError) {
         if (e.code === 'P2002') {
@@ -526,7 +541,8 @@ async function handleProjectFile(data: ProjectFileData[]) {
 
       index++
     } catch (e) {
-      console.error(`Found an error at row #${index}`)
+      // console.error(`Found an error at row #${index}`)
+      index++
 
       if (e instanceof Prisma.PrismaClientKnownRequestError) {
         if (e.code === 'P2002') {
@@ -602,6 +618,36 @@ async function createResponseFile(
   })
 
   return join(exportDir, 'report.xlsx')
+}
+
+/**
+ * This function emails the error report to all of the admins
+ * @param reportFilePath
+ */
+async function sendEmailToAdmins(reportFilePath: string) {
+  try {
+    // First find all of the admins in the database
+    const admins = await prisma.user.findMany({
+      where: {
+        role: {
+          roleID: 1,
+        },
+      },
+    })
+
+    // Iterates over all of the admin users and sends them an email with the report file
+    for (const admin of admins) {
+      const email = await sendEmail(
+        admin.email,
+        'Database Upload Error Report',
+        'Attached is the error report for the database upload',
+        `<p>Attached is the error report for the database upload</p>`,
+        reportFilePath,
+      )
+    }
+  } catch (e) {
+    console.error(e)
+  }
 }
 
 // Disable body parser so that we can parse the form data

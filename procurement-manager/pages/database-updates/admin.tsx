@@ -3,10 +3,9 @@
  */
 
 import React, { useEffect, useState } from 'react'
-import { Button, Col, Row } from 'react-bootstrap'
+import { Button, Col, Nav, Row } from 'react-bootstrap'
 import { prisma } from '@/db'
 import { Project, Request, User } from '@prisma/client'
-import CustomTable from '@/components/Table'
 import Link from 'next/link'
 import Head from 'next/head'
 import styles from '@/styles/DatabaseUpdate.module.scss'
@@ -17,7 +16,7 @@ import 'ag-grid-community/styles/ag-theme-quartz.css' // Theme
 export async function getServerSideProps() {
   const users = await prisma.user.findMany()
   const projects = await prisma.project.findMany()
-  const requests = await prisma.request.findMany()
+  // const requests = await prisma.request.findMany()
 
   return {
     props: {
@@ -25,7 +24,7 @@ export async function getServerSideProps() {
       description: 'University of Texas at Dallas',
       users: JSON.parse(JSON.stringify(users)),
       projects: JSON.parse(JSON.stringify(projects)),
-      requests: JSON.parse(JSON.stringify(requests)),
+      // requests: JSON.parse(JSON.stringify(requests)),
     },
   }
 }
@@ -35,12 +34,7 @@ interface AdminProps {
   description: String
   users: User[]
   projects: Project[]
-  requests: Request[]
-}
-
-type AgGridColumn = {
-  headerName: string
-  field: string
+  // requests: Request[]
 }
 
 export default function admin({
@@ -48,7 +42,7 @@ export default function admin({
   description,
   users,
   projects,
-  requests,
+  // requests,
 }: AdminProps): JSX.Element {
   const [tableType, setTableType] = useState<string>('user') // either user or project
   const [colData, setColData] = useState<any>([])
@@ -59,7 +53,6 @@ export default function admin({
 
   useEffect(() => {
     if (tableType === 'user') {
-      console.log(users)
       setColData([
         { field: 'userID' },
         { field: 'netID' },
@@ -72,7 +65,6 @@ export default function admin({
         { field: 'deactivationDate' },
       ])
     } else if (tableType === 'project') {
-      console.log(projects)
       setColData([
         { field: 'projectID' },
         { field: 'projectTitle' },
@@ -99,17 +91,40 @@ export default function admin({
         <Col>
           <div className={styles['header-btns-container']}>
             {/* Users Dropdown (maybe, hopefully) & Projects Button*/}
-            <div>
-              <Button onClick={() => setTableType('user')}>Users</Button>
-              <Button onClick={() => setTableType('project')} className='mx-2'>
-                Projects
-              </Button>
-            </div>
+            <Nav
+              variant='tabs'
+              defaultActiveKey={'user'}
+              className='flex-grow-1 me-4'
+            >
+              <Nav.Item>
+                <Nav.Link
+                  eventKey={'user'}
+                  onClick={() => setTableType('user')}
+                >
+                  Users
+                </Nav.Link>
+              </Nav.Item>
+              <Nav.Item>
+                <Nav.Link
+                  eventKey={'project'}
+                  onClick={() => setTableType('project')}
+                >
+                  Projects
+                </Nav.Link>
+              </Nav.Item>
+            </Nav>
 
-            {/* Upload Button */}
-            <Link href={'/database-updates/upload'}>
-              <Button>Upload Files</Button>
-            </Link>
+            <div>
+              {/* TODO: Finish add and delete functionality for Admins */}
+              <Button variant='success'>Add</Button>
+              <Button variant='danger' className='mx-2'>
+                Delete
+              </Button>
+              {/* Upload Button */}
+              <Link href={'/database-updates/upload'}>
+                <Button>Upload Files</Button>
+              </Link>
+            </div>
           </div>
         </Col>
       </Row>
@@ -142,10 +157,6 @@ export default function admin({
               />
             )}
           </div>
-          {/* <CustomTable
-            type={tableType}
-            data={tableType == 'user' ? users : projects}
-          ></CustomTable> */}
         </Col>
       </Row>
     </>
