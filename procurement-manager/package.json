@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "jasmine"
   },
   "dependencies": {
     "@next-auth/prisma-adapter": "^1.0.6",
@@ -37,8 +38,10 @@
   "devDependencies": {
     "@types/formidable": "^3.4.5",
     "@types/nodemailer": "^6.4.14",
+    "jasmine": "^5.1.0",
     "prettier": "3.1.1",
     "prisma": "^4.11.0",
+    "request": "^2.88.2",
     "sass": "^1.60.0"
   }
 }

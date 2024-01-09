@@ -2,6 +2,7 @@
 // BECAUSE THERE ARE NO ERROR HANDLING, ONLY CALL THIS ENDPOINT ONCE AFTER RESET
 
 import { PrismaClient } from '@prisma/client'
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime'
 import { NextApiRequest, NextApiResponse } from 'next'
 const prisma = new PrismaClient()
 
@@ -9,6 +10,10 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
+  if (req.method !== 'GET') {
+    res.status(405).json({ data: null, error: 'Method Not Allowed' })
+  }
+
   try {
     // create roles
     await prisma.role.createMany({
@@ -133,6 +138,9 @@ export default async function handler(
     res.status(200).json({ message: 'Responded Successfully!' })
   } catch (error) {
     console.log(error)
-    res.status(500).json({ message: 'Internal Server Error', error: error })
+    if (error instanceof PrismaClientKnownRequestError) {
+      res.status(200).json({ message: 'Test API has been called already!' })
+    } else
+      res.status(500).json({ message: 'Internal Server Error', error: error })
   }
 }
