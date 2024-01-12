@@ -12,6 +12,7 @@ export default async function handler(
 ) {
   if (req.method !== 'GET') {
     res.status(405).json({ data: null, error: 'Method Not Allowed' })
+    return
   }
 
   try {
@@ -137,10 +138,21 @@ export default async function handler(
 
     res.status(200).json({ message: 'Responded Successfully!' })
   } catch (error) {
-    console.log(error)
     if (error instanceof PrismaClientKnownRequestError) {
-      res.status(200).json({ message: 'Test API has been called already!' })
-    } else
+      if (error.code === 'P2002')
+        res.status(200).json({ message: 'Test API has been called already!' })
       res.status(500).json({ message: 'Internal Server Error', error: error })
+    } else if (error instanceof Error) {
+      if ('code' in error) {
+        if (error.code === 'P2002')
+          res.status(200).json({
+            message: 'Test API has been called already!',
+            error: error,
+          })
+      }
+    } else {
+      console.log(error)
+      res.status(500).json({ message: 'Internal Server Error', error: error })
+    }
   }
 }
