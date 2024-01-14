@@ -55,6 +55,6 @@ export default async function handler(
       res.status(500).json({ error: 'Failed to create user' })
     }
   } else {
-    res.status(400).json({ error: 'Invalid method' })
+    res.status(405).json({ error: 'Invalid method' })
   }
 }

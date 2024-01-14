@@ -1,2 +1,4 @@
 procurement-manager/.env
 .vscode
+procurement-manager/uploads
+procurement-manager/exports/files/report.xlsx

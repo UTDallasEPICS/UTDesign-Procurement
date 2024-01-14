@@ -58,7 +58,7 @@ interface Item {
  */
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse
+  res: NextApiResponse,
 ) {
   // Some error handling???
   if (req.method !== 'POST') {
@@ -128,10 +128,10 @@ export default async function handler(
 async function createRequest(
   body: any,
   dateSubmitted: Date,
-  optionalFields: Optionals
+  optionalFields: Optionals,
 ) {
-  const requestForm = await prisma.request
-    .create({
+  try {
+    const requestForm = await prisma.request.create({
       data: {
         dateNeeded: new Date(body.dateNeeded), // may change in the future
         dateSubmitted: dateSubmitted,
@@ -150,27 +150,29 @@ async function createRequest(
         Process: true,
       },
     })
-    .catch((e) => {
-      throw new Error(e)
-    })
+    console.log(requestForm)
 
-  // Update the total expenses in the project
-  // Find the project to get the total expenses
-  const project = await prisma.project.findUnique({
-    where: { projectNum: body.projectNum },
-  })
-  console.log('project', project?.totalExpenses)
-  // Update the totalExpenses in the project
-  const updateExpense = await prisma.project.update({
-    where: { projectNum: body.projectNum },
-    data: {
-      totalExpenses: Prisma.Decimal.add(
-        project?.totalExpenses === undefined ? 0 : project.totalExpenses,
-        body.totalExpenses
-      ),
-    },
-  })
-  return requestForm
+    // Update the total expenses in the project
+    // Find the project to get the total expenses
+    const project = await prisma.project.findUnique({
+      where: { projectNum: body.projectNum },
+    })
+    console.log(project)
+    console.log('project', project?.totalExpenses)
+    // Update the totalExpenses in the project
+    const updateExpense = await prisma.project.update({
+      where: { projectNum: body.projectNum },
+      data: {
+        totalExpenses: Prisma.Decimal.add(
+          project?.totalExpenses === undefined ? 0 : project.totalExpenses,
+          body.totalExpenses,
+        ),
+      },
+    })
+    return requestForm
+  } catch (error) {
+    throw error
+  }
 }
 
 async function createItem(reqID: number, itemToPut: Item) {

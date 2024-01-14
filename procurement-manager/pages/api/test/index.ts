@@ -2,13 +2,19 @@
 // BECAUSE THERE ARE NO ERROR HANDLING, ONLY CALL THIS ENDPOINT ONCE AFTER RESET
 
 import { PrismaClient } from '@prisma/client'
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime'
 import { NextApiRequest, NextApiResponse } from 'next'
 const prisma = new PrismaClient()
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse
+  res: NextApiResponse,
 ) {
+  if (req.method !== 'GET') {
+    res.status(405).json({ data: null, error: 'Method Not Allowed' })
+    return
+  }
+
   try {
     // create roles
     await prisma.role.createMany({
@@ -55,7 +61,7 @@ export default async function handler(
     await prisma.project.create({
       data: {
         projectType: 'EPICS',
-        projectNum: 1000,
+        projectNum: 10000, // Changed because Sample Files to be uploaded have projects greater than 1000
         projectTitle: 'Sample Project 1',
         startingBudget: 1000.0,
         sponsorCompany: 'Sample Company 1',
@@ -67,7 +73,7 @@ export default async function handler(
     await prisma.project.create({
       data: {
         projectType: 'EPICS',
-        projectNum: 2000,
+        projectNum: 20000, // Changed because Sample Files to be uploaded have projects greater than 1000
         projectTitle: 'Sample Project 2',
         startingBudget: 1000.0,
         sponsorCompany: 'Sample Company 1',
@@ -97,8 +103,8 @@ export default async function handler(
     await prisma.worksOn.create({
       data: {
         user: { connect: { netID: 'abc000000' } },
-        project: { connect: { projectNum: 1000 } },
-        startDate: new Date()
+        project: { connect: { projectNum: 10000 } },
+        startDate: new Date(),
       },
     })
 
@@ -106,8 +112,8 @@ export default async function handler(
     await prisma.worksOn.create({
       data: {
         user: { connect: { netID: 'def000000' } },
-        project: { connect: { projectNum: 1000 } },
-        startDate: new Date()
+        project: { connect: { projectNum: 10000 } },
+        startDate: new Date(),
       },
     })
 
@@ -115,8 +121,8 @@ export default async function handler(
     await prisma.worksOn.create({
       data: {
         user: { connect: { netID: 'def000000' } },
-        project: { connect: { projectNum: 2000 } },
-        startDate: new Date()
+        project: { connect: { projectNum: 20000 } },
+        startDate: new Date(),
       },
     })
 
@@ -132,7 +138,21 @@ export default async function handler(
 
     res.status(200).json({ message: 'Responded Successfully!' })
   } catch (error) {
-    console.log(error)
-    res.status(500).json({ message: 'Internal Server Error', error: error })
+    if (error instanceof PrismaClientKnownRequestError) {
+      if (error.code === 'P2002')
+        res.status(200).json({ message: 'Test API has been called already!' })
+      res.status(500).json({ message: 'Internal Server Error', error: error })
+    } else if (error instanceof Error) {
+      if ('code' in error) {
+        if (error.code === 'P2002')
+          res.status(200).json({
+            message: 'Test API has been called already!',
+            error: error,
+          })
+      }
+    } else {
+      console.log(error)
+      res.status(500).json({ message: 'Internal Server Error', error: error })
+    }
   }
 }

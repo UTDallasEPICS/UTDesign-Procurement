@@ -7,7 +7,6 @@
 
 import React, { useState } from 'react'
 import { Container, Row, Collapse } from 'react-bootstrap'
-import TopBarComponent from '@/components/TopBarComponent'
 import ProjectHeader from '@/components/ProjectHeader'
 import ReimbursementCard from './history-reimbursement'
 import RequestCard from './history-request'
@@ -26,15 +25,14 @@ export default function Mentor() {
 
   return (
     <>
-      <TopBarComponent />
       <Container>
         <Row>
-          <ProjectHeader
+          {/* <ProjectHeader
             title='Project 1: Project Name | Capstone, Request'
             budget='Budget: $100/$500'
             isOpen={isOpenProject1}
             toggleCollapse={toggleCollapseProject1}
-          />
+          /> */}
           <Collapse in={isOpenProject1}>
             <div>
               <Row>
@@ -45,12 +43,12 @@ export default function Mentor() {
           </Collapse>
         </Row>
         <Row>
-          <ProjectHeader
-            title='Project 3: Point of Nerve Conduction Diagnostic | Capstone, Reimbursement'
-            budget='Budget: $100/$500'
+          {/* <ProjectHeader
+            projectName='Project 3: Point of Nerve Conduction Diagnostic | Capstone, Reimbursement'
+            budgetTotal='Budget: $100/$500'
             isOpen={isOpenProject2}
             toggleCollapse={toggleCollapseProject2}
-          />
+          /> */}
           <Collapse in={isOpenProject2}>
             <div>
               <Row>
