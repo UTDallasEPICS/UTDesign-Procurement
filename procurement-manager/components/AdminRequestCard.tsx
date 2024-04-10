@@ -506,17 +506,23 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
                                     }
                                   />
                                 </td>
-                                <td>
-                                  <Form.Control
-                                    name='url'
-                                    value={item.url} // TODO:: make item url shown as clickable link
-                                    onChange={(e) =>
-                                      handleItemChange(
-                                        e as React.ChangeEvent<HTMLInputElement>,
-                                        itemIndex
-                                      )
-                                    }
-                                  />
+                                //Makes URLS clickable
+                                <td style={{ position: 'relative', paddingRight: '40px' }}>
+                                  {editable ? (
+                                    <Form.Control
+                                      name='itemURL'
+                                      value={item.url}
+                                      onChange={(e) =>
+                                        handleItemChange(
+                                          e as React.ChangeEvent<HTMLInputElement>,
+                                          itemIndex
+                                        )
+                                      }
+                                      style={{ paddingLeft: '20px' }}
+                                    />
+                                  ) : (
+                                    <a href={item.url} target="_blank" rel="noopener noreferrer" style={{ position: 'absolute', top: '50%', right: '5px', transform: 'translateY(-50%)', textDecoration: 'none' }}>Open</a>
+                                  )}
                                 </td>
                                 <td>
                                   <Form.Control
