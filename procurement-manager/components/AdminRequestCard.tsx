@@ -506,7 +506,6 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
                                     }
                                   />
                                 </td>
-                                //Makes URLS clickable
                                 <td style={{ position: 'relative', paddingRight: '40px' }}>
                                   {editable ? (
                                     <Form.Control
