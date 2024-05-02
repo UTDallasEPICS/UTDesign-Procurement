@@ -33,10 +33,11 @@ CREATE TABLE `Project` (
     `projectTitle` VARCHAR(191) NOT NULL,
     `startingBudget` DECIMAL(65, 30) NOT NULL,
     `sponsorCompany` VARCHAR(191) NOT NULL,
-    `activationDate` DATETIME(3) NOT NULL,
+    `activationDate` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `deactivationDate` DATETIME(3) NULL,
     `additionalInfo` VARCHAR(191) NULL,
     `costCenter` INTEGER NULL,
+    `totalExpenses` DECIMAL(65, 30) NOT NULL DEFAULT 0,
 
     UNIQUE INDEX `Project_projectNum_key`(`projectNum`),
     PRIMARY KEY (`projectID`)
@@ -56,14 +57,15 @@ CREATE TABLE `PreviousRecord` (
 CREATE TABLE `Request` (
     `requestID` INTEGER NOT NULL AUTO_INCREMENT,
     `dateNeeded` DATETIME(3) NOT NULL,
-    `dateSubmitted` DATETIME(3) NOT NULL,
+    `dateSubmitted` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `dateOrdered` DATETIME(3) NULL,
     `dateReceived` DATETIME(3) NULL,
     `dateApproved` DATETIME(3) NULL,
-    `justification` VARCHAR(191) NULL,
     `additionalInfo` VARCHAR(191) NULL,
+    `expense` DECIMAL(65, 30) NOT NULL DEFAULT 0,
     `projectID` INTEGER NOT NULL,
     `studentID` INTEGER NOT NULL,
+    `uploadID` INTEGER NULL,
 
     PRIMARY KEY (`requestID`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -75,10 +77,9 @@ CREATE TABLE `RequestItem` (
     `url` VARCHAR(191) NOT NULL,
     `partNumber` VARCHAR(191) NOT NULL,
     `quantity` INTEGER NOT NULL,
-    `unitPrice` DECIMAL(65, 30) NULL,
+    `unitPrice` DECIMAL(65, 30) NOT NULL,
     `requestID` INTEGER NOT NULL,
     `vendorID` INTEGER NOT NULL,
-    `uploadID` INTEGER NULL,
 
     PRIMARY KEY (`itemID`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -124,7 +125,6 @@ CREATE TABLE `Reimbursement` (
     `reimbursementID` INTEGER NOT NULL AUTO_INCREMENT,
     `dateSubmitted` DATETIME(3) NOT NULL,
     `status` VARCHAR(191) NOT NULL,
-    `justification` VARCHAR(191) NULL,
     `additionalInfo` VARCHAR(191) NULL,
     `projectID` INTEGER NOT NULL,
     `studentID` INTEGER NOT NULL,
@@ -157,7 +157,7 @@ CREATE TABLE `ReimbursementUpload` (
 -- CreateTable
 CREATE TABLE `Process` (
     `processID` INTEGER NOT NULL AUTO_INCREMENT,
-    `status` ENUM('UNDER_REVIEW', 'APPROVED', 'REJECTED', 'ORDERED', 'DELIVERED', 'CANCELLED') NOT NULL DEFAULT 'UNDER_REVIEW',
+    `status` ENUM('UNDER_REVIEW', 'APPROVED', 'REJECTED', 'ORDERED', 'DELIVERED', 'CANCELLED', 'RECALLED') NOT NULL DEFAULT 'UNDER_REVIEW',
     `mentorProcessed` DATETIME(3) NULL,
     `mentorProcessedComments` VARCHAR(191) NULL,
     `adminProcessed` DATETIME(3) NULL,
@@ -183,6 +183,7 @@ CREATE TABLE `Department` (
 CREATE TABLE `Vendor` (
     `vendorID` INTEGER NOT NULL AUTO_INCREMENT,
     `vendorName` VARCHAR(191) NOT NULL,
+    `vendorCategory` VARCHAR(191) NULL,
 
     PRIMARY KEY (`vendorID`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -199,8 +200,11 @@ CREATE TABLE `DepartmentUser` (
 CREATE TABLE `WorksOn` (
     `userID` INTEGER NOT NULL,
     `projectID` INTEGER NOT NULL,
+    `startDate` DATETIME(3) NOT NULL,
+    `endDate` DATETIME(3) NULL,
+    `comments` VARCHAR(191) NULL,
 
-    PRIMARY KEY (`userID`, `projectID`)
+    PRIMARY KEY (`userID`, `projectID`, `startDate`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -231,13 +235,13 @@ ALTER TABLE `Request` ADD CONSTRAINT `Request_projectID_fkey` FOREIGN KEY (`proj
 ALTER TABLE `Request` ADD CONSTRAINT `Request_studentID_fkey` FOREIGN KEY (`studentID`) REFERENCES `User`(`userID`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE `Request` ADD CONSTRAINT `Request_uploadID_fkey` FOREIGN KEY (`uploadID`) REFERENCES `RequestUpload`(`uploadID`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE `RequestItem` ADD CONSTRAINT `RequestItem_requestID_fkey` FOREIGN KEY (`requestID`) REFERENCES `Request`(`requestID`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `RequestItem` ADD CONSTRAINT `RequestItem_vendorID_fkey` FOREIGN KEY (`vendorID`) REFERENCES `Vendor`(`vendorID`) ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE `RequestItem` ADD CONSTRAINT `RequestItem_uploadID_fkey` FOREIGN KEY (`uploadID`) REFERENCES `RequestUpload`(`uploadID`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `Order` ADD CONSTRAINT `Order_requestID_fkey` FOREIGN KEY (`requestID`) REFERENCES `Request`(`requestID`) ON DELETE RESTRICT ON UPDATE CASCADE;
