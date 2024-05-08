@@ -237,6 +237,7 @@ export default function Admin({
     id: number;
     vendorName: RequestItem[];
   }[]>([]);
+  //Nihita - ***THIS PART OF THE CODE HAS BUGS***
   //Set all the states for the variables
   //Use these states to store the json data from the database api calls
   const [vendor, setVendor] = useState('');
@@ -336,7 +337,7 @@ export default function Admin({
       </div >
     )
   }
-
+  //This is the end of the bug
   return (
     <>
 
