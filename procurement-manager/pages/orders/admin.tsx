@@ -9,11 +9,15 @@ import ProjectHeader from '@/components/ProjectHeader'
 import ReimbursementCard from '@/components/AdminReimbursementCard'
 import { prisma } from '@/db'
 import { RequestDetails } from '@/lib/types'
-import { Prisma, Project, Status, User, Order } from '@prisma/client'
+import { Prisma, Project, Status, User, Order, RequestItem } from '@prisma/client';
 import RejectionModal from '@/components/RejectionModal'
 import axios from 'axios'
 import { Session, getServerSession } from 'next-auth'
 import { authOptions } from '../api/auth/[...nextauth]'
+import express from 'express';
+import getVendors from '@/components/AdminRequestCard'
+
+const app = express();
 
 export async function getServerSideProps(context: any) {
   const session = await getServerSession(context.req, context.res, authOptions)
@@ -21,7 +25,9 @@ export async function getServerSideProps(context: any) {
 
   // projects and requests are loaded from the server-side first (I wanted it try it out)
   // These will be passed to a state so if we need to fetch again, we can just update the state
+
   const projects = await prisma.project.findMany()
+
   const requestOfMultipleProjects: RequestDetails[][] = []
 
   // Next.js recommends that instead of calling from '/api/request-form/get', just perform the query here
@@ -175,23 +181,20 @@ export default function Admin({
    * this function is used to retrieve the orders associated with each request in the project, and if a request has an order then the request is processed
    */
   async function getProcessedReqs() {
-    try
-    {
+    try {
       let projectReqs: RequestDetails[][] = []
       let reqsWithOrders: RequestDetails[] = []
 
-      for (let projectIndex = 0; projectIndex < projects.length; projectIndex++)
-      {
+      for (let projectIndex = 0; projectIndex < projects.length; projectIndex++) {
         reqsWithOrders = []
-        for (const request of projectRequests[projectIndex]) 
-        {
+        for (const request of projectRequests[projectIndex]) {
           const response = await axios.get('/api/orders/get/requestOrders/', {
             params: {
               requestID: request.requestID
-          }})
+            }
+          })
 
-          if (response.status === 200) 
-          {
+          if (response.status === 200) {
             const orders: Order[] = response.data.orders
             if (orders.length !== 0) {
               reqsWithOrders.push(request)
@@ -216,8 +219,7 @@ export default function Admin({
    * @param reqID the requestID of the request
    * @returns boolean value depending on the request associated with that ID is processed or not
    */
-  function processed (projIndex: number, reqID: number) 
-  {
+  function processed(projIndex: number, reqID: number) {
     if (projectReqsWithOrders !== undefined) {
       for (const req of projectReqsWithOrders[projIndex]) {
         if (reqID === req.requestID) return true
@@ -225,11 +227,124 @@ export default function Admin({
     }
     return false
   }
+  const [userData, setUserData] = useState<{
+    projName: string;
+    id: number;
+    vendorName: RequestItem[];
+  }[]>([]);
+  const [userSearchData, setUserSearchData] = useState<{
+    projName: string;
+    id: number;
+    vendorName: RequestItem[];
+  }[]>([]);
+  //Set all the states for the variables
+  //Use these states to store the json data from the database api calls
+  const [vendor, setVendor] = useState('');
+  const [status, setStatus] = useState('');
+  const [number, setNumber] = useState('');
+  const [projectSearch, setProjectSearch] = useState<Project[]>([]);
+  const [vendors, setVendors] = useState<RequestItem[]>([]);
+  const [projName, setprojName] = useState('');
+  const [id, setId] = useState('');
+  const [vendorName, setVendorName] = useState('');
+
+  //Using axios to recieve the data from the database api call
+  //This function particulary calls the project model to get the list of the projects
+  const fetchProjects = async () => {
+    try {
+      const response = await axios.get('/api/orders/get/requestProjects.ts');
+      const data1 = response.data;
+      console.log(data1); // Do something with the fetched data
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+  //Using axios to recieve the data from the database api call
+  //This function particulary calls the project requestItem to get the list of the vendor names
+  const fetchVendors = async () => {
+    try {
+      const response = await axios.get('/api/orders/get/requestVendors.ts');
+      const data2 = response.data;
+      console.log(data2); // Do something with the fetched data
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
+  //This function searches for the projects and vendor names
+  function CustomSearch() {
+
+    //Call the functions that fetch the data
+    fetchProjects()
+    fetchVendors()
+
+    React.useEffect(() => {
+
+      const fetchData = async () => {
+        // setProjectSearch(data1);
+        // UT setVendors(data2);
+
+        const vendors = await prisma.requestItem.findMany()
+      };
+
+      fetchData();
+
+
+      //const statusVals = await prisma.process.findMany()
+      const data = projects.map(project => ({
+        projName: project.projectTitle,
+        id: project.projectID,
+        vendorName: vendors.filter(requestItem => requestItem.vendorID),
+        //statusAns: statusVals.filter(process => process.status)
+      }));
+
+      //sets the data from databse to the state
+      setUserData(data);
+      setUserSearchData(data);
+    }, []);
+    //filters the data for each category
+    const handleSearch = () => {
+      const newData =
+        userData
+          .filter(x => x.projName == (projName == '' ? x.projName : projName))
+          .filter(y => y.id == (id == '' ? y.id : id))
+      //.filter(z => z.number == (number == '' ? z.number : number))
+      setUserSearchData(newData);
+    }
+
+
+    //Front end for the search boxes
+    return (
+      <div>
+        <table>
+          <tbody>
+            <tr>
+              <td>
+                <input className="filter" type='text' placeholder="Enter Vendor.." value={vendorName} onChange={(e) => setVendorName(e.target.value)} />
+              </td>
+              <td>
+                <input className="filter" type='text' placeholder="Enter Project Number.." value={id} onChange={(e) => setId(e.target.value)} />
+              </td>
+
+              <td>
+                <button className="btn-primary" onClick={handleSearch}>Search</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+      </div >
+    )
+  }
 
   return (
     <>
+
       <Row className='my-4'>
         <h1>Welcome back {user && user.firstName}</h1>
+      </Row>
+      <Row className='searchBar'>
+        <CustomSearch />
       </Row>
       {/* Creates the ProjectHeader  */}
       {projects.map((project, projIndex) => {
@@ -311,3 +426,4 @@ export default function Admin({
     </>
   )
 }
+
