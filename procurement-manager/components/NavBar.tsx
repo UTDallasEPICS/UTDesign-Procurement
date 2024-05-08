@@ -39,12 +39,14 @@ export default function NavBar({}: NavbarProps): JSX.Element {
                   </Nav.Link>
 
                   {/* Links seen by Admin */}
-                  {(user.roleID === 1) && (
+                  {user.roleID === 1 && (
                     <>
-                      <Nav.Link href='/projects' className='mx-2'> {/* for now only admin can use projects/order history page */}
+                      <Nav.Link href='/projects' className='mx-2'>
+                        {' '}
+                        {/* for now only admin can use projects/order history page */}
                         Projects & Order History
                       </Nav.Link>
-                      <Nav.Link href='/database-updates' className='mx-2'> 
+                      <Nav.Link href='/database-updates' className='mx-2'>
                         Database Updates
                       </Nav.Link>
                     </>
@@ -62,7 +64,10 @@ export default function NavBar({}: NavbarProps): JSX.Element {
                     </>
                   )}
 
-                  <Button variant='secondary' onClick={() => signOut({ callbackUrl: '/'})}>
+                  <Button
+                    variant='secondary'
+                    onClick={() => signOut({ callbackUrl: '/' })}
+                  >
                     Log Out
                   </Button>
                 </>

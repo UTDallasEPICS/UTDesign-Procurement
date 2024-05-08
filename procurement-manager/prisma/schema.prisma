@@ -217,6 +217,12 @@ enum Status {
   RECALLED // status after a request/reimbursement is recalled by student and wants to edit before resubmitting
 }
 
+enum VendorStatus{
+  APPROVED
+  DENIED
+  PENDING
+}
+
 model Process {
   processID               Int            @id @default(autoincrement()) // unique identifier for each process
   status                  Status         @default(UNDER_REVIEW) // status of the process
@@ -247,7 +253,9 @@ model Department {
 model Vendor {
   vendorID          Int                 @id @default(autoincrement()) // unique identifier for each vendor
   vendorName        String // name of the vendor
-  vendorCategory    String? // category of the vendor - may be changed since vendor can have multiple categories so probably create another model for VendorCategory
+  vendorStatus      VendorStatus @default(DENIED)// Vendor Status (Approved, Pending, and Denied) 
+  vendorEmail       String? // Optional field
+  vendorURL         String @default("https://default.com")// vendor URL
   RequestItem       RequestItem[]
   ReimbursementItem ReimbursementItem[]
 }
@@ -265,9 +273,9 @@ model DepartmentUser {
 
 // This signifies what projects a user is working on
 model WorksOn {
-  user      User    @relation(fields: [userID], references: [userID]) // the user to connect to
-  userID    Int     // since @@id defines composite ID (unique combination of userID & projectID), no unique constraint
-  project   Project @relation(fields: [projectID], references: [projectID]) // the project to connect to
+  user      User      @relation(fields: [userID], references: [userID]) // the user to connect to
+  userID    Int // since @@id defines composite ID (unique combination of userID & projectID), no unique constraint
+  project   Project   @relation(fields: [projectID], references: [projectID]) // the project to connect to
   projectID Int
   startDate DateTime // start date for user in project
   endDate   DateTime? // end date for user in project, optional (so if null then current user otherwise past user)

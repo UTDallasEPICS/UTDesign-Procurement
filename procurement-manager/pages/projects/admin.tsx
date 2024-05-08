@@ -138,7 +138,7 @@ export default function Admin({
                 // toggleProjectCollapse(projIndex)
                 toggleCards(projIndex)
               }}
-              isOpen={isOpen[projIndex]}
+              isOpen={true}
             />
             <AdminProjectCard
             projectIndex={projIndex}

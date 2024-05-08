@@ -1,0 +1,41 @@
+@import 'colors';
+
+$overlay: rgba(215, 215, 215, 0.5);
+
+.drag-drop {
+  width: 100%;
+  border: 0.5rem solid $darkGreen;
+  border-radius: 1rem;
+  padding: 2rem;
+  cursor: pointer;
+  display: inline-block;
+
+  &:hover {
+    background-color: $overlay;
+  }
+}
+
+.in-zone {
+  background-color: $overlay;
+}
+
+.out-zone {
+  background-color: white;
+}
+
+.file-input,
+.change-file-input {
+  width: 0.1px;
+  height: 0.1px;
+  opacity: 0;
+  overflow: hidden;
+  position: absolute;
+  z-index: -1;
+}
+
+.header-btns-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}

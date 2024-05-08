@@ -20,6 +20,7 @@ export async function getServerSideProps(context: any) {
   const user = session?.user as User
   let projects = null
   let listOfProjects = null
+
   try {
     projects = await prisma.project.findMany({
       where: {
@@ -47,6 +48,7 @@ export async function getServerSideProps(context: any) {
   } catch (error) {
     console.log('project error: ', error)
   }
+
   let vendors = await prisma.vendor.findMany({})
   return {
     props: {
@@ -65,15 +67,33 @@ interface StudentRequestProps {
   vendors: Vendor[]
 }
 
-const StudentRequest = ({ session, user, listOfProjects, vendors }: StudentRequestProps) => {
+const StudentRequest = ({
+  session,
+  user,
+  listOfProjects,
+  vendors,
+}: StudentRequestProps) => {
   // State and handlers
   const [date, setDate] = useState('')
   const [additionalInfo, setAdditionalInfo] = useState('')
   // remaining budget before adding any items
-  const [remainingBeforeItem, setRemainingBeforeItem] = useState<Prisma.Decimal>(Prisma.Decimal.sub(new Prisma.Decimal(listOfProjects[0].startingBudget), new Prisma.Decimal(listOfProjects[0].totalExpenses)))
+  const [remainingBeforeItem, setRemainingBeforeItem] =
+    useState<Prisma.Decimal>(
+      Prisma.Decimal.sub(
+        new Prisma.Decimal(listOfProjects[0].startingBudget),
+        new Prisma.Decimal(listOfProjects[0].totalExpenses),
+      ),
+    )
   // remaining budget that updates every time item is added/deleted
-  const [remainingAfterItem, setRemainingAfterItem] = useState<Prisma.Decimal>(Prisma.Decimal.sub(new Prisma.Decimal(listOfProjects[0].startingBudget), new Prisma.Decimal(listOfProjects[0].totalExpenses)))
-  const [totalExpenses, setTotalExpenses] = useState<Prisma.Decimal>(new Prisma.Decimal(listOfProjects[0].totalExpenses))
+  const [remainingAfterItem, setRemainingAfterItem] = useState<Prisma.Decimal>(
+    Prisma.Decimal.sub(
+      new Prisma.Decimal(listOfProjects[0].startingBudget),
+      new Prisma.Decimal(listOfProjects[0].totalExpenses),
+    ),
+  )
+  const [totalExpenses, setTotalExpenses] = useState<Prisma.Decimal>(
+    new Prisma.Decimal(listOfProjects[0].totalExpenses),
+  )
   const [items, setItems] = useState([
     {
       sequence: 1,
@@ -88,10 +108,28 @@ const StudentRequest = ({ session, user, listOfProjects, vendors }: StudentReque
   ])
   const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null)
   const [projects, setProjects] = useState<Project[]>(listOfProjects)
-  const [selectedProject, setSelectedProject] = useState(listOfProjects[0].projectNum)
+  const [selectedProject, setSelectedProject] = useState(
+    listOfProjects[0].projectNum,
+  )
   const router = useRouter()
-  
-// TODO:: update tooltip whenever item is added or deleted
+
+  //Creates the other option
+  //This current implementation works
+  //other option-----
+  const [selectedVendor, setSelectedVendor] = useState('')
+  const [isNewVendor, setIsNewVendor] = useState(false)
+  const [newVendorName, setNewVendorName] = useState('')
+  const [newVendorURL, setNewVendorURL] = useState('')
+  const [newVendorEmail, setNewVendorEmail] = useState('')
+
+  const handleVendorChange = (e: React.ChangeEvent<any>) => {
+    const value = e.target.value
+    setSelectedVendor(value)
+    setIsNewVendor(value === 'other')
+  }
+  //------------
+
+  // TODO:: update tooltip whenever item is added or deleted
 
   /**
    * This function handles updating the tooltips whenever the input fields are changed
@@ -125,20 +163,20 @@ const StudentRequest = ({ session, user, listOfProjects, vendors }: StudentReque
       handleTooltip(
         index,
         `item${index}Description`,
-        `descriptionTooltip${index}`
+        `descriptionTooltip${index}`,
       )
       handleTooltip(index, `item${index}Link`, `linkTooltip${index}`)
       handleTooltip(
         index,
         `item${index}PartNumber`,
-        `partNumberTooltip${index}`
+        `partNumberTooltip${index}`,
       )
     })
   }, [items])
 
   const handleUnitCostBlur = (
     e: React.FocusEvent<HTMLInputElement>,
-    index: number
+    index: number,
   ) => {
     const newItems = [...items]
     newItems[index].unitCost = e.target.value
@@ -158,12 +196,17 @@ const StudentRequest = ({ session, user, listOfProjects, vendors }: StudentReque
 
   // Dynamically update the budget remaining
   useEffect(() => {
-    let proj = projects.filter((project) => (project.projectNum === selectedProject))
+    let proj = projects.filter(
+      (project) => project.projectNum === selectedProject,
+    )
     setRemainingAfterItem(
       Prisma.Decimal.sub(
-        (Prisma.Decimal.sub(new Prisma.Decimal(proj[0].startingBudget), new Prisma.Decimal(proj[0].totalExpenses))),
-        calculateTotalCost()
-      )
+        Prisma.Decimal.sub(
+          new Prisma.Decimal(proj[0].startingBudget),
+          new Prisma.Decimal(proj[0].totalExpenses),
+        ),
+        calculateTotalCost(),
+      ),
     )
   }, [items])
 
@@ -176,7 +219,7 @@ const StudentRequest = ({ session, user, listOfProjects, vendors }: StudentReque
     setDate(e.target.value)
   }
   const handleAdditionalInfoChange = (
-    e: React.ChangeEvent<HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLTextAreaElement>,
   ) => {
     setAdditionalInfo(e.target.value)
   }
@@ -187,12 +230,13 @@ const StudentRequest = ({ session, user, listOfProjects, vendors }: StudentReque
       totalCost +=
         (parseFloat(item.unitCost) || 0) * (parseInt(item.quantity) || 0)
     })
-    return new Prisma.Decimal(totalCost);
+    return new Prisma.Decimal(totalCost)
   }
 
   /**
    * Updates the state of the items array to add a new item
    */
+
   const handleAddItem = () => {
     setItems([
       ...items,
@@ -215,6 +259,7 @@ const StudentRequest = ({ session, user, listOfProjects, vendors }: StudentReque
    * @param index
    * @param field
    */
+
   const handleItemChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
     index: number,
@@ -224,7 +269,7 @@ const StudentRequest = ({ session, user, listOfProjects, vendors }: StudentReque
       | 'link'
       | 'partNumber'
       | 'quantity'
-      | 'unitCost'
+      | 'unitCost',
   ) => {
     const newItems = [...items]
     newItems[index][field] = e.target.value
@@ -256,7 +301,7 @@ const StudentRequest = ({ session, user, listOfProjects, vendors }: StudentReque
     // Check if the remaining budget is negative
     if (remainingAfterItem < new Prisma.Decimal(0)) {
       alert(
-        'Your remaining budget cannot be negative. Please review your items.'
+        'Your remaining budget cannot be negative. Please review your items.',
       )
       return
     }
@@ -332,7 +377,9 @@ const StudentRequest = ({ session, user, listOfProjects, vendors }: StudentReque
     let budget: Prisma.Decimal = new Prisma.Decimal(0)
     proj.forEach((project) => {
       if (project.projectNum === projectNum) {
-        budget = new Prisma.Decimal(Prisma.Decimal.sub(project.startingBudget, project.totalExpenses))
+        budget = new Prisma.Decimal(
+          Prisma.Decimal.sub(project.startingBudget, project.totalExpenses),
+        )
       }
     })
     setRemainingBeforeItem(budget)
@@ -422,7 +469,73 @@ const StudentRequest = ({ session, user, listOfProjects, vendors }: StudentReque
             </Form.Group>
           </Col>
         </Row>
-
+        // OTHER option ---
+        <Row className='my-4'>
+          <Col md={4}>
+            <Form.Group controlId='vendorSelect'>
+              <Form.Label>
+                <strong>Vendor</strong>
+              </Form.Label>
+              <Form.Control
+                as='select'
+                value={selectedVendor}
+                onChange={handleVendorChange}
+              >
+                <option value=''>Select a Vendor</option>
+                {vendors
+                  .filter((vendor) => vendor.vendorStatus === 'APPROVED')
+                  .map((vendor) => (
+                    <option key={vendor.vendorID} value={vendor.vendorID}>
+                      {vendor.vendorName}
+                    </option>
+                  ))}
+                <option value='other'>Other</option>
+              </Form.Control>
+            </Form.Group>
+          </Col>
+        </Row>
+        {isNewVendor && (
+          <Row className='my-4'>
+            <Col md={4}>
+              <Form.Group controlId='newVendorName'>
+                <Form.Label>
+                  <strong>New Vendor Name</strong>
+                </Form.Label>
+                <Form.Control
+                  type='text'
+                  value={newVendorName}
+                  onChange={(e) => setNewVendorName(e.target.value)}
+                  required
+                />
+              </Form.Group>
+            </Col>
+            <Col md={4}>
+              <Form.Group controlId='newVendorURL'>
+                <Form.Label>
+                  <strong>New Vendor URL</strong>
+                </Form.Label>
+                <Form.Control
+                  type='url'
+                  value={newVendorURL}
+                  onChange={(e) => setNewVendorURL(e.target.value)}
+                  required
+                />
+              </Form.Group>
+            </Col>
+            <Col md={4}>
+              <Form.Group controlId='newVendorEmail'>
+                <Form.Label>
+                  <strong>New Vendor Email (Optional)</strong>
+                </Form.Label>
+                <Form.Control
+                  type='email'
+                  value={newVendorEmail}
+                  onChange={(e) => setNewVendorEmail(e.target.value)}
+                />
+              </Form.Group>
+            </Col>
+          </Row>
+        )}
         <h5>
           <strong>Items:</strong>
         </h5>
@@ -607,7 +720,7 @@ const StudentRequest = ({ session, user, listOfProjects, vendors }: StudentReque
                       onBlur={(e) =>
                         handleUnitCostBlur(
                           e as React.FocusEvent<HTMLInputElement>,
-                          index
+                          index,
                         )
                       }
                       className={`${styles.costInputField} ${styles.unitCostInput} ${styles.hideArrows}`}
@@ -660,7 +773,6 @@ const StudentRequest = ({ session, user, listOfProjects, vendors }: StudentReque
             </Row>
           </div>
         ))}
-
         <Row className='my-4'>
           <Col xs={12} md={4}>
             <Button variant='primary' type='button' onClick={handleAddItem}>
@@ -668,7 +780,6 @@ const StudentRequest = ({ session, user, listOfProjects, vendors }: StudentReque
             </Button>
           </Col>
         </Row>
-
         {/* TODO:: store uploaded files in the cloud and update DB */}
         <Row className='my-4'>
           <Form.Group controlId='fileUpload'>
@@ -684,7 +795,6 @@ const StudentRequest = ({ session, user, listOfProjects, vendors }: StudentReque
             />
           </Form.Group>
         </Row>
-
         <Row className='my-4'>
           <Button variant='success' type='submit'>
             Submit
