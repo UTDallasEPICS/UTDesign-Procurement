@@ -291,7 +291,7 @@ export default function Admin({
       fetchData();
 
 
-      //const statusVals = await prisma.process.findMany()
+      //Get the particular values from the models
       const data = projects.map(project => ({
         projName: project.projectTitle,
         id: project.projectID,
