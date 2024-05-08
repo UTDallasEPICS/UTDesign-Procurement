@@ -170,25 +170,51 @@ This allows the Upload Files page to email error files to admins.
 
 ## ✅ To-do list (After FALL 2023) ✅
 
+### Debug & Merge The 3 Branches (dev/suhas, search, nishant/manit) 
+
 ### Front-end
 
 - Update Login Page for UTD SSO Integration.
-- Implement Reimbursement Form.
-- Design and Implement Database Updates Page.
-- Work on improving the UI/UX of the web application based on user feedback and suggestions and resolve any bugs/TODO comments in code from previous semesters.
-  - Complete remaining TODOs for Orders Page, Projects & Order History Page, and Request Form
-- Keep following UTD guidelines.
+- Implement Reimbursement Form In Student View.
+- Add form validation to make sure input values follow type requirements.
+- Enhance UI, test, and fix the Database Updates Page.
+- Enhance UI, test, and fix the request form page (Student View).
+- Complete remaining TODOs for Orders, Projects & Order History, and Request Form pages.
+- Make sure all work adheres to the UTD guidelines.
 
 ### Back-end
 
 - Implement UTD SSO (Single Sign-On) feature for user authentication.
 - Continue developing API endpoints and integrating them with the front-end to provide full functionality of the application. APIs to work on: [Backend_APIs.docx](https://github.com/UTDallasEPICS/UTDesign-Procurement/raw/main/docs/Backend_APIs.docx)
-  - [Updated List of APIs we did](docs/api.md)
-- Implement excel file upload feature for Database Updates Page.
-- Integrate cloud software to store uploaded request/reimbursement files in the cloud.
-- Data Input for Departments table.
-- Finish data input for Vendors from the vendor list in the UTDesign website.
-- Improve code by better type-checking and error handling, and resolve any bugs/TODO comments in code/APIs from previous semesters.
+- Update the list of APIs done so far with the new add/delete orders APIs. (docs/api.md)
+- Integrate cloud software to store uploaded request/reimbursement files in the cloud (DB Updates Page & Student View of Request Form).
+- Improve code by implementing type-checking and error handling, and resolve any bugs/TODO comments in code/APIs from previous semesters.
+
+### Notes
+
+Commits have not been made to the main branch due to bugs in different files of the code. The commits are spread across a few branches. Debugging first, and then merging all the branches is ideal. (dev/suhas, search, 
+dev/suhas: functional datePicker, add/delete order features, clickable item links, student request card can be edited if rejected (in progress, needs API to save the updated data), add/delete item features (in progress, need to create API and save the added item), and minor debugging.
+search: The search feature is nearing completion; however, it requires final bug fixes and comprehensive API call testing. Additionally, implement a filter for task status to enhance functionality.
+nishant/manit: Student view other button is done and vendor tag functionality is properly implemented in both student and admin view. Reject and accept buttons are implemented but buggy in admin view. API request for approval for admin view is implemented but untested as admin view in buggy. Reason is unknown for a bug in admin view but potentially because of an api call. In the prisma file vendorStatus, vendorEmail, and vendorURL are properly implemented with no bugs.
+
+### User Workflows
+- Student
+  Able to request reimbursement of funds with the reimbursement form (TODO) and the ordering of parts with the request form. Also able to 
+  view requests made in the Orders page.
+  The Student opens the Request Form page and fills it out, then press submit. 
+  Reimbursement Form. (TODO)
+- Mentor
+  Role: Views requests made by the student on the Orders page and can either approve or deny the request to go to the admin.
+- Admin
+  Role: Views requests approved by the mentor and can review request orders, edit order request information, add shipment details, and view 
+  the history of previous projects and 
+  orders. They can also edit information in the DB
+- In the orders page, the admin can edit the request by pressing the edit button, enabling the admin to add/remove shipping details and 
+  order details.
+- In the Projects and Order history page, the admin can view the history of previous projects and orders and edit them by pressing the edit 
+  button.
+- In the Database Updates page, the admin can add/delete users and projects (TODO). They are also able to upload files by clicking the 
+  Upload Files button.
 
 ## ⚡ Resources ⚡
 
