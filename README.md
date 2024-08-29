@@ -2,7 +2,8 @@
 
 ## READ EVERYTHING BEFORE STARTING ON THE PROJECT!!!
 
-## Project Background 
+## Project Background
+
 The current process for managing procurement paperwork submitted by students from EPICS, Capstone, and UTD Makerspace is outdated and inefficient. The workflow involves students filling out Excel sheets and emailing them to their mentors for review. Mentors then either approve the form and forward it to the administrator, Oddrun Mahaffey, for order placement or reject it, providing the student with a reason for the rejection. To streamline this process and make it more convenient for all parties involved, the objective is to create a centralized UTD Procurement Manager website where the entire procedure can be completed online. The web application will primarily benefit students engaged in Capstone, Senior Design, and EPICS projects by simplifying their procurement process and enabling more effective financial management. Furthermore, project mentors and UTDesign staff will experience the advantages of reduced email correspondence and a more streamlined approach to handling requests and budgets, making the system more efficient for all involved parties.
 
 ## Project Introduction
@@ -78,7 +79,7 @@ The current process for managing procurement paperwork submitted by students fro
 
 ## ✅ To-do list (After FALL 2023) ✅
 
-### Debug & Merge The 3 Branches (dev/suhas, search, nishant/manit) 
+### Debug & Merge The 3 Branches (dev/suhas, search, nishant/manit)
 
 ### Front-end
 
@@ -100,28 +101,29 @@ The current process for managing procurement paperwork submitted by students fro
 
 ### Notes
 
-Commits have not been made to the main branch due to bugs in different files of the code. The commits are spread across a few branches. Debugging first, and then merging all the branches is ideal. (dev/suhas, search, 
+Commits have not been made to the main branch due to bugs in different files of the code. The commits are spread across a few branches. Debugging first, and then merging all the branches is ideal. (dev/suhas, search, nishant/manit)
 dev/suhas: functional datePicker, add/delete order features, clickable item links, student request card can be edited if rejected (in progress, needs API to save the updated data), add/delete item features (in progress, need to create API and save the added item), and minor debugging.
 search: The search feature is nearing completion; however, it requires final bug fixes and comprehensive API call testing. Additionally, implement a filter for task status to enhance functionality.
 nishant/manit: Student view other button is done and vendor tag functionality is properly implemented in both student and admin view. Reject and accept buttons are implemented but buggy in admin view. API request for approval for admin view is implemented but untested as admin view in buggy. Reason is unknown for a bug in admin view but potentially because of an api call. In the prisma file vendorStatus, vendorEmail, and vendorURL are properly implemented with no bugs.
 
 ### User Workflows
+
 - Student
-  Able to request reimbursement of funds with the reimbursement form (TODO) and the ordering of parts with the request form. Also able to 
+  Able to request reimbursement of funds with the reimbursement form (TODO) and the ordering of parts with the request form. Also able to
   view requests made in the Orders page.
-  The Student opens the Request Form page and fills it out, then press submit. 
+  The Student opens the Request Form page and fills it out, then press submit.
   Reimbursement Form. (TODO)
 - Mentor
   Role: Views requests made by the student on the Orders page and can either approve or deny the request to go to the admin.
 - Admin
-  Role: Views requests approved by the mentor and can review request orders, edit order request information, add shipment details, and view 
-  the history of previous projects and 
+  Role: Views requests approved by the mentor and can review request orders, edit order request information, add shipment details, and view
+  the history of previous projects and
   orders. They can also edit information in the DB
-- In the orders page, the admin can edit the request by pressing the edit button, enabling the admin to add/remove shipping details and 
+- In the orders page, the admin can edit the request by pressing the edit button, enabling the admin to add/remove shipping details and
   order details.
-- In the Projects and Order history page, the admin can view the history of previous projects and orders and edit them by pressing the edit 
+- In the Projects and Order history page, the admin can view the history of previous projects and orders and edit them by pressing the edit
   button.
-- In the Database Updates page, the admin can add/delete users and projects (TODO). They are also able to upload files by clicking the 
+- In the Database Updates page, the admin can add/delete users and projects (TODO). They are also able to upload files by clicking the
   Upload Files button.
 
 ## 🔗 Pre-requisites for running the app locally 🔗
@@ -187,7 +189,7 @@ Downlading and setting up mySQL is required first. mySQL Workbench is used then 
 
 7. First, we have to create a **.env** file inside of the **procurement-manager** folder.
 8. In the **.env** file, type `DATABASE_URL="mysql://root:password@localhost:3306/procurement"` but change the password to your password when initially setting up mySQL.
-9. (Mac Only) Run this command in the terminal to set up the intial docker container `docker run -d -e MYSQL_ROOT_PASSWORD=password -p 3306:3306 mysql mysqld --lower_case_table_names=1` (refer to this [video](https://youtu.be/piekR2i6nRQ) if you are having difficulties)
+9. (Mac Only) Run this command in the terminal to set up the intial docker container `docker run -d -e MYSQL_ROOT_PASSWORD=<password> -p 3306:3306 mysql mysqld --lower_case_table_names=1` (refer to this [video](https://youtu.be/piekR2i6nRQ) if you are having difficulties) **(ensure the `<password>` is replaced with your mySQL root password)**
 10. To sync your database with the project schema type `npx prisma migrate dev` (make sure your in the procurement-manager folder).
 
 Mac users will see a new docker container in docker desktop and you can run the database server by pressing the start button in the future.
@@ -201,33 +203,36 @@ You can also do `npx prisma studio` instead of using mySQL Workbench to see the 
 
 ### 1️⃣ more thing: 1️⃣
 
-10. In the terminal, enter `openssl rand -base64 32` which will generate random characters and copy it.
-11. In the **.env** file, below the DATABASE_URL type: `NEXTAUTH_SECRET="randomcode"` and paste the randome characters in the randomcode.
+11. In the terminal, enter `openssl rand -base64 32` which will generate random characters and copy it.
+12. In the **.env** file, below the DATABASE_URL type: `NEXTAUTH_SECRET="randomcode"` and paste the randome characters in the randomcode.
     > This is what makes the fake authentication work
     > An example .env file can be found in /docs
 
-_NEW THING:_ 12. Add this:
+_NEW THING:_ 13. Add this:
 `NODEMAILER_EMAIL="utdesign.procurementmanager@gmail.com"`
 `NODEMAILER_PASSWORD="nnft zpaq rooq iwkq"`
 This allows the Upload Files page to email error files to admins.
 
 ### 😁 Finally!!! 😁
 
-12. Making sure you are still in the **procurement-manager** folder, type `npm run dev` which runs the website
-13. In your browser, type `localhost:3000/api/test`. This creates all the sample data to run the project.
-14. Finally go to the website in `localhost:3000`.
-15. 🎉🎉 GOOD LUCK AND HAVE FUN! 🎉🎉
+14. Making sure you are still in the **procurement-manager** folder, type `npm run dev` which runs the website
+15. In your browser, type `localhost:3000/api/test`. This creates all the sample data to run the project.
+16. Finally go to the website in `localhost:3000`.
+17. 🎉🎉 GOOD LUCK AND HAVE FUN! 🎉🎉
 
 ---
 
 ## Figma
+
 This contains the UI mocksups of the app and is located in the /docs folder
 
 ## Workflow Diagrams
-These are located in the /docs folder. 
+
+These are located in the /docs folder.
 
 ## Docs
-The /docs folder contains various documents on the design and schemas of the app, including documentation on APIs. These should be looked at. 
+
+The /docs folder contains various documents on the design and schemas of the app, including documentation on APIs. These should be looked at.
 
 ## ⚡ Resources ⚡
 
