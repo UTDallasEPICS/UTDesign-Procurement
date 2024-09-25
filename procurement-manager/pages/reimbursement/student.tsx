@@ -1,12 +1,12 @@
 /**
- * This is the Request Form page
+ * This is the Reimbursement Form page
  */
 
 import React, { useState, useEffect, useRef } from 'react'
 import { Container, Row, Col, Button, InputGroup } from 'react-bootstrap'
 import Form from 'react-bootstrap/Form'
 import 'bootstrap/dist/css/bootstrap.min.css'
-import styles from '@/styles/request.module.css'
+import styles from '@/styles/reimbursement.module.css'
 import { Prisma, Project, User, Vendor } from '@prisma/client'
 import axios from 'axios'
 import { Session, getServerSession } from 'next-auth'
@@ -289,7 +289,7 @@ const StudentRequest = ({ user, listOfProjects }: StudentRequestProps) => {
         <Row className='my-4'>
 
           {/* ADDITIONAL INFO */}
-          <Col md={7}>
+          <Col md={10}>
             <Form.Group controlId='additionalInfo'>
               <Form.Label>
                 <strong>Additional Information</strong>
@@ -370,7 +370,7 @@ const StudentRequest = ({ user, listOfProjects }: StudentRequestProps) => {
               </Col>
 
               {/* VENDOR */}
-              <Col md={1}>
+              <Col md={2}>
                 <Form.Group controlId={`item${index}Vendor`}>
                   <Form.Label>
                     <strong>Vendor</strong>
@@ -387,7 +387,7 @@ const StudentRequest = ({ user, listOfProjects }: StudentRequestProps) => {
               </Col>
 
               {/* ITEM DESCRIPTION */}
-              <Col md={2}>
+              <Col md={4}>
                 <Form.Group controlId={`item${index}Description`}>
                   <Form.Label>
                     <strong>Description</strong>
@@ -441,22 +441,24 @@ const StudentRequest = ({ user, listOfProjects }: StudentRequestProps) => {
                   </InputGroup>
                 </Form.Group>
               </Col>   
-              
+                    
               {/* RECEIPT UPLOAD */}
-              <Row className='my-4'>
-                <Form.Group controlId='fileUpload'>
-                  <Form.Label>
-                    <strong>Receipt Upload</strong>
-                  </Form.Label>
-                  <Form.Control
-                    type='file'
-                    multiple
-                    onChange={(e) =>
-                      setSelectedFiles((e.target as HTMLInputElement).files)
-                    }
-                  />
-                </Form.Group>
-              </Row>
+              <Col md={12}>
+                <div className={styles.fileUpload}>
+                  <Form.Group controlId='fileUpload'>
+                    <Form.Label>
+                      <strong>Receipt Upload</strong>
+                    </Form.Label>
+                    <Form.Control
+                      type='file'
+                      multiple
+                      onChange={(e) =>
+                        setSelectedFiles((e.target as HTMLInputElement).files)
+                      }
+                    />
+                  </Form.Group>
+                </div>
+              </Col>
 
               {/* DELETE BUTTON */}
               <Col className='d-flex justify-content-end mt-2 w-100'>
