@@ -856,7 +856,8 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
                                <Button
                                  className={styles.cardBtn}
                                  variant='danger'
-                                 onClick={() => handleDeleteOrder(orderIndex, parseInt(order.orderNumber))}                                >
+                                 onClick={() => handleDeleteOrder(orderIndex, parseInt(order.orderNumber))}
+                               >
                                  Delete
                                </Button>
                              </td>
@@ -896,12 +897,8 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
    </Row>
  )
 }
+
 export default AdminRequestCard
 function newDetails(arg0: string, newDetails: any) {
  throw new Error('Function not implemented.')
 }
-
-
-
-
-
