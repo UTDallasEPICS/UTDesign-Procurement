@@ -1,0 +1,22 @@
+.headingLabel {
+  font-weight: bold;
+}
+
+.requestDetails {
+  td {
+    line-height: 1.5rem;
+    vertical-align: middle;
+  }
+  .form-control {
+    // width: fit-content !important;
+  }
+}
+
+.cardBtn {
+  min-width: 9.25rem;
+}
+
+.editBtn,
+.rejectBtn {
+  margin-right: 1.25rem;
+}
