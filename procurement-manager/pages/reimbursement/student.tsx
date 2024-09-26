@@ -206,28 +206,18 @@ const StudentRequest = ({ user, listOfProjects }: StudentRequestProps) => {
     // clean out the items to send to API
     const itemsToSend = items.map((item) => {
       return {
+        receiptDate: item.receiptDate,
         description: item.description,
-        unitPrice: parseFloat(item.unitCost),
-        vendorID: parseInt(item.vendor),
+        receiptTotal: item.unitCost,
+        vendorID: parseInt(item.vendor)
       }
     })
 
-    // Process form data and submit
-    console.info('Submitted Form ::', {
-      date,
-      additionalInfo,
-      itemsToSend,
-      items: items,
-      selectedFiles,
-      selectedProject: selectedProject,
-      user: user.email,
-      totalExpenses: calculateTotalCost(),
-    })
+    console.log('STUDENT.TSX', itemsToSend)
 
     // Call the API
     try {
-      const newRequest = await axios.post('/api/request-form', {
-        dateNeeded: date,
+      const newRequest = await axios.post('/api/reimbursement-form', {
         projectNum: selectedProject,
         studentEmail: user.email,
         items: itemsToSend,
