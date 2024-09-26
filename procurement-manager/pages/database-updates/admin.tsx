@@ -12,6 +12,7 @@ import styles from '@/styles/DatabaseUpdate.module.scss'
 import { AgGridReact } from 'ag-grid-react'
 import 'ag-grid-community/styles/ag-grid.css' // Core CSS
 import 'ag-grid-community/styles/ag-theme-quartz.css' // Theme
+import { CellValueChangedEvent } from 'ag-grid-community'
 
 export async function getServerSideProps() {
   const users = await prisma.user.findMany()
@@ -50,6 +51,14 @@ export default function admin({
     editable: true,
     filter: true,
   })
+
+  const onCellValueChanged = (
+    event: CellValueChangedEvent
+  ) => {
+    if (event.rowIndex === null) return
+    // TODO edit database values
+    // users[event.rowIndex].lastName = event.newValue
+  }
 
   useEffect(() => {
     if (tableType === 'user') {
@@ -146,6 +155,8 @@ export default function admin({
                 defaultColDef={defaultColDef}
                 autoSizeStrategy={{ type: 'fitCellContents' }}
                 pagination={true}
+                onCellValueChanged={onCellValueChanged}
+                stopEditingWhenCellsLoseFocus={true}
               />
             ) : (
               <AgGridReact
@@ -154,6 +165,8 @@ export default function admin({
                 defaultColDef={defaultColDef}
                 autoSizeStrategy={{ type: 'fitCellContents' }}
                 pagination={true}
+                onCellValueChanged={onCellValueChanged}
+                stopEditingWhenCellsLoseFocus={true}
               />
             )}
           </div>
