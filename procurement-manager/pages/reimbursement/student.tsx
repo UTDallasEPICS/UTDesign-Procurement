@@ -64,7 +64,7 @@ interface StudentRequestProps {
   vendors: Vendor[]
 }
 
-const StudentRequest = ({ user, listOfProjects }: StudentRequestProps) => {
+const StudentReimbursement = ({ user, listOfProjects }: StudentRequestProps) => {
   // State and handlers
   const [date, setDate] = useState('')
   const [additionalInfo, setAdditionalInfo] = useState('')
@@ -489,4 +489,4 @@ const StudentRequest = ({ user, listOfProjects }: StudentRequestProps) => {
   )
 }
 
-export default StudentRequest
+export default StudentReimbursement
