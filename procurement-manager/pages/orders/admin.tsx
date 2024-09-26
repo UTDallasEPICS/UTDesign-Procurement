@@ -14,10 +14,8 @@ import RejectionModal from '@/components/RejectionModal'
 import axios from 'axios'
 import { Session, getServerSession } from 'next-auth'
 import { authOptions } from '../api/auth/[...nextauth]'
-import express from 'express';
 import getVendors from '@/components/AdminRequestCard'
 
-const app = express();
 
 export async function getServerSideProps(context: any) {
   const session = await getServerSession(context.req, context.res, authOptions)
