@@ -115,7 +115,8 @@ export default async function handler(
       }
     }
 
-    console.debug('Requests associated with user: ', requestsOfMultipleProjects)
+    //console.debug('Requests associated with user: ', requestsOfMultipleProjects)
+
     res.status(200).json({
       userRole: user.roleID,
       projects: listOfProjects,
