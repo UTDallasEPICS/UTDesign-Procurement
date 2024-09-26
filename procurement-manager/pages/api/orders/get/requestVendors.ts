@@ -1,8 +1,11 @@
-import { PrismaClient } from '@prisma/client';
-//API call to get data from the project model
-export default async function handler(req: any, res: any) {
-  const prisma = new PrismaClient();
+import { NextApiRequest, NextApiResponse } from 'next'
+import { prisma } from '@/db'
 
+//API call to get data from the project model
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
   if (req.method === 'GET') {
     try {
       //Get information from the a particular model

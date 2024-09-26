@@ -1,10 +1,12 @@
 // API to get the orders placed for a request
-import { PrismaClient } from '@prisma/client';
+import { NextApiRequest, NextApiResponse } from 'next'
+import { prisma } from '@/db'
 
 //API call to get data from the project request Item
-export default async function handler(req: any, res: any) {
-  const prisma = new PrismaClient();
-
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
   if (req.method === 'GET') {
     try {
       //Get information from the particular model
