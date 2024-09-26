@@ -2,7 +2,7 @@
 // BECAUSE THERE ARE NO ERROR HANDLING, ONLY CALL THIS ENDPOINT ONCE AFTER RESET
 
 import { PrismaClient } from '@prisma/client'
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime'
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/binary'
 import { NextApiRequest, NextApiResponse } from 'next'
 const prisma = new PrismaClient()
 
