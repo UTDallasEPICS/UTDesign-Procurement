@@ -8,6 +8,8 @@ import {
   Process,
   RequestItem,
   Project,
+  Reimbursement,
+  ReimbursementItem,
 } from '@prisma/client'
 import PersistentFile from 'formidable/PersistentFile'
 
@@ -18,6 +20,12 @@ export interface RequestDetails extends Request {
   OtherExpense: OtherExpense[]
   Process: Process[]
   // maybe add the RequestUpload here
+}
+
+export interface ReimbursementDetails extends Reimbursement {
+  project: Project
+  ReimbursementItem: ReimbursementItem[]
+  Process: Process[]
 }
 
 export interface ValidFile {

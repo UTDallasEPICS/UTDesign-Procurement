@@ -5,9 +5,10 @@
 import React, { useEffect, useState } from 'react'
 import { Row } from 'react-bootstrap'
 import OrderCard from '../../components/StudentRequestCard'
+import ReimburseCard from '../../components/StudentReimbursementCard'
 import ProjectHeader from '../../components/ProjectHeader'
 import { Prisma, Project, User } from '@prisma/client'
-import { RequestDetails } from '@/lib/types'
+import { ReimbursementDetails, RequestDetails } from '@/lib/types'
 import axios from 'axios'
 import { Session, getServerSession } from 'next-auth'
 import { authOptions } from '../api/auth/[...nextauth]'
@@ -31,8 +32,11 @@ interface StudentProps {
 export default function Student({ session, user }: StudentProps) {
   // state for opening the collapsed cards - an array due to multiple projects
   const [isOpen, setIsOpen] = useState<boolean[]>([])
+
   // state for the requests inside the different projects associated to the user
   const [projectRequests, setProjectRequests] = useState<RequestDetails[][]>([])
+  const [projectReimbursements, setProjectReimbursements] = useState<ReimbursementDetails[][]>([])
+
   // state for the projects associated to the user
   const [projects, setProjects] = useState<Project[]>([])
 
@@ -56,6 +60,23 @@ export default function Student({ session, user }: StudentProps) {
     setProjects(projects)
     setProjectRequests(requestsOfMultipleProjects)
     setIsOpen(projects.map(() => true))
+    console.log('request (Student)', requestsOfMultipleProjects)
+    console.log('setRequest (Student)', projectRequests)
+
+
+    const nextResponse = await axios.post('/api/reimbursement-form/get', {
+      netID: user.netID,
+    })
+    const [nextProjects, reimbursementsOfMultipleProjects] = await Promise.all([
+      nextResponse.data.projects,
+      nextResponse.data.reimbursements
+    ])
+    setProjects(nextProjects)
+    setProjectReimbursements(reimbursementsOfMultipleProjects)
+    setIsOpen(nextProjects.map(() => true))
+    console.log('reimbursement (Student)', reimbursementsOfMultipleProjects)
+    console.log('setReimbursement (Student)', projectReimbursements)
+
   }
 
   /**
@@ -118,6 +139,22 @@ export default function Student({ session, user }: StudentProps) {
             ) : (
               <p className='my-4'>There are no requests in this project.</p>
             )}
+
+            {projectReimbursements[projIndex].length > 0 ? (
+              projectReimbursements[projIndex].map((reimbursement, reimIndex) => {
+                return (
+                  <ReimburseCard
+                    key={reimIndex}
+                    details={reimbursement}
+                    collapsed={isOpen[projIndex]}
+                  />
+                )
+              })
+            ) : (
+              <p className='my-4'>There are no reimbursement requests in this project.</p>
+            )}
+          
+            
             {/* </div>
             </Collapse> */}
           </Row>
