@@ -175,7 +175,7 @@ const StudentRequestCard: React.FC<RequestCardProps> = ({
                 (total, item) =>
                   total + item.quantity * (item.unitPrice as any),
                 0
-              ).toFixed(4)}
+              ).toFixed(2)}
             </p>
           </Col>
 

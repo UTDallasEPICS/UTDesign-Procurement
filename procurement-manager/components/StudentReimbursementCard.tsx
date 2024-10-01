@@ -18,6 +18,7 @@ import {
 } from 'react-bootstrap'
 import styles from '@/styles/RequestCard.module.scss'
 import { Status } from '@prisma/client'
+import { Decimal } from '@prisma/client/runtime'
 
 interface ReimbursementCardProps {
   details: ReimbursementDetails
@@ -161,9 +162,9 @@ const StudentReimbursementCard: React.FC<ReimbursementCardProps> = ({
               $
               {details.ReimbursementItem.reduce(
                 (total, item) =>
-                  total + (item.receiptTotal as any),
+                    total + 1 * (item.receiptTotal as any),
                 0
-              )}
+              ).toFixed(2)}
             </p>
           </Col>
 
@@ -288,7 +289,6 @@ const StudentReimbursementCard: React.FC<ReimbursementCardProps> = ({
                                         }
                                     />
                                 </InputGroup>
-                              
                             </td>
                           </tr>
                         )
