@@ -163,7 +163,7 @@ const StudentReimbursementCard: React.FC<ReimbursementCardProps> = ({
                 (total, item) =>
                   total + (item.receiptTotal as any),
                 0
-              ).toFixed(4)}
+              )}
             </p>
           </Col>
 
@@ -250,7 +250,7 @@ const StudentReimbursementCard: React.FC<ReimbursementCardProps> = ({
                             <td>
                                 <Form.Control
                                     name = 'receiptDate'
-                                    value = {item.receiptDate.toLocaleDateString(undefined, {
+                                    value = {new Date(item.receiptDate).toLocaleDateString(undefined, {
                                         weekday: 'short',
                                         year: 'numeric',
                                         month: 'short',
@@ -275,26 +275,21 @@ const StudentReimbursementCard: React.FC<ReimbursementCardProps> = ({
                             </td>
 
                             <td>
-                              <Form.Control
-                                name='recieptTotal'
-                                value={item.receiptTotal.toString()}
-                                onChange={(e) =>
-                                  handleInputChange(
-                                    e as React.ChangeEvent<HTMLInputElement>,
-                                    itemIndex
-                                  )
-                                }
-                              />
+                                <InputGroup>
+                                    <InputGroup.Text>$</InputGroup.Text>
+                                    <Form.Control
+                                        name='recieptTotal'
+                                        value={item.receiptTotal.toString()}
+                                        onChange={(e) =>
+                                            handleInputChange(
+                                            e as React.ChangeEvent<HTMLInputElement>,
+                                            itemIndex
+                                            )
+                                        }
+                                    />
+                                </InputGroup>
+                              
                             </td>
-                            
-                            <td>
-                              <Form.Control />
-                            </td>
-
-                            <td>
-                              <Form.Control />
-                            </td>
-
                           </tr>
                         )
                       })}
