@@ -1,9 +1,11 @@
 /**
  * This is the Admin View for the Orders Page
+ * This current implementation does not work
+ * Unknown reason but possible API error
  */
 
 import React, { useEffect, useState } from 'react'
-import { Row } from 'react-bootstrap'
+import { Row, Button, Modal, Form } from 'react-bootstrap'
 import AdminRequestCard from '@/components/AdminRequestCard'
 import ProjectHeader from '@/components/ProjectHeader'
 import ReimbursementCard from '@/components/AdminReimbursementCard'
@@ -24,6 +26,7 @@ export async function getServerSideProps(context: any) {
   const projects = await prisma.project.findMany()
   const requestOfMultipleProjects: RequestDetails[][] = []
 
+  
   // Next.js recommends that instead of calling from '/api/request-form/get', just perform the query here
   // to reduce the number of API calls and improve performance because getServerSideProps can do server-side code
   for (const project of projects) {
@@ -75,21 +78,19 @@ export default function Admin({
   // state for the modal for rejecting requests
   const [showRejectModal, setShowRejectModal] = useState(false)
   // state to set the request number for the reject modal to show
-  const [selectedRequestID, setSelectedRequestID] = useState<number | null>(
-    null
-  )
+  const [selectedRequestID, setSelectedRequestID] = useState<number | null>(null)
   // state for the requests inside the different projects associated to the user
-  const [projectRequests, setProjectRequests] =
-    useState<RequestDetails[][]>(reqs)
+  const [rejectionReason, setRejectionReason] = useState('')
+  const [projectRequests, setProjectRequests] = useState<RequestDetails[][]>(reqs)
   // state for the projects associated to the user
   const [projects, setProjects] = useState<Project[]>(projs)
   const [projectReqsWithOrders, setProjectReqsWithOrders] = useState<RequestDetails[][]>()
 
   // Opens all the cards by default
   useEffect(() => {
-    getProcessedReqs()
     setIsOpen(projects.map(() => true))
   }, [])
+
 
   // Client-side data fetching whenever we need to refetch the data and rerender the page
   /**
@@ -106,7 +107,6 @@ export default function Admin({
     ])
     setProjects(projects)
     setProjectRequests(requestsOfMultipleProjects)
-    getProcessedReqs()
     setIsOpen(projects.map(() => true))
   }
 
@@ -117,45 +117,6 @@ export default function Admin({
   const handleReject = (requestID: number) => {
     setSelectedRequestID(requestID)
     setShowRejectModal(true)
-  }
-
-  /**
-   * This function is called after the mentor submits the rejection reason through the RejectionModal.
-   * @param reason - The reason for rejecting the request.
-   */
-  const handleSubmitRejection = async (reason: string) => {
-    setShowRejectModal(false)
-    try {
-      const response = await axios.post('/api/process/update', {
-        netID: user.netID,
-        requestID: selectedRequestID,
-        comment: reason,
-        status: Status.REJECTED,
-      })
-
-      // Updates the page if the request was successfully rejected so the rejected request should not be seen
-      if (response.status === 200) {
-        getAdmin()
-      }
-    } catch (error) {
-      if (error instanceof Error) console.log(error.message)
-      else if (axios.isAxiosError(error))
-        console.log(error.message, error.status)
-      else console.log(error)
-    }
-  }
-
-  /**
-   * This was a feature where clicking the hide/show button in ProjectHeader
-   * would instead hide all the requests for the project. - May not be needed
-   * @param projectIndex - The index of the project in the projects array.
-   */
-  const toggleProjectCollapse = (projectIndex: number) => {
-    setIsOpen((prevOpen) => {
-      const newOpen = [...prevOpen]
-      newOpen[projectIndex] = !newOpen[projectIndex]
-      return newOpen
-    })
   }
 
   /**
@@ -171,9 +132,53 @@ export default function Admin({
     })
   }
 
+
   /**
-   * this function is used to retrieve the orders associated with each request in the project, and if a request has an order then the request is processed
+   * This function is called after the mentor submits the rejection reason through the RejectionModal.
+   * @param reason - The reason for rejecting the request.
    */
+  const handleSubmitRejection = async () => {
+    setShowRejectModal(false)
+    try {
+      const response = await axios.post('/api/process/update', {
+        netID: user.netID,
+        requestID: selectedRequestID,
+        comment: rejectionReason,
+        status: Status.REJECTED,
+      })
+
+      if (response.status === 200) {
+        getAdmin()
+      }
+    } catch (error) {
+      if (error instanceof Error) console.log(error.message)
+      else if (axios.isAxiosError(error)) console.log(error.message, error.status)
+      else console.log(error)
+    }
+  }
+  /**
+   * This function is called after the mentor submits the acceptance
+   * BUGGY
+   * @param requestID 
+   */
+  const handleAccept = async (requestID: number) => {
+    try {
+      const response = await axios.post('/api/request/accept', {
+        requestID,
+      });
+      if (response.status === 200) {
+        alert('Request Accepted');
+        getAdmin();
+      }
+    } catch (error) {
+      console.error('Error accepting request:', error);
+    }
+  };
+
+
+  /**
+  * this function is used to retrieve the orders associated with each request in the project, and if a request has an order then the request is processed
+  */
   async function getProcessedReqs() {
     try
     {
@@ -226,88 +231,58 @@ export default function Admin({
     return false
   }
 
+
   return (
     <>
       <Row className='my-4'>
         <h1>Welcome back {user && user.firstName}</h1>
       </Row>
-      {/* Creates the ProjectHeader  */}
       {projects.map((project, projIndex) => {
         return (
           <Row key={projIndex}>
             <ProjectHeader
               projectName={project.projectTitle}
               expenses={project.totalExpenses}
-              available={Prisma.Decimal.sub(
-                project.startingBudget,
-                project.totalExpenses
-              )}
+              available={Prisma.Decimal.sub(project.startingBudget, project.totalExpenses)}
               budgetTotal={project.startingBudget}
-              onToggleCollapse={() => {
-                // toggleProjectCollapse(projIndex)
-                toggleCards(projIndex)
-              }}
+              onToggleCollapse={() => toggleCards(projIndex)}
               isOpen={isOpen[projIndex]}
             />
-            {/* Details of the request forms modeled into cards */}
-            {/* These are the request forms associated to its project */}
-            {/* The Collapse below was an old feature that might be used again */}
-            {/* <Collapse in={isOpen[projIndex]}> */}
-            {/* <div> */}
-            {projectRequests[projIndex].length > 0 ? (
-              projectRequests[projIndex].map((request, reqIndex) => {
-                // TODO:: only show request cards if approved and not processed, works using an if and 'processed' function but resolve rendering issue:
-                // i.e. when you open or refresh orders page, it still tries to display the request cards of processed requests, then the cards disappear
-                // maybe try getting processed requests and update the request array in getServerSideProps() instead of in the component
-                return (
-                  <AdminRequestCard
-                    key={reqIndex}
-                    user={user}
-                    project={project}
-                    details={request}
-                    onReject={() => handleReject(request.requestID)}
-                    onSave={() => getAdmin()} // since after adding orders and updating project expenses in AdminRequestCard this function call will show the updated project info after querying DB
-                    collapsed={isOpen[projIndex]}
-                  />
-                )
-              })
-            ) : (
-              <p className='my-4'>There are no requests in this project.</p>
-            )}
-            {/* </div> */}
-            {/* </Collapse> */}
+            {projectRequests[projIndex].map((request, reqIndex) => {
+              return (
+                <AdminRequestCard
+                  key={reqIndex}
+                  user={user}
+                  project={project}
+                  details={request}
+                  onReject={() => handleReject(request.requestID)}
+                  onAccept={() => handleAccept(request.requestID)}
+                  onSave={() => getAdmin()}
+                  collapsed={isOpen[projIndex]}
+                />
+              )
+            })}
           </Row>
         )
       })}
-
-      <RejectionModal
-        show={showRejectModal}
-        onHide={() => setShowRejectModal(false)}
-        onSubmit={handleSubmitRejection}
-      />
-
-      {/* AN EXAMPLE OF REIMBURSEMENT CARDS - not updated */}
-      {/* <Row>
-        <ProjectHeader
-          projectName='Project 3: Point of Nerve Conduction Diagnostic | Capstone, Reimbursement'
-          // budget='Budget: $100/$500'
-          isOpen={isOpenProject2}
-          expenses={0}
-          available={0}
-          budgetTotal={new Decimal()}
-          onToggleCollapse={function (): void {
-            throw new Error('Function not implemented.')
-          }} // toggleCollapse={toggleCollapseProject2}
-        />
-        <Collapse in={isOpenProject2}>
-          <div>
-            <Row>
-              <ReimbursementCard />
-              <ReimbursementCard />
-            </Row>
-          </div>
-        </Collapse>
-      </Row> */}
+      <Modal show={showRejectModal} onHide={() => setShowRejectModal(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Reason for Rejection</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form.Control
+            as="textarea"
+            rows={3}
+            value={rejectionReason}
+            onChange={(e) => setRejectionReason(e.target.value)}
+            placeholder="Enter the reason for rejection"
+          />
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowRejectModal(false)}>Cancel</Button>
+          <Button variant="primary" onClick={handleSubmitRejection}>Submit Rejection</Button>
+        </Modal.Footer>
+      </Modal>
     </>
   )
 }

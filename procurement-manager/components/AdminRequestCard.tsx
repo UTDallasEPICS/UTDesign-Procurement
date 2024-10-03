@@ -23,6 +23,7 @@ interface AdminRequestCardProps {
   project: Project
   details: RequestDetails
   onReject: () => void
+  onAccept: (requestId: number) => Promise<void>;
   onSave: () => void
   collapsed: boolean
 }
@@ -32,6 +33,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
   project,
   details,
   onReject,
+  onAccept,
   onSave,
   collapsed,
 }) => {
@@ -439,6 +441,14 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
 
                   {/* REJECT/EDIT BUTTONS */}
                   <Col xs={12} lg={5}>
+                    <Button
+                      variant='success'
+                      style={{ minWidth: '150px', marginRight: '20px' }}
+                      onClick={() => onAccept(details.requestID)}
+                      className={`${styles.cardBtn} ${styles.rejectBtn}`}
+                    >
+                      Accept
+                    </Button>
                     <Button
                       className={`${styles.cardBtn} ${styles.rejectBtn}`}
                       variant='danger'
