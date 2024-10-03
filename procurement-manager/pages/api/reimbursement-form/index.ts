@@ -106,6 +106,7 @@ async function createReimbursement(
             },
             status: Status.UNDER_REVIEW,
             additionalInfo: optionalFields.additionalInfo,
+            expense: body.totalExpenses
         },
         include: {
             ReimbursementItem: true,

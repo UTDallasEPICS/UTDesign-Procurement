@@ -172,6 +172,7 @@ model Reimbursement {
   dateSubmitted     DateTime // date the reimbursement form was submitted
   status            String // status of the reimbursement form
   additionalInfo    String? // any additional information and why the reimbursement is being requested 
+  expense           Decimal             @default(0)
   // RELATIONSHIPS HERE ::
   project           Project             @relation(fields: [projectID], references: [projectID]) // the project that the reimbursement is in
   projectID         Int
