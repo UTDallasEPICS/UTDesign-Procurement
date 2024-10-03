@@ -2,7 +2,7 @@
 
 import { NextApiRequest, NextApiResponse } from 'next'
 import { prisma } from '@/db'
-import { Prisma, Vendor, Order } from '@prisma/client'
+import { Vendor, Order } from '@prisma/client'
 
 export default async function handler(
   req: NextApiRequest,

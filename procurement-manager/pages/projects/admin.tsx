@@ -67,7 +67,7 @@ export default function Admin({
 }: AdminProps): JSX.Element {
   // state for opening the collapsed cards - an array due to multiple projects
   const [isOpen, setIsOpen] = useState<boolean[]>([])
- 
+
   // state for the requests inside the different projects associated to the user
   const [projectRequests, setProjectRequests] =
     useState<RequestDetails[][]>(reqs)
@@ -126,10 +126,10 @@ export default function Admin({
   return (
     <>
       <Row className='my-4'>
+
       </Row>
       {/* Creates the ProjectHeader  */}
-      {projects.map((project, projIndex) => 
-      {
+      {projects.map((project, projIndex) => {
         return (
           <Row key={projIndex}>
             <ProjectPageHeader
@@ -141,10 +141,10 @@ export default function Admin({
               isOpen={true}
             />
             <AdminProjectCard
-            projectIndex={projIndex}
-            project={project}
-            requests={projectRequests} // array of requests for multiple projects so use project index to access request list for a project
-            collapsed={isOpen[projIndex]}
+              projectIndex={projIndex}
+              project={project}
+              requests={projectRequests} // array of requests for multiple projects so use project index to access request list for a project
+              collapsed={isOpen[projIndex]}
             />
           </Row>
         )
