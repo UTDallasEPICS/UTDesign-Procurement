@@ -43,6 +43,7 @@ export default function Student({ session, user }: StudentProps) {
   useEffect(() => {
     getStudentReimbursements()
     getStudentRequests()
+    console.log("TEST")
   }, [])
 
   // Client-side data fetching whenever we need to refetch the data and rerender the page but can be done in getServerSideProps
@@ -61,8 +62,8 @@ export default function Student({ session, user }: StudentProps) {
     setProjects(projects)
     setProjectRequests(requestsOfMultipleProjects)
     setIsOpen(projects.map(() => true))
-    console.log('request (Student)', requestsOfMultipleProjects)
-    console.log('setRequest (Student)', projectRequests)
+    //console.log('request (Student)', requestsOfMultipleProjects)
+    //console.log('setRequest (Student)', projectRequests)
   }
 
   async function getStudentReimbursements() {
@@ -73,8 +74,8 @@ export default function Student({ session, user }: StudentProps) {
       nextResponse.data.reimbursements
     ])
     setProjectReimbursements(reimbursementsOfMultipleProjects)
-    console.log('reimbursement (Student)', reimbursementsOfMultipleProjects)
-    console.log('setReimbursement (Student)', projectReimbursements)
+    //console.log('reimbursement (Student)', reimbursementsOfMultipleProjects)
+    //console.log('setReimbursement (Student)', projectReimbursements)
   }
 
   /**
