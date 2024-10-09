@@ -217,7 +217,7 @@ enum Status {
   RECALLED // status after a request/reimbursement is recalled by student and wants to edit before resubmitting
 }
 
-enum VendorStatus{
+enum VendorStatus {
   APPROVED
   DENIED
   PENDING
