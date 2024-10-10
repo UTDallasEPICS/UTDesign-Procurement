@@ -288,7 +288,7 @@ export default function Admin({
         // setProjectSearch(data1);
         // UT setVendors(data2);
 
-        const vendors = await prisma.requestItem.findMany()
+        // const vendors = await prisma.requestItem.findMany()
       };
 
       fetchData();
@@ -348,7 +348,7 @@ export default function Admin({
         <h1>Welcome back {user && user.firstName}</h1>
       </Row>
       <Row className='searchBar'>
-        <CustomSearch />
+        {/* <CustomSearch /> */}
       </Row>
       {/* Creates the ProjectHeader  */}
       {projects.map((project, projIndex) => {

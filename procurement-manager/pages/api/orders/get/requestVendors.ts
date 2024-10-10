@@ -9,7 +9,7 @@ export default async function handler(
   if (req.method === 'GET') {
     try {
       //Get information from the a particular model
-      const vendors = await prisma.requestItem.findMany();
+      const vendors = await prisma.vendor.findMany();
       res.status(200).json(vendors);
     } catch (error) {
       res.status(500).json({ error: 'Error fetching items' });
