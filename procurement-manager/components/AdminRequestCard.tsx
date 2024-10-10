@@ -25,7 +25,6 @@ import {
 } from '@prisma/client'
 import axios from 'axios'
 import { json } from 'stream/consumers'
-import { Decimal } from '@prisma/client/runtime'
 interface AdminRequestCardProps {
   user: User
   project: Project
@@ -66,7 +65,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
       orderNumber: string
       trackingInfo: string
       orderDetails: string
-      shippingCost: number
+      shippingCost: Prisma.Decimal
       dateOrdered: string
     }[]
   >([])
@@ -76,7 +75,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
       orderNumber: string
       trackingInfo: string
       orderDetails: string
-      shippingCost: Decimal
+      shippingCost: Prisma.Decimal
       dateOrdered: string
     }[]
   >([])
@@ -341,7 +340,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
         orderNumber: '',
         trackingInfo: '',
         orderDetails: '',
-        shippingCost: 0,
+        shippingCost: new Prisma.Decimal(0),
         dateOrdered: '',
       },
     ])
