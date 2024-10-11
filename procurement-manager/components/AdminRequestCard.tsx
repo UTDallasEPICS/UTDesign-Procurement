@@ -22,6 +22,7 @@ import {
   Vendor,
   Order,
   RequestItem,
+  Status,
 } from '@prisma/client'
 import axios from 'axios'
 import { json } from 'stream/consumers'
@@ -520,7 +521,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
               {/* ORDER SUBTOTAL */}
               <Col xs={6} lg={2}>
                 <h6 className={styles.headingLabel}>Order Subtotal</h6>
-                <p>${orderTotal.toFixed(4)}</p>
+                <p>${orderTotal.toFixed(2)}</p>
               </Col>
               {/* STATUS */}
               <Col xs={6} lg={3}>
@@ -529,432 +530,319 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
               </Col>
             </Row>
             {/* COLLAPSED ROW */}
-            <div>
-              <Row className='my-4 smaller-row'>
-                {/* JUSTIFICATION ADDITIONAL INFO */}
-                <Col xs={12} lg={3}>
-                  <h6 className={styles.headingLabel}>Additional info:</h6>
-                  <p>
-                    {!details.additionalInfo ? 'none' : details.additionalInfo}
-                  </p>
-                  <h6 className={styles.headingLabel}>Sponsor:</h6>
-                  <p>{details.project.sponsorCompany}</p>
-                </Col>
-                {/* REQUESTED BY/APPROVED BY */}
-                <Col xs={12} lg={4}>
-                  <h6 className={styles.headingLabel}>Requested by:</h6>
-                  <p>{studentThatRequested?.email}</p>
-                  <h6 className={styles.headingLabel}>Approved by:</h6>
-                  <p>{mentorThatApproved?.email}</p>
-                </Col>
-                {/* REJECT/EDIT BUTTONS */}
-                <Col xs={12} lg={5}>
-                  <Button
-                    className={`${styles.cardBtn} ${styles.rejectBtn}`}
-                    variant='success'
-                    style={{ minWidth: '150px', marginRight: '20px' }}
-                    onClick={onAccept}
-                  >
-                    Accept
-                  </Button>
-                  <Button
-                    className={`${styles.cardBtn} ${styles.rejectBtn}`}
-                    variant='danger'
-                    style={{ minWidth: '150px', marginRight: '20px' }}
-                    onClick={onReject}
-                  >
-                    Reject
-                  </Button>{' '}
-                  {!editable && (
-                    <Button
-                      className={`${styles.editBtn} ${styles.cardBtn}`}
-                      variant='warning'
-                      onClick={(e) => setEditable(true)}
+            <Collapse in={collapse}>
+              <div>
+                <Row className='my-4 smaller-row'>
+                  {/* JUSTIFICATION ADDITIONAL INFO */}
+                  <Col xs={12} lg={3}>
+                    <h6 className={styles.headingLabel}>Additional info:</h6>
+                    <p>
+                      {!details.additionalInfo ? 'none' : details.additionalInfo}
+                    </p>
+                    <h6 className={styles.headingLabel}>Sponsor:</h6>
+                    <p>{details.project.sponsorCompany}</p>
+                  </Col>
+                  {/* REQUESTED BY/APPROVED BY */}
+                  <Col xs={12} lg={4}>
+                    <h6 className={styles.headingLabel}>Requested by:</h6>
+                    <p>{studentThatRequested?.email}</p>
+                    <h6 className={styles.headingLabel}>Approved by:</h6>
+                    <p>{mentorThatApproved?.email}</p>
+                  </Col>
+                  {/* REJECT/EDIT BUTTONS */}
+                  <Col xs={12} lg={5}>
+                    {/* TODO Admins can delete instead of rejecting, shouldn't need to approve */}
+                    {details.Process[0].status == Status.UNDER_REVIEW && (<Button
+                      className={`${styles.cardBtn} ${styles.rejectBtn}`}
+                      variant='success'
+                      style={{ minWidth: '150px', marginRight: '20px' }}
+                      onClick={onAccept}
                     >
-                      Edit
-                    </Button>
-                  )}
-                </Col>
-              </Row>
-              {/* REQUEST ITEMS */}
-              <Row className='my-2'>
-                <Form className={styles.requestDetails}>
-                  <fieldset disabled={!editable}>
-                    <Table responsive striped>
-                      <thead>
-                        <tr>
-                          <th>#</th>
-                          <th>Description</th>
-                          <th>Vendor</th>
-                          <th>URL</th>
-                          <th>Part #</th>
-                          <th>Qty</th>
-                          <th>Unit Price</th>
-                          <th>Total</th>
-                          <th>Order #</th>
-                          <th> </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {items.map((item, itemIndex) => {
-                          return (
-                            <tr key={itemIndex}>
-                              <td width={20}>{itemIndex + 1}</td>
-                              <td>
-                                <Form.Control
-                                  name='description'
-                                  value={item.description}
-                                  onChange={(e) =>
-                                    handleItemChange(
-                                      e as React.ChangeEvent<HTMLInputElement>,
-                                      itemIndex,
-                                    )
-                                  }
-                                />
-                              </td>
-                              <td>
-                                <Form.Control
-                                  name='vendorName'
-                                  value={item.vendorName}
-                                  onChange={(e) =>
-                                    handleItemChange(
-                                      e as React.ChangeEvent<HTMLInputElement>,
-                                      itemIndex,
-                                    )
-                                  }
-                                />
-                              </td>
-                              <td
-                                style={{
-                                  position: 'relative',
-                                  paddingRight: '40px',
-                                }}
-                              >
-                                {editable ? (
+                      Accept
+                    </Button>)}
+                    <Button
+                      className={`${styles.cardBtn} ${styles.rejectBtn}`}
+                      variant='danger'
+                      style={{ minWidth: '150px', marginRight: '20px' }}
+                      onClick={onReject}
+                    >
+                      Reject
+                    </Button>{' '}
+                    {!editable && (
+                      <Button
+                        className={`${styles.editBtn} ${styles.cardBtn}`}
+                        variant='warning'
+                        onClick={(e) => setEditable(true)}
+                      >
+                        Edit
+                      </Button>
+                    )}
+                  </Col>
+                </Row>
+                {/* REQUEST ITEMS */}
+                <Row className='my-2'>
+                  <Form className={styles.requestDetails}>
+                    <fieldset disabled={!editable}>
+                      <Table responsive striped>
+                        <thead>
+                          <tr>
+                            <th>#</th>
+                            <th>Description</th>
+                            <th>Vendor</th>
+                            <th>URL</th>
+                            <th>Part #</th>
+                            <th>Qty</th>
+                            <th>Unit Price</th>
+                            <th>Total</th>
+                            <th>Order #</th>
+                            <th> </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {items.map((item, itemIndex) => {
+                            return (
+                              <tr key={itemIndex}>
+                                <td width={20}>{itemIndex + 1}</td>
+                                <td>
                                   <Form.Control
-                                    name='url'
-                                    value={item.url}
+                                    name='description'
+                                    value={item.description}
                                     onChange={(e) =>
                                       handleItemChange(
                                         e as React.ChangeEvent<HTMLInputElement>,
                                         itemIndex,
                                       )
                                     }
-                                    style={{ paddingLeft: '20px' }}
                                   />
-                                ) : (
-                                  <a
-                                    href={item.url}
-                                    target='_blank'
-                                    rel='noopener noreferrer'
-                                    style={{
-                                      position: 'absolute',
-                                      top: '50%',
-                                      right: '5px',
-                                      transform: 'translateY(-50%)',
-                                      textDecoration: 'none',
-                                    }}
-                                  >
-                                    Open
-                                  </a>
-                                )}
-                              </td>
-                              <td>
-                                <Form.Control
-                                  name='partNumber'
-                                  value={item.partNumber}
-                                  onChange={(e) =>
-                                    handleItemChange(
-                                      e as React.ChangeEvent<HTMLInputElement>,
-                                      itemIndex,
-                                    )
-                                  }
-                                />
-                              </td>
-                              <td width={70}>
-                                <Form.Control
-                                  name='quantity'
-                                  value={item.quantity}
-                                  onChange={(e) =>
-                                    handleItemChange(
-                                      e as React.ChangeEvent<HTMLInputElement>,
-                                      itemIndex,
-                                    )
-                                  }
-                                />
-                              </td>
-                              <td width={90}>
-                                <Form.Control
-                                  name='unitPrice'
-                                  value={item.unitPrice.toString()}
-                                  onChange={(e) =>
-                                    handleItemChange(
-                                      e as React.ChangeEvent<HTMLInputElement>,
-                                      itemIndex,
-                                    )
-                                  }
-                                />
-                              </td>
-                              <td>
-                                <InputGroup>
-                                  <InputGroup.Text>$</InputGroup.Text>
+                                </td>
+                                <td>
                                   <Form.Control
-                                    value={(
-                                      item.quantity * (item.unitPrice as any)
-                                    ).toFixed(4)}
-                                    disabled
+                                    name='vendorName'
+                                    value={item.vendorName}
+                                    onChange={(e) =>
+                                      handleItemChange(
+                                        e as React.ChangeEvent<HTMLInputElement>,
+                                        itemIndex,
+                                      )
+                                    }
                                   />
-                                </InputGroup>
-                              </td>
-                              <td>
-                                <Form.Control disabled />
-                              </td>
-                              <td>
-                                <Button
-                                  className={styles.cardBtn}
-                                  variant='danger'
-                                  onClick={() => handleDeleteItem(itemIndex)}
+                                </td>
+                                <td
+                                  style={{
+                                    position: 'relative',
+                                    paddingRight: '40px',
+                                  }}
                                 >
-                                  Delete
-                                </Button>
-                              </td>
-                            </tr>
-                          )
-                        })}
-                        {newItems.map((item, itemIndex) => {
-                          return (
-                            <tr key={itemIndex + items.length}>
-                              <td width={20}>{itemIndex + items.length + 1}</td>
-                              <td>
-                                <Form.Control
-                                  name='description'
-                                  value={item.description}
-                                  onChange={(e) =>
-                                    handleItemChange(
-                                      e as React.ChangeEvent<HTMLInputElement>,
-                                      itemIndex + items.length,
-                                    )
-                                  }
-                                />
-                              </td>
-                              <td>
-                                <Form.Control
-                                  name='vendorName'
-                                  value={item.vendorName}
-                                  onChange={(e) =>
-                                    handleItemChange(
-                                      e as React.ChangeEvent<HTMLInputElement>,
-                                      itemIndex + items.length,
-                                    )
-                                  }
-                                />
-                              </td>
-                              <td
-                                style={{
-                                  position: 'relative',
-                                  paddingRight: '40px',
-                                }}
-                              >
-                                {editable ? (
+                                  {editable ? (
+                                    <Form.Control
+                                      name='url'
+                                      value={item.url}
+                                      onChange={(e) =>
+                                        handleItemChange(
+                                          e as React.ChangeEvent<HTMLInputElement>,
+                                          itemIndex,
+                                        )
+                                      }
+                                      style={{ paddingLeft: '20px' }}
+                                    />
+                                  ) : (
+                                    <a
+                                      href={item.url}
+                                      target='_blank'
+                                      rel='noopener noreferrer'
+                                      style={{
+                                        position: 'absolute',
+                                        top: '50%',
+                                        right: '5px',
+                                        transform: 'translateY(-50%)',
+                                        textDecoration: 'none',
+                                      }}
+                                    >
+                                      Open
+                                    </a>
+                                  )}
+                                </td>
+                                <td>
                                   <Form.Control
-                                    name='url'
-                                    value={item.url}
+                                    name='partNumber'
+                                    value={item.partNumber}
+                                    onChange={(e) =>
+                                      handleItemChange(
+                                        e as React.ChangeEvent<HTMLInputElement>,
+                                        itemIndex,
+                                      )
+                                    }
+                                  />
+                                </td>
+                                <td width={70}>
+                                  <Form.Control
+                                    name='quantity'
+                                    value={item.quantity}
+                                    onChange={(e) =>
+                                      handleItemChange(
+                                        e as React.ChangeEvent<HTMLInputElement>,
+                                        itemIndex,
+                                      )
+                                    }
+                                  />
+                                </td>
+                                <td width={90}>
+                                  <Form.Control
+                                    name='unitPrice'
+                                    value={item.unitPrice.toString()}
+                                    onChange={(e) =>
+                                      handleItemChange(
+                                        e as React.ChangeEvent<HTMLInputElement>,
+                                        itemIndex,
+                                      )
+                                    }
+                                  />
+                                </td>
+                                <td>
+                                  <InputGroup>
+                                    <InputGroup.Text>$</InputGroup.Text>
+                                    <Form.Control
+                                      value={(
+                                        item.quantity * (item.unitPrice as any)
+                                      ).toFixed(2)}
+                                      disabled
+                                    />
+                                  </InputGroup>
+                                </td>
+                                <td>
+                                  <Form.Control disabled />
+                                </td>
+                                <td>
+                                  <Button
+                                    className={styles.cardBtn}
+                                    variant='danger'
+                                    onClick={() => handleDeleteItem(itemIndex)}
+                                  >
+                                    Delete
+                                  </Button>
+                                </td>
+                              </tr>
+                            )
+                          })}
+                          {newItems.map((item, itemIndex) => {
+                            return (
+                              <tr key={itemIndex + items.length}>
+                                <td width={20}>{itemIndex + items.length + 1}</td>
+                                <td>
+                                  <Form.Control
+                                    name='description'
+                                    value={item.description}
                                     onChange={(e) =>
                                       handleItemChange(
                                         e as React.ChangeEvent<HTMLInputElement>,
                                         itemIndex + items.length,
                                       )
                                     }
-                                    style={{ paddingLeft: '20px' }}
                                   />
-                                ) : (
-                                  <a
-                                    href={item.url}
-                                    target='_blank'
-                                    rel='noopener noreferrer'
-                                    style={{
-                                      position: 'absolute',
-                                      top: '50%',
-                                      right: '5px',
-                                      transform: 'translateY(-50%)',
-                                      textDecoration: 'none',
-                                    }}
-                                  >
-                                    Open
-                                  </a>
-                                )}
-                              </td>
-                              <td>
-                                <Form.Control
-                                  name='partNumber'
-                                  value={item.partNumber}
-                                  onChange={(e) =>
-                                    handleItemChange(
-                                      e as React.ChangeEvent<HTMLInputElement>,
-                                      itemIndex + items.length,
-                                    )
-                                  }
-                                />
-                              </td>
-                              <td width={70}>
-                                <Form.Control
-                                  name='quantity'
-                                  value={item.quantity}
-                                  onChange={(e) =>
-                                    handleItemChange(
-                                      e as React.ChangeEvent<HTMLInputElement>,
-                                      itemIndex + items.length,
-                                    )
-                                  }
-                                />
-                              </td>
-                              <td width={90}>
-                                <Form.Control
-                                  name='unitPrice'
-                                  value={item.unitPrice.toString()}
-                                  onChange={(e) =>
-                                    handleItemChange(
-                                      e as React.ChangeEvent<HTMLInputElement>,
-                                      itemIndex + items.length,
-                                    )
-                                  }
-                                />
-                              </td>
-                              <td>
-                                <InputGroup>
-                                  <InputGroup.Text>$</InputGroup.Text>
+                                </td>
+                                <td>
                                   <Form.Control
-                                    value={(
-                                      item.quantity * Number(item.unitPrice)
-                                    ).toFixed(4)}
-                                    disabled
+                                    name='vendorName'
+                                    value={item.vendorName}
+                                    onChange={(e) =>
+                                      handleItemChange(
+                                        e as React.ChangeEvent<HTMLInputElement>,
+                                        itemIndex + items.length,
+                                      )
+                                    }
                                   />
-                                </InputGroup>
-                              </td>
-                              <td>
-                                <Form.Control disabled />
-                              </td>
-                              <td>
-                                <Button
-                                  className={styles.cardBtn}
-                                  variant='danger'
-                                  onClick={() =>
-                                    handleDeleteItem(itemIndex + items.length)
-                                  }
+                                </td>
+                                <td
+                                  style={{
+                                    position: 'relative',
+                                    paddingRight: '40px',
+                                  }}
                                 >
-                                  Delete
-                                </Button>
-                              </td>
-                            </tr>
-                          )
-                        })}
-                      </tbody>
-                    </Table>
-                    <Row>
-                      <Col xs={12} className='d-flex justify-content-end'>
-                        {editable && (
-                          <Button
-                            className={styles.cardBtn}
-                            variant='success'
-                            onClick={handleAddItem}
-                          >
-                            Add Item
-                          </Button>
-                        )}
-                      </Col>
-                    </Row>
-                    {/* ORDERS (based on number of vendors) */}
-                    {Boolean(orders.length > 0) && (
-                      <Table responsive striped>
-                        <thead>
-                          <tr>
-                            <th>Order #</th>
-                            <th>Tracking Info</th>
-                            <th>Order Details</th>
-                            <th>Shipping Cost</th>
-                            <th>Date Ordered</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {orders.map((order, orderIndex) => {
-                            return (
-                              <tr key={orderIndex}>
+                                  {editable ? (
+                                    <Form.Control
+                                      name='url'
+                                      value={item.url}
+                                      onChange={(e) =>
+                                        handleItemChange(
+                                          e as React.ChangeEvent<HTMLInputElement>,
+                                          itemIndex + items.length,
+                                        )
+                                      }
+                                      style={{ paddingLeft: '20px' }}
+                                    />
+                                  ) : (
+                                    <a
+                                      href={item.url}
+                                      target='_blank'
+                                      rel='noopener noreferrer'
+                                      style={{
+                                        position: 'absolute',
+                                        top: '50%',
+                                        right: '5px',
+                                        transform: 'translateY(-50%)',
+                                        textDecoration: 'none',
+                                      }}
+                                    >
+                                      Open
+                                    </a>
+                                  )}
+                                </td>
                                 <td>
                                   <Form.Control
-                                    name='orderNumber'
-                                    value={order.orderNumber}
+                                    name='partNumber'
+                                    value={item.partNumber}
                                     onChange={(e) =>
-                                      handleOrderChange(
+                                      handleItemChange(
                                         e as React.ChangeEvent<HTMLInputElement>,
-                                        orderIndex,
+                                        itemIndex + items.length,
+                                      )
+                                    }
+                                  />
+                                </td>
+                                <td width={70}>
+                                  <Form.Control
+                                    name='quantity'
+                                    value={item.quantity}
+                                    onChange={(e) =>
+                                      handleItemChange(
+                                        e as React.ChangeEvent<HTMLInputElement>,
+                                        itemIndex + items.length,
+                                      )
+                                    }
+                                  />
+                                </td>
+                                <td width={90}>
+                                  <Form.Control
+                                    name='unitPrice'
+                                    value={item.unitPrice.toString()}
+                                    onChange={(e) =>
+                                      handleItemChange(
+                                        e as React.ChangeEvent<HTMLInputElement>,
+                                        itemIndex + items.length,
                                       )
                                     }
                                   />
                                 </td>
                                 <td>
-                                  <Form.Control
-                                    name='trackingInfo'
-                                    value={order.trackingInfo}
-                                    onChange={(e) =>
-                                      handleOrderChange(
-                                        e as React.ChangeEvent<HTMLInputElement>,
-                                        orderIndex,
-                                      )
-                                    }
-                                  />
+                                  <InputGroup>
+                                    <InputGroup.Text>$</InputGroup.Text>
+                                    <Form.Control
+                                      value={(
+                                        item.quantity * Number(item.unitPrice)
+                                      ).toFixed(2)}
+                                      disabled
+                                    />
+                                  </InputGroup>
                                 </td>
                                 <td>
-                                  <Form.Control
-                                    name='orderDetails'
-                                    value={order.orderDetails}
-                                    onChange={(e) =>
-                                      handleOrderChange(
-                                        e as React.ChangeEvent<HTMLInputElement>,
-                                        orderIndex,
-                                      )
-                                    }
-                                  />
-                                </td>
-                                <td>
-                                  <Form.Control
-                                    name='shippingCost'
-                                    value={Number(order.shippingCost)}
-                                    onChange={(e) =>
-                                      handleOrderChange(
-                                        e as React.ChangeEvent<HTMLInputElement>,
-                                        orderIndex,
-                                      )
-                                    }
-                                  />
-                                </td>
-                                <td>
-                                  <Form.Control
-                                    name='dateOrdered'
-                                    type='date'
-                                    value={
-                                      order.dateOrdered
-                                        ? new Date(order.dateOrdered)
-                                            .toISOString()
-                                            .split('T')[0]
-                                        : ''
-                                    }
-                                    onChange={(e) =>
-                                      handleOrderChange(
-                                        e as React.ChangeEvent<HTMLInputElement>,
-                                        orderIndex,
-                                      )
-                                    }
-                                  />
+                                  <Form.Control disabled />
                                 </td>
                                 <td>
                                   <Button
                                     className={styles.cardBtn}
                                     variant='danger'
                                     onClick={() =>
-                                      handleDeleteOrder(
-                                        orderIndex,
-                                        parseInt(order.orderNumber),
-                                      )
+                                      handleDeleteItem(itemIndex + items.length)
                                     }
                                   >
                                     Delete
@@ -965,36 +853,152 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
                           })}
                         </tbody>
                       </Table>
-                    )}
-                  </fieldset>
-                  <Row>
-                    <Col xs={12} className='d-flex justify-content-end'>
-                      {editable && (
-                        <Row>
-                          <Col>
+                      <Row>
+                        <Col xs={12} className='d-flex justify-content-end'>
+                          {editable && (
                             <Button
                               className={styles.cardBtn}
                               variant='success'
-                              onClick={handleAddOrders}
+                              onClick={handleAddItem}
                             >
-                              Add Order
+                              Add Item
                             </Button>
-                            &nbsp;
-                            <Button
-                              className={styles.cardBtn}
-                              variant='success'
-                              onClick={(e) => handleSave()}
-                            >
-                              Save
-                            </Button>
-                          </Col>
-                        </Row>
+                          )}
+                        </Col>
+                      </Row>
+                      {/* ORDERS (based on number of vendors) */}
+                      {Boolean(orders.length > 0) && (
+                        <Table responsive striped>
+                          <thead>
+                            <tr>
+                              <th>Order #</th>
+                              <th>Tracking Info</th>
+                              <th>Order Details</th>
+                              <th>Shipping Cost</th>
+                              <th>Date Ordered</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {orders.map((order, orderIndex) => {
+                              return (
+                                <tr key={orderIndex}>
+                                  <td>
+                                    <Form.Control
+                                      name='orderNumber'
+                                      value={order.orderNumber}
+                                      onChange={(e) =>
+                                        handleOrderChange(
+                                          e as React.ChangeEvent<HTMLInputElement>,
+                                          orderIndex,
+                                        )
+                                      }
+                                    />
+                                  </td>
+                                  <td>
+                                    <Form.Control
+                                      name='trackingInfo'
+                                      value={order.trackingInfo}
+                                      onChange={(e) =>
+                                        handleOrderChange(
+                                          e as React.ChangeEvent<HTMLInputElement>,
+                                          orderIndex,
+                                        )
+                                      }
+                                    />
+                                  </td>
+                                  <td>
+                                    <Form.Control
+                                      name='orderDetails'
+                                      value={order.orderDetails}
+                                      onChange={(e) =>
+                                        handleOrderChange(
+                                          e as React.ChangeEvent<HTMLInputElement>,
+                                          orderIndex,
+                                        )
+                                      }
+                                    />
+                                  </td>
+                                  <td>
+                                    <Form.Control
+                                      name='shippingCost'
+                                      value={Number(order.shippingCost)}
+                                      onChange={(e) =>
+                                        handleOrderChange(
+                                          e as React.ChangeEvent<HTMLInputElement>,
+                                          orderIndex,
+                                        )
+                                      }
+                                    />
+                                  </td>
+                                  <td>
+                                    <Form.Control
+                                      name='dateOrdered'
+                                      type='date'
+                                      value={
+                                        order.dateOrdered
+                                          ? new Date(order.dateOrdered)
+                                              .toISOString()
+                                              .split('T')[0]
+                                          : ''
+                                      }
+                                      onChange={(e) =>
+                                        handleOrderChange(
+                                          e as React.ChangeEvent<HTMLInputElement>,
+                                          orderIndex,
+                                        )
+                                      }
+                                    />
+                                  </td>
+                                  <td>
+                                    <Button
+                                      className={styles.cardBtn}
+                                      variant='danger'
+                                      onClick={() =>
+                                        handleDeleteOrder(
+                                          orderIndex,
+                                          parseInt(order.orderNumber),
+                                        )
+                                      }
+                                    >
+                                      Delete
+                                    </Button>
+                                  </td>
+                                </tr>
+                              )
+                            })}
+                          </tbody>
+                        </Table>
                       )}
-                    </Col>
-                  </Row>
-                </Form>
-              </Row>
-            </div>
+                    </fieldset>
+                    <Row>
+                      <Col xs={12} className='d-flex justify-content-end'>
+                        {editable && (
+                          <Row>
+                            <Col>
+                              <Button
+                                className={styles.cardBtn}
+                                variant='success'
+                                onClick={handleAddOrders}
+                              >
+                                Add Order
+                              </Button>
+                              &nbsp;
+                              <Button
+                                className={styles.cardBtn}
+                                variant='success'
+                                onClick={(e) => handleSave()}
+                              >
+                                Save
+                              </Button>
+                            </Col>
+                          </Row>
+                        )}
+                      </Col>
+                    </Row>
+                  </Form>
+                </Row>
+              </div>
+            </Collapse>
           </Card.Body>
         </Card>
       </Col>
