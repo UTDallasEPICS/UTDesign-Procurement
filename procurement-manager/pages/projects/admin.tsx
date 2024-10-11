@@ -76,7 +76,8 @@ export default function Admin({
 
   // Opens all the cards by default
   useEffect(() => {
-    setIsOpen(projects.map(() => true))
+    // setIsOpen(projects.map(() => true))
+    getAdmin()
   }, [])
 
   // Client-side data fetching whenever we need to refetch the data and rerender the page
@@ -138,7 +139,7 @@ export default function Admin({
                 // toggleProjectCollapse(projIndex)
                 toggleCards(projIndex)
               }}
-              isOpen={true}
+              isOpen={isOpen[projIndex]}
             />
             <AdminProjectCard
               projectIndex={projIndex}
