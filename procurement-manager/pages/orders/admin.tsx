@@ -165,10 +165,11 @@ export default function Admin({
    * BUGGY
    * @param requestID 
    */
-  const handleAccept = async (requestID: number) => {
+  const handleAccept = async (requestID: number, processID: number) => {
     try {
       const response = await axios.post('/api/request/accept', {
         requestID,
+        processID,
       });
       if (response.status === 200) {
         alert('Request Accepted');
@@ -256,7 +257,7 @@ export default function Admin({
   //This function particulary calls the project model to get the list of the projects
   const fetchProjects = async () => {
     try {
-      const response = await axios.get('/api/orders/get/requestProjects.ts');
+      const response = await axios.get('/api/project');
       const data1 = response.data;
       console.log(data1); // Do something with the fetched data
     } catch (error) {
@@ -267,7 +268,7 @@ export default function Admin({
   //This function particulary calls the project requestItem to get the list of the vendor names
   const fetchVendors = async () => {
     try {
-      const response = await axios.get('/api/orders/get/requestVendors.ts');
+      const response = await axios.get('/api/vendor/get');
       const data2 = response.data;
       console.log(data2); // Do something with the fetched data
     } catch (error) {
@@ -370,7 +371,7 @@ export default function Admin({
                   project={project}
                   details={request}
                   onReject={() => handleReject(request.requestID)}
-                  onAccept={() => handleAccept(request.requestID)}
+                  onAccept={() => handleAccept(request.requestID, request.Process[0].processID)}
                   onSave={() => getAdmin()}
                   collapsed={isOpen[projIndex]}
                 />
