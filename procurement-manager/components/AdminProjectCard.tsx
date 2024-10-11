@@ -706,7 +706,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
                       <Col xs={12} md={2}>
                         <h6 className={styles.headingLabel}> Order Subtotal</h6>
                         <p>
-                        ${calculateTotalCost(reqIndex).toFixed(4)}
+                        ${calculateTotalCost(reqIndex).toFixed(2)}
                         </p>
                         </Col>
                       </Row>
@@ -826,7 +826,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
                                         <Form.Control
                                           value={(
                                             item.quantity * (item.unitPrice as any)
-                                          ).toFixed(4)}
+                                          ).toFixed(2)}
                                           disabled
                                         />
                                       </InputGroup>

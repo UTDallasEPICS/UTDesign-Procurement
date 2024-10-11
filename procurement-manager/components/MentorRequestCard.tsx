@@ -108,7 +108,7 @@ const MentorRequestCard: React.FC<RequestCardProps> = ({
                     (total, item) =>
                       total + item.quantity * (item.unitPrice as any),
                     0
-                  ).toFixed(4)}
+                  ).toFixed(2)}
                 </p>
               </Col>
 
@@ -214,7 +214,7 @@ const MentorRequestCard: React.FC<RequestCardProps> = ({
                             <td>
                               {(
                                 item.quantity * (item.unitPrice as any)
-                              ).toFixed(4)}
+                              ).toFixed(2)}
                             </td>
                             <td></td>
                             <td></td>

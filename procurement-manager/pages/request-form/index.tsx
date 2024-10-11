@@ -399,7 +399,7 @@ const StudentRequest = ({
           </p>
           <p>
             <span>
-              ${new Prisma.Decimal(remainingBeforeItem).toFixed(4).toString()}
+              ${new Prisma.Decimal(remainingBeforeItem).toFixed(2).toString()}
             </span>
           </p>
         </Col>
@@ -408,7 +408,7 @@ const StudentRequest = ({
             <strong>Remaining: </strong>
           </p>
           <p>
-            <span>${remainingAfterItem.toFixed(4).toString()}</span>
+            <span>${remainingAfterItem.toFixed(2).toString()}</span>
           </p>
         </Col>
       </Row>
