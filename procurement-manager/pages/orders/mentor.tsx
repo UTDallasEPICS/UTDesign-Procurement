@@ -241,7 +241,7 @@ export default function Mentor({ session, user }: MentorProps) {
             )}
             
             {/* RENDERS THE REIMBURSEMENTS ASSOCIATED TO THE PROJECT THE MENTOR IS IN */}
-            {projectReimbursements[projIndex].length > 0 ? (
+            {projectReimbursements[projIndex]?.length > 0 ? (
               projectReimbursements[projIndex].map((reimbursement, reimIndex) => {
                 return (
                   //console.log('projectReimbursements:: ', projectReimbursements),

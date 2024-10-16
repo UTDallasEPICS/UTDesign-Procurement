@@ -28,7 +28,7 @@ export default async function handler(
           userID: user.userID,
           endDate: null // if no end date then user is still in projects, so current projects
       }
-  })
+    })
 
     // this will be the array of reimbursement Forms that will be sent
     let reimbursementsOfMultipleProjects: ReimbursementDetails[][] = []
