@@ -34,11 +34,11 @@ export default async function handler(
     const [user, request, reimbursement] = await Promise.all([
       await prisma.user.findUnique({ where: { netID: netID } }),
       await prisma.request.findUnique({
-        where: { requestID: requestID },
+        where: { requestID },
         include: { Process: true },
       }),
       await prisma.reimbursement.findUnique({
-        where: { reimbursementID: reimbursementID },
+        where: { reimbursementID },
         include: { Process: true }
       })
     ])
