@@ -38,11 +38,7 @@ export default function Mentor({ session, user }: MentorProps) {
   const [showRejectModal, setShowRejectModal] = useState(false)
 
   // state to set the request number for the reject modal to show
-  const [selectedRequestID, setSelectedRequestID] = useState<number | null>(
-    null
-  )
-
-  const [selectedReimbursementID, setSelectedReimbursementID] = useState<number | null>(
+  const [selectedProcessID, setSelectedProcessID] = useState<number | null>(
     null
   )
 
@@ -118,9 +114,8 @@ export default function Mentor({ session, user }: MentorProps) {
    * This function is called after the mentor clicks the reject button on a request.
    * @param requestID - The requestID of the request being rejected.
    */
-  const handleReject = (ReqID: number | null, ReimID: number | null) => {
-    setSelectedRequestID(ReqID)
-    setSelectedReimbursementID(ReimID)
+  const handleReject = (processID: number) => {
+    setSelectedProcessID(processID)
     setShowRejectModal(true)
   }
 
@@ -133,8 +128,7 @@ export default function Mentor({ session, user }: MentorProps) {
     try {
       const response = await axios.post('/api/process/update', {
         netID: user.netID,
-        requestID: selectedRequestID,
-        reimbursementID: selectedReimbursementID,
+        processID: selectedProcessID,
         comment: reason,
         status: Status.REJECTED,
       })
@@ -156,33 +150,11 @@ export default function Mentor({ session, user }: MentorProps) {
    * This function is called when the mentor clicks the approve button on a request.
    * @param requestID - The requestID of the request being approved.
    */
-  async function handleApproveRequest(requestID: number) {
+  async function handleApprove(processID: number) {
     try {
       const res = await axios.post('/api/process/update', {
         netID: user.netID,
-        requestID: requestID,
-        comment: 'Approved',
-        status: Status.APPROVED,
-      })
-
-      // Updates the page if the request was successfully approved so the approved request should not be seen
-      if (res.status === 200) {
-        getMentorReimbursements()
-        getMentorRequests()
-      }
-    } catch (error) {
-      if (error instanceof Error) console.error(error.message)
-      else if (axios.isAxiosError(error))
-        console.error(error.message, error.status)
-      else console.error(error)
-    }
-  }
-
-  async function handleApproveReimbursement(reimbursementID: number) {
-    try {
-      const res = await axios.post('/api/process/update', {
-        netID: user.netID,
-        reimbursementID: reimbursementID,
+        processID: processID,
         comment: 'Approved',
         status: Status.APPROVED,
       })
@@ -225,14 +197,14 @@ export default function Mentor({ session, user }: MentorProps) {
             />
             
             {/* RENDERS THE REQUESTS ASSOCIATED TO THE PROJECT THE MENTOR IS IN */}
-            {projectRequests[projIndex].length > 0 ? (
+            {projectRequests[projIndex]?.length > 0 ? (
               projectRequests[projIndex].map((request, reqIndex) => (
                 <MentorRequestCard
                   details={request}
                   key={reqIndex}
                   {...request}
-                  onReject={() => handleReject(request.requestID, null)}
-                  onApprove={() => handleApproveRequest(request.requestID)}
+                  onReject={() => handleReject(request.Process[0].processID)}
+                  onApprove={() => handleApprove(request.Process[0].processID)}
                   collapsed={isOpen[projIndex]}
                 />
               ))
@@ -249,8 +221,8 @@ export default function Mentor({ session, user }: MentorProps) {
                     details={reimbursement}
                     key={reimIndex}
                     {...reimbursement}
-                    onReject={() => handleReject(null, reimbursement.reimbursementID)}
-                    onApprove={() => handleApproveReimbursement(reimbursement.reimbursementID)}
+                    onReject={() => handleReject(reimbursement.Process[0].processID)}
+                    onApprove={() => handleApprove(reimbursement.Process[0].processID)}
                     collapsed={isOpen[projIndex]}
                   />
                 )

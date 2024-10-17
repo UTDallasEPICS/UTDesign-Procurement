@@ -126,7 +126,7 @@ export default function Student({ session, user }: StudentProps) {
             />
                           
             {
-            projectRequests[projIndex].length > 0 ? (
+            projectRequests[projIndex]?.length > 0 ? (
               projectRequests[projIndex].map((request, reqIndex) => {
                 return (
                   //console.log('projectRequests:: ', projectRequests),
@@ -142,7 +142,7 @@ export default function Student({ session, user }: StudentProps) {
             )}
 
             {
-            projectReimbursements[projIndex].length > 0 ? (
+            projectReimbursements[projIndex]?.length > 0 ? (
               projectReimbursements[projIndex].map((reimbursement, reimIndex) => {
                 return (
                   //console.log('projectReimbursements:: ', projectReimbursements),
