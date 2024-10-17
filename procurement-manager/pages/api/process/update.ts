@@ -28,6 +28,8 @@ export default async function handler(
     //post method as we are getting info
     const { netID, requestID, comment, status } = req.body
 
+    // TODO: proper auth instead of passing netID
+
     // Finds the user and request based on the netID and requestID provided in the request body
     const [user, request] = await Promise.all([
       await prisma.user.findUnique({ where: { netID: netID } }),
@@ -124,7 +126,7 @@ export default async function handler(
       })
     }
     //user.roleID is student, so student can reject the status
-    else if (user.roleID === 3) {
+    else if (user.roleID === 3 && status == Status.REJECTED) {
       const updatedProcess = await prisma.process.update({
         where: { processID: request.Process[0].processID },
         data: {
@@ -134,6 +136,12 @@ export default async function handler(
       res.status(200).json({
         message: `Process ${request.Process[0].processID} was updated successfully`,
         update: updatedProcess,
+      })
+    }
+    // student tried to accept
+    else {
+      res.status(403).json({
+        message: 'No permission to update this process'
       })
     }
   } catch (error) {
