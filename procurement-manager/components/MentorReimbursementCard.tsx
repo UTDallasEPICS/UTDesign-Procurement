@@ -89,7 +89,6 @@ const MentorReimbursementCard: React.FC<ReimbursementCardProps> = ({
                 </p>
               </Col>
 
-              
               {/* ORDER SUBTOTAL */}
               <Col xs={6} lg={2}>
                 <h6 className={styles.headingLabel}>Order Subtotal</h6>
@@ -97,7 +96,7 @@ const MentorReimbursementCard: React.FC<ReimbursementCardProps> = ({
                   $
                   {details.ReimbursementItem.reduce(
                     (total, item) =>
-                        total + 1 * (item.receiptTotal as any),
+                      total + 1 * (item.receiptTotal as any),
                     0
                   ).toFixed(2)}
                 </p>

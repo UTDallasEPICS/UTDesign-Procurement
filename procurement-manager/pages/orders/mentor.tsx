@@ -80,8 +80,6 @@ export default function Mentor({ session, user }: MentorProps) {
       nextResponse.data.reimbursements
     ])
     setProjectReimbursements(reimbursementsOfMultipleProjects)
-    console.log('reimbursement (Student)', reimbursementsOfMultipleProjects)
-    console.log('setReimbursement (Student)', projectReimbursements)
   }
 
   /**
@@ -209,14 +207,13 @@ export default function Mentor({ session, user }: MentorProps) {
                 />
               ))
             ) : (
-              <p className='my-4'>There are no requests in this project.</p>
+              <p className='my-4'>There are no procurement requests in this project.</p>
             )}
             
             {/* RENDERS THE REIMBURSEMENTS ASSOCIATED TO THE PROJECT THE MENTOR IS IN */}
             {projectReimbursements[projIndex]?.length > 0 ? (
               projectReimbursements[projIndex].map((reimbursement, reimIndex) => {
                 return (
-                  //console.log('projectReimbursements:: ', projectReimbursements),
                   <MentorReimburseCard
                     details={reimbursement}
                     key={reimIndex}

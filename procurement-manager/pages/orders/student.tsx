@@ -138,7 +138,7 @@ export default function Student({ session, user }: StudentProps) {
                 )
               })
             ) : (
-              <p className='my-4'>There are no requests in this project.</p>
+              <p className='my-4'>There are no procurement requests in this project.</p>
             )}
 
             {
