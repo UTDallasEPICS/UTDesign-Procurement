@@ -52,7 +52,7 @@ export default function admin({
     filter: true,
   })
 
-  const onCellValueChanged = (//update the database in this function call
+  const onCellValueChanged = (
     event: CellValueChangedEvent
   ) => {
     if (event.rowIndex === null) return
