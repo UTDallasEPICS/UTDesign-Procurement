@@ -3,7 +3,7 @@
  */
 
 import React, { useEffect, useState } from 'react'
-import { Button, Col, Nav, Row } from 'react-bootstrap'
+import { Button, Col, Modal, Nav, Row} from 'react-bootstrap'
 import { prisma } from '@/db'
 import { Project, Request, User } from '@prisma/client'
 import Link from 'next/link'
@@ -13,6 +13,8 @@ import { AgGridReact } from 'ag-grid-react'
 import 'ag-grid-community/styles/ag-grid.css' // Core CSS
 import 'ag-grid-community/styles/ag-theme-quartz.css' // Theme
 import { CellValueChangedEvent } from 'ag-grid-community'
+import AddOptionModal from '@/components/AdminAddButtonModal';
+
 
 export async function getServerSideProps() {
   const users = await prisma.user.findMany()
@@ -47,11 +49,14 @@ export default function admin({
 }: AdminProps): JSX.Element {
   const [tableType, setTableType] = useState<string>('user') // either user or project
   const [colData, setColData] = useState<any>([])
+  const [showModal, setShowModal] = useState(false);
+
   const [defaultColDef, setDefaultColDef] = useState<any>({
     editable: true,
     filter: true,
   })
 
+  
   const onCellValueChanged = (
     event: CellValueChangedEvent
   ) => {
@@ -90,6 +95,8 @@ export default function admin({
     }
   }, [tableType])
 
+  
+
   return (
     <>
       <Head>
@@ -125,10 +132,20 @@ export default function admin({
 
             <div>
               {/* TODO: Finish add and delete functionality for Admins */}
-              <Button variant='success'>Add</Button>
-              <Button variant='danger' className='mx-2'>
-                Delete
-              </Button>
+              <Button variant="success" onClick={() => setShowModal(true)}>Add</Button>  
+                <Modal show={showModal} onHide={() => setShowModal(false)}>
+                  <Modal.Header closeButton>
+                    <Modal.Title>Select Add Option</Modal.Title>
+                  </Modal.Header>
+                  <Modal.Body>
+                    <p>What would you like to add?</p>
+                    {/* <Button variant="secondary" className="mx-2" onClick={onAddUser}>Add User</Button> */}
+                    {/* <Button variant="primary" onClick={onAddProject}>Add Project</Button> */}
+                  </Modal.Body>
+                </Modal> 
+              
+              <Button variant="danger" className="mx-2">Delete</Button>           
+              
               {/* Upload Button */}
               <Link href={'/database-updates/upload'}>
                 <Button>Upload Files</Button>
@@ -172,6 +189,8 @@ export default function admin({
           </div>
         </Col>
       </Row>
+      
     </>
   )
 }
+
