@@ -3,7 +3,7 @@
  */
 
 import React, { useEffect, useState } from 'react'
-import { Button, Col, Modal, Nav, Row} from 'react-bootstrap'
+import { Button, Col, Modal, Nav, Row, Form} from 'react-bootstrap'
 import { prisma } from '@/db'
 import { Project, Request, User } from '@prisma/client'
 import Link from 'next/link'
@@ -50,6 +50,10 @@ export default function admin({
   const [tableType, setTableType] = useState<string>('user') // either user or project
   const [colData, setColData] = useState<any>([])
   const [showModal, setShowModal] = useState(false);
+  const [showRejectionReason, setShowRejectionReason] = useState(false);
+  const handleAddUserClick = () => {
+    setShowRejectionReason(true);
+  };
 
   const [defaultColDef, setDefaultColDef] = useState<any>({
     editable: true,
@@ -139,8 +143,16 @@ export default function admin({
                   </Modal.Header>
                   <Modal.Body>
                     <p>What would you like to add?</p>
-                    {/* <Button variant="secondary" className="mx-2" onClick={onAddUser}>Add User</Button> */}
-                    {/* <Button variant="primary" onClick={onAddProject}>Add Project</Button> */}
+                    {<Button variant="secondary" className="mx-2" onClick={handleAddUserClick}>Add User</Button>}
+                    {showRejectionReason && (
+                    <Form>
+                      <Form.Group controlId="rejectionReason">
+                        <Form.Label>Reason for rejection:</Form.Label>
+                        <Form.Control as="textarea" rows={1} />
+                      </Form.Group>
+                    </Form>
+                    )}
+                    {<Button variant="primary">Add Project</Button>}
                   </Modal.Body>
                 </Modal> 
               

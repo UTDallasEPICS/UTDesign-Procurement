@@ -18,7 +18,7 @@ export default async function handler(
   `findMany` method. If the request is successful, it sends a JSON response with the user data and a
   status code of 200 (indicating that the request was successful). If there is an error, it sends a
   JSON response with an error message and a status code of 500 (indicating that there was a server
-  error). */
+  error). */  
   if (req.method === 'GET') {
     try {
       const users = await prisma.user.findMany()

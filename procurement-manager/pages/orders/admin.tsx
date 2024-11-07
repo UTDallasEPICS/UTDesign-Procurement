@@ -384,7 +384,7 @@ export default function Admin({
         <Modal.Header closeButton>
           <Modal.Title>Reason for Rejection</Modal.Title>
         </Modal.Header>
-        <Modal.Body>
+        <Modal.Body> 
           <Form.Control
             as="textarea"
             rows={3}
