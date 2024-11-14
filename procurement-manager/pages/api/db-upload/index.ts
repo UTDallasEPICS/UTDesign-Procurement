@@ -27,6 +27,7 @@ import {
   FileDataErrorWithName,
 } from '@/lib/types'
 import { sendEmail } from '@/lib/emailService'
+import { validateEmailAndReturnNetID } from '@/lib/netid'
 
 // Needed for XLSX to work with the filesystem
 XLSX.set_fs(fs)
@@ -186,13 +187,13 @@ async function analyzeFile(
       for (let i = 0; i < data.length; i++) {
         if (data[i]['Email'] && data[i]['Project Number']) {
           fileType = FILE_TYPE.STUDENT
-          continue
+          break
         } else if (data[i]['Faculty Email']) {
           fileType = FILE_TYPE.NON_STUDENT
-          continue
+          break
         } else if (data[i]['Project Number'] && data[i]['Title']) {
           fileType = FILE_TYPE.PROJECT
-          continue
+          break
         }
       }
 
@@ -386,25 +387,6 @@ async function handleStudentFile(data: StudentFileData[]) {
 }
 
 /**
- * This function takes the email of the non-student and validates that the netID and the address
- * @param nonStudent
- * @returns NetID of the non-student
- */
-function validateEmailAndReturn(nonStudent: NonStudentFileData) {
-  const netIDFormat = /^[a-zA-Z]{3}\d{6}$/
-  const netID = nonStudent['Faculty Email'].toLowerCase().split('@')[0]
-  const emailOrg = nonStudent['Faculty Email'].toLowerCase().split('@')[1]
-  if (emailOrg !== 'utdallas.edu')
-    throw new Error('Invalid email. Non-students must have a UTD email address')
-  if (!netIDFormat.test(netID))
-    throw new Error(
-      'Invalid netID found from email, should be in the format abc123456',
-    )
-
-  return netID
-}
-
-/**
  * Handles the non-student file by iterating over the rows of the non-student file
  * and updating the database accordingly
  * @param data
@@ -416,19 +398,20 @@ async function handleNonStudentFile(data: NonStudentFileData[]) {
   for (const nonStudent of data) {
     try {
       // First check if the non-student is already in the database
+      const nonStudentEmail = nonStudent['Faculty Email']
       const exists = await prisma.user.findUnique({
         where: {
-          email: nonStudent['Faculty Email'],
+          email: nonStudentEmail,
         },
       })
 
       if (exists) {
         // First validate email and netID
-        const netID = validateEmailAndReturn(nonStudent)
+        const netID = validateEmailAndReturnNetID(nonStudentEmail, false)
 
         const modify = await prisma.user.update({
           where: {
-            email: nonStudent['Faculty Email'],
+            email: nonStudentEmail,
           },
           data: {
             firstName: nonStudent['First Name'],
@@ -440,14 +423,14 @@ async function handleNonStudentFile(data: NonStudentFileData[]) {
       // If the non-student does not exist, create a new non-student
       else {
         // First validate email and netID
-        const netID = validateEmailAndReturn(nonStudent)
+        const netID = validateEmailAndReturnNetID(nonStudentEmail, false)
 
         // TODO: Change the roleID to the correct one
         const user = await prisma.user.create({
           data: {
             firstName: nonStudent['First Name'],
             lastName: nonStudent['Last Name'],
-            email: nonStudent['Faculty Email'].toLowerCase(),
+            email: nonStudentEmail.toLowerCase(),
             netID: netID,
             active: true,
             role: {
