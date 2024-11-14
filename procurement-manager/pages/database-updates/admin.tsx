@@ -96,6 +96,8 @@ export default function admin({
         { field: 'vendorID' },
         { field: 'vendorName' },
         { field: 'vendorStatus' },
+        { field: 'vendorEmail' },
+        { field: 'vendorURL' },
       ])
     }
   }, [tableType])
