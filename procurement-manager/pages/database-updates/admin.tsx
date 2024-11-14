@@ -49,10 +49,23 @@ export default function admin({
 }: AdminProps): JSX.Element {
   const [tableType, setTableType] = useState<string>('user') // either user or project
   const [colData, setColData] = useState<any>([])
-  const [showModal, setShowModal] = useState(false);
-  const [showRejectionReason, setShowRejectionReason] = useState(false);
+  const [showModal, setShowModal] = useState(false)
+  const [showAddUser, setShowAddUser] = useState(false)
+  const [showAddProject, setShowAddProject] = useState(false)
+  const [rejectionReason, setRejectionReason] = useState('')
   const handleAddUserClick = () => {
-    setShowRejectionReason(true);
+    setShowAddUser(true)
+    setShowAddProject(false)
+  }
+  const handleAddProjectClick = () => {
+    setShowAddProject(true)
+    setShowAddUser(false)
+  }
+  const handleHideModal = () => {
+    setShowModal(false);
+    setShowAddUser(false);
+    setShowAddProject(false)
+    setRejectionReason(''); // Reset the reason for rejection
   };
 
   const [defaultColDef, setDefaultColDef] = useState<any>({
@@ -137,22 +150,30 @@ export default function admin({
             <div>
               {/* TODO: Finish add and delete functionality for Admins */}
               <Button variant="success" onClick={() => setShowModal(true)}>Add</Button>  
-                <Modal show={showModal} onHide={() => setShowModal(false)}>
+                <Modal show={showModal} onHide={handleHideModal}>
                   <Modal.Header closeButton>
                     <Modal.Title>Select Add Option</Modal.Title>
                   </Modal.Header>
                   <Modal.Body>
                     <p>What would you like to add?</p>
                     {<Button variant="secondary" className="mx-2" onClick={handleAddUserClick}>Add User</Button>}
-                    {showRejectionReason && (
+                    {showAddUser && (
                     <Form>
-                      <Form.Group controlId="rejectionReason">
+                      <Form.Group controlId="addUser">
                         <Form.Label>Reason for rejection:</Form.Label>
                         <Form.Control as="textarea" rows={1} />
                       </Form.Group>
                     </Form>
                     )}
-                    {<Button variant="primary">Add Project</Button>}
+                    {<Button variant="primary" onClick={handleAddProjectClick}>Add Project</Button>}
+                    {showAddProject && (
+                    <Form>
+                      <Form.Group controlId="addUser">
+                        <Form.Label>Reason for rejection:</Form.Label>
+                        <Form.Control as="textarea" rows={1} />
+                      </Form.Group>
+                    </Form>
+                    )}
                   </Modal.Body>
                 </Modal> 
               
