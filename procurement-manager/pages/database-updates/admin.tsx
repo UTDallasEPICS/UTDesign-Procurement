@@ -5,7 +5,7 @@
 import React, { useEffect, useState } from 'react'
 import { Button, Col, Nav, Row } from 'react-bootstrap'
 import { prisma } from '@/db'
-import { Project, Request, User } from '@prisma/client'
+import { Project, Request, User, Vendor } from '@prisma/client'
 import Link from 'next/link'
 import Head from 'next/head'
 import styles from '@/styles/DatabaseUpdate.module.scss'
@@ -17,6 +17,7 @@ import { CellValueChangedEvent } from 'ag-grid-community'
 export async function getServerSideProps() {
   const users = await prisma.user.findMany()
   const projects = await prisma.project.findMany()
+  const vendors = await prisma.vendor.findMany()
   // const requests = await prisma.request.findMany()
 
   return {
@@ -25,6 +26,7 @@ export async function getServerSideProps() {
       description: 'University of Texas at Dallas',
       users: JSON.parse(JSON.stringify(users)),
       projects: JSON.parse(JSON.stringify(projects)),
+      vendors: JSON.parse(JSON.stringify(vendors)),
       // requests: JSON.parse(JSON.stringify(requests)),
     },
   }
@@ -35,6 +37,7 @@ interface AdminProps {
   description: String
   users: User[]
   projects: Project[]
+  vendors: Vendor[]
   // requests: Request[]
 }
 
@@ -43,6 +46,7 @@ export default function admin({
   description,
   users,
   projects,
+  vendors,
   // requests,
 }: AdminProps): JSX.Element {
   const [tableType, setTableType] = useState<string>('user') // either user or project
@@ -87,6 +91,12 @@ export default function admin({
         { field: 'additionalInfo' },
         { field: 'costCenter' },
       ])
+    } else if (tableType === 'vendor') {
+      setColData([
+        { field: 'vendorID' },
+        { field: 'vendorName' },
+        { field: 'vendorStatus' },
+      ])
     }
   }, [tableType])
 
@@ -119,6 +129,14 @@ export default function admin({
                   onClick={() => setTableType('project')}
                 >
                   Projects
+                </Nav.Link>
+              </Nav.Item>
+              <Nav.Item>
+                <Nav.Link
+                  eventKey={'vendor'}
+                  onClick={() => setTableType('vendor')}
+                >
+                  Vendors
                 </Nav.Link>
               </Nav.Item>
             </Nav>
@@ -158,9 +176,19 @@ export default function admin({
                 onCellValueChanged={onCellValueChanged}
                 stopEditingWhenCellsLoseFocus={true}
               />
-            ) : (
+            ) : tableType === 'project' ? (
               <AgGridReact
                 rowData={projects}
+                columnDefs={colData}
+                defaultColDef={defaultColDef}
+                autoSizeStrategy={{ type: 'fitCellContents' }}
+                pagination={true}
+                onCellValueChanged={onCellValueChanged}
+                stopEditingWhenCellsLoseFocus={true}
+              />
+            ) : (
+              <AgGridReact
+                rowData={vendors}
                 columnDefs={colData}
                 defaultColDef={defaultColDef}
                 autoSizeStrategy={{ type: 'fitCellContents' }}
