@@ -2,24 +2,23 @@
  * This is the Admin View for the Database Updates Page
  */
 
+
 import React, { useEffect, useState } from 'react'
-import { Button, Col, Modal, Nav, Row, Form} from 'react-bootstrap'
+import { Button, Col, Nav, Row } from 'react-bootstrap'
 import { prisma } from '@/db'
-import { Project, Request, User } from '@prisma/client'
+import { Project, User } from '@prisma/client'
 import Link from 'next/link'
 import Head from 'next/head'
 import styles from '@/styles/DatabaseUpdate.module.scss'
 import { AgGridReact } from 'ag-grid-react'
-import 'ag-grid-community/styles/ag-grid.css' // Core CSS
-import 'ag-grid-community/styles/ag-theme-quartz.css' // Theme
+import 'ag-grid-community/styles/ag-grid.css'
+import 'ag-grid-community/styles/ag-theme-quartz.css'
 import { CellValueChangedEvent } from 'ag-grid-community'
-import AddOptionModal from '@/components/AdminAddButtonModal';
-
+import AdminAddButtonModal from '@/components/AdminAddButtonModal'
 
 export async function getServerSideProps() {
   const users = await prisma.user.findMany()
   const projects = await prisma.project.findMany()
-  // const requests = await prisma.request.findMany()
 
   return {
     props: {
@@ -27,7 +26,6 @@ export async function getServerSideProps() {
       description: 'University of Texas at Dallas',
       users: JSON.parse(JSON.stringify(users)),
       projects: JSON.parse(JSON.stringify(projects)),
-      // requests: JSON.parse(JSON.stringify(requests)),
     },
   }
 }
@@ -37,7 +35,6 @@ interface AdminProps {
   description: String
   users: User[]
   projects: Project[]
-  // requests: Request[]
 }
 
 export default function admin({
@@ -45,41 +42,26 @@ export default function admin({
   description,
   users,
   projects,
-  // requests,
 }: AdminProps): JSX.Element {
   const [tableType, setTableType] = useState<string>('user') // either user or project
   const [colData, setColData] = useState<any>([])
   const [showModal, setShowModal] = useState(false)
-  const [showAddUser, setShowAddUser] = useState(false)
-  const [showAddProject, setShowAddProject] = useState(false)
-  const [rejectionReason, setRejectionReason] = useState('')
+
   const handleAddUserClick = () => {
-    setShowAddUser(true)
-    setShowAddProject(false)
+    setShowModal(true)
   }
+
   const handleAddProjectClick = () => {
-    setShowAddProject(true)
-    setShowAddUser(false)
+    setShowModal(true)
   }
-  const handleHideModal = () => {
-    setShowModal(false);
-    setShowAddUser(false);
-    setShowAddProject(false)
-    setRejectionReason(''); // Reset the reason for rejection
-  };
 
   const [defaultColDef, setDefaultColDef] = useState<any>({
     editable: true,
     filter: true,
   })
 
-  
-  const onCellValueChanged = (
-    event: CellValueChangedEvent
-  ) => {
+  const onCellValueChanged = (event: CellValueChangedEvent) => {
     if (event.rowIndex === null) return
-    // TODO edit database values
-    // users[event.rowIndex].lastName = event.newValue
   }
 
   useEffect(() => {
@@ -112,8 +94,6 @@ export default function admin({
     }
   }, [tableType])
 
-  
-
   return (
     <>
       <Head>
@@ -123,63 +103,27 @@ export default function admin({
       <Row>
         <Col>
           <div className={styles['header-btns-container']}>
-            {/* Users Dropdown (maybe, hopefully) & Projects Button*/}
-            <Nav
-              variant='tabs'
-              defaultActiveKey={'user'}
-              className='flex-grow-1 me-4'
-            >
+            <Nav variant='tabs' defaultActiveKey={'user'} className='flex-grow-1 me-4'>
               <Nav.Item>
-                <Nav.Link
-                  eventKey={'user'}
-                  onClick={() => setTableType('user')}
-                >
+                <Nav.Link eventKey={'user'} onClick={() => setTableType('user')}>
                   Users
                 </Nav.Link>
               </Nav.Item>
               <Nav.Item>
-                <Nav.Link
-                  eventKey={'project'}
-                  onClick={() => setTableType('project')}
-                >
+                <Nav.Link eventKey={'project'} onClick={() => setTableType('project')}>
                   Projects
                 </Nav.Link>
               </Nav.Item>
             </Nav>
 
             <div>
-              {/* TODO: Finish add and delete functionality for Admins */}
-              <Button variant="success" onClick={() => setShowModal(true)}>Add</Button>  
-                <Modal show={showModal} onHide={handleHideModal}>
-                  <Modal.Header closeButton>
-                    <Modal.Title>Select Add Option</Modal.Title>
-                  </Modal.Header>
-                  <Modal.Body>
-                    <p>What would you like to add?</p>
-                    {<Button variant="secondary" className="mx-2" onClick={handleAddUserClick}>Add User</Button>}
-                    {showAddUser && (
-                    <Form>
-                      <Form.Group controlId="addUser">
-                        <Form.Label>Reason for rejection:</Form.Label>
-                        <Form.Control as="textarea" rows={1} />
-                      </Form.Group>
-                    </Form>
-                    )}
-                    {<Button variant="primary" onClick={handleAddProjectClick}>Add Project</Button>}
-                    {showAddProject && (
-                    <Form>
-                      <Form.Group controlId="addUser">
-                        <Form.Label>Reason for rejection:</Form.Label>
-                        <Form.Control as="textarea" rows={1} />
-                      </Form.Group>
-                    </Form>
-                    )}
-                  </Modal.Body>
-                </Modal> 
-              
-              <Button variant="danger" className="mx-2">Delete</Button>           
-              
-              {/* Upload Button */}
+              <Button variant="success" onClick={() => setShowModal(true)}>Add</Button>
+              <AdminAddButtonModal
+                show={showModal}
+                onHide={() => setShowModal(false)}
+              />
+
+              <Button variant="danger" className="mx-2">Delete</Button>
               <Link href={'/database-updates/upload'}>
                 <Button>Upload Files</Button>
               </Link>
@@ -188,42 +132,21 @@ export default function admin({
         </Col>
       </Row>
 
-      {/* Tables Component */}
       <Row>
         <Col>
-          <div
-            className='ag-theme-quartz'
-            style={{
-              width: '100%',
-              height: '75vh',
-            }}
-          >
-            {tableType === 'user' ? (
-              <AgGridReact
-                rowData={users}
-                columnDefs={colData}
-                defaultColDef={defaultColDef}
-                autoSizeStrategy={{ type: 'fitCellContents' }}
-                pagination={true}
-                onCellValueChanged={onCellValueChanged}
-                stopEditingWhenCellsLoseFocus={true}
-              />
-            ) : (
-              <AgGridReact
-                rowData={projects}
-                columnDefs={colData}
-                defaultColDef={defaultColDef}
-                autoSizeStrategy={{ type: 'fitCellContents' }}
-                pagination={true}
-                onCellValueChanged={onCellValueChanged}
-                stopEditingWhenCellsLoseFocus={true}
-              />
-            )}
+          <div className='ag-theme-quartz' style={{ width: '100%', height: '75vh' }}>
+            <AgGridReact
+              rowData={tableType === 'user' ? users : projects}
+              columnDefs={colData}
+              defaultColDef={defaultColDef}
+              autoSizeStrategy={{ type: 'fitCellContents' }}
+              pagination={true}
+              onCellValueChanged={onCellValueChanged}
+              stopEditingWhenCellsLoseFocus={true}
+            />
           </div>
         </Col>
       </Row>
-      
     </>
   )
 }
-
