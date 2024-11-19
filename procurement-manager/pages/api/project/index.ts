@@ -32,7 +32,7 @@ export default async function handler(
 
   let result
   if (req.method === 'POST') {
-    // post seems to be unused - colin (11/08/2024)
+    // post seems to be unused - colin (11/18/2024)
 
     // post method as we are getting info
     // first get user's email from req.body

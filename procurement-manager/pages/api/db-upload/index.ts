@@ -249,10 +249,12 @@ async function handleStudentFile(data: StudentFileData[]) {
 
   for (const student of data) {
     try {
+      const studentEmail = student['Email'].toLowerCase()
+
       // First check if the student is already in the database
       const exists = await prisma.user.findUnique({
         where: {
-          email: student['Email'].toLowerCase(),
+          email: studentEmail,
         },
       })
 
@@ -303,7 +305,7 @@ async function handleStudentFile(data: StudentFileData[]) {
         // Finally, update the student's information if it has changed
         const modify = await prisma.user.update({
           where: {
-            email: student['Email'],
+            email: studentEmail,
           },
           data: {
             firstName: student['First Name'],
@@ -319,13 +321,13 @@ async function handleStudentFile(data: StudentFileData[]) {
       // If the student does not exist, create a new student
       else {
         // First validate email and netID
-        const netID = validateEmailAndReturnNetID(student['Email'])
+        const netID = validateEmailAndReturnNetID(studentEmail)
 
         const user = await prisma.user.create({
           data: {
             firstName: student['First Name'],
             lastName: student['Last Name'],
-            email: student['Email'].toLowerCase(),
+            email: studentEmail,
             netID: netID,
             active: student['Deactivation Date'] ? false : true,
             role: {
@@ -401,7 +403,7 @@ async function handleNonStudentFile(data: NonStudentFileData[]) {
   for (const nonStudent of data) {
     try {
       // First check if the non-student is already in the database
-      const nonStudentEmail = nonStudent['Faculty Email']
+      const nonStudentEmail = nonStudent['Faculty Email'].toLowerCase();
       const exists = await prisma.user.findUnique({
         where: {
           email: nonStudentEmail,
@@ -409,9 +411,6 @@ async function handleNonStudentFile(data: NonStudentFileData[]) {
       })
 
       if (exists) {
-        // First validate email and netID
-        const netID = validateEmailAndReturnNetID(nonStudentEmail, false)
-
         const modify = await prisma.user.update({
           where: {
             email: nonStudentEmail,
@@ -429,11 +428,12 @@ async function handleNonStudentFile(data: NonStudentFileData[]) {
         const netID = validateEmailAndReturnNetID(nonStudentEmail, false)
 
         // TODO: Change the roleID to the correct one
+        // but mentor role should be fine because we're not uploading admins - colin (11/18/24)
         const user = await prisma.user.create({
           data: {
             firstName: nonStudent['First Name'],
             lastName: nonStudent['Last Name'],
-            email: nonStudentEmail.toLowerCase(),
+            email: nonStudentEmail,
             netID: netID,
             active: true,
             role: {
