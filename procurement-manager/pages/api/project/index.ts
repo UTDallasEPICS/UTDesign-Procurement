@@ -32,15 +32,15 @@ export default async function handler(
 
   let result
   if (req.method === 'POST') {
-    //post method as we are getting info
-    const { netID, projectInfo } = req.body
-    // first get user's netID ??? from req.body
-    //console.log("netid",netID);
+    // post seems to be unused - colin (11/08/2024)
 
-    // TODO: use email instead of netID
-    const user = await prisma.user.findFirst({
+    // post method as we are getting info
+    // first get user's email from req.body
+    const { email, projectInfo } = req.body
+
+    const user = await prisma.user.findUnique({
       where: {
-        netID: netID,
+        email: email,
       },
     })
     //console.log("USer details",user);

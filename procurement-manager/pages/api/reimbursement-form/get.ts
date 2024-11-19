@@ -11,11 +11,10 @@ export default async function handler(
 ) {
     try {
         if (req.method !== 'POST') throw new Error('Invalid method')
-        const { netID } = req.body
+        const { email } = req.body
 
-        // TODO: use email instead of netID
-        const user = await prisma.user.findFirst({
-            where: { netID: netID },
+        const user = await prisma.user.findUnique({
+            where: { email: email },
         })
         if (!user) throw new Error('user not found')
         let projects: Project[]

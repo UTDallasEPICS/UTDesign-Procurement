@@ -9,10 +9,9 @@ export default async function handler(
   ) {
     if (req.method === 'POST') {
         try {
-            // TODO: use email instead of netID
             const user = await prisma.user.findFirst({
                 where: {
-                    netID: req.body.netID
+                    email: req.body.email
                 }
             })
             

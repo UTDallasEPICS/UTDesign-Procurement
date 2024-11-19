@@ -33,22 +33,23 @@ export default async function handleOrders(
   }
   //}
   //Define a new API route handler function for handling POST requests to create a new order:
-  /* This code defines an API route handler function for handling POST requests to create a new order. It
-first checks if the HTTP method is POST, then extracts the necessary data from the request body
-(netID, processID, comment, and status). It then uses the PrismaClient to find a user with the given
-netID and checks their roleID. If the user is an admin, it extracts additional data from the request
-body (dateOrdered, orderNumber, orderDetails, trackingInfo, shippingCost, requestID, and adminID)
-and creates a new order in the database using the PrismaClient. Finally, it sends a response back to
-the client with the newly created order as JSON data. */
+  /*
+  This code defines an API route handler function for handling POST requests to create a new order. It
+  first checks if the HTTP method is POST, then extracts the necessary data from the request body
+  (email, processID, comment, and status). It then uses the PrismaClient to find a user with the given
+  email and checks their roleID. If the user is an admin, it extracts additional data from the request
+  body (dateOrdered, orderNumber, orderDetails, trackingInfo, shippingCost, requestID, and adminID)
+  and creates a new order in the database using the PrismaClient. Finally, it sends a response back to
+  the client with the newly created order as JSON data.
+  */
   //export default async function handleOrders(req: NextApiRequest, res: NextApiResponse) {
   else if (req.method === 'POST') {
     //post method as we are getting info
 
-    // first get user's netID ??? from req.body
-    // TODO use email instead of netid
-    const user = await prisma.user.findFirst({
+    // first get user's email from req.body
+    const user = await prisma.user.findUnique({
       where: {
-        netID: req.body.netID,
+        email: req.body.email,
       },
     })
 
