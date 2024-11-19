@@ -9,7 +9,8 @@ export default async function handler(
   ) {
     if (req.method === 'POST') {
         try {
-            const user = await prisma.user.findUnique({
+            // TODO: use email instead of netID
+            const user = await prisma.user.findFirst({
                 where: {
                     netID: req.body.netID
                 }

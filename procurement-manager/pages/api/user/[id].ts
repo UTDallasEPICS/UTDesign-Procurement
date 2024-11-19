@@ -12,7 +12,7 @@ export default async function handler(
   try {
     const id = parseInt(req.query.id as string)
     if (req.method === 'GET') {
-      const user = await prisma.user.findUnique({
+      const user = await prisma.user.findFirst({
         where: {
           userID: id,
         },

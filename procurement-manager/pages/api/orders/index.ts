@@ -45,7 +45,8 @@ the client with the newly created order as JSON data. */
     //post method as we are getting info
 
     // first get user's netID ??? from req.body
-    const user = await prisma.user.findUnique({
+    // TODO use email instead of netid
+    const user = await prisma.user.findFirst({
       where: {
         netID: req.body.netID,
       },
@@ -70,7 +71,7 @@ the client with the newly created order as JSON data. */
             trackingInfo: req.body.trackingInfo,
             shippingCost: new Prisma.Decimal(req.body.shippingCost),
             request: { connect: { requestID: parseInt(req.body.requestID) } },
-            admin: { connect: { netID: user.netID } },
+            admin: { connect: { email: user.email } },
           },
         })
 

@@ -267,7 +267,7 @@ async function handleStudentFile(data: StudentFileData[]) {
         const worksOn = await prisma.worksOn.findFirst({
           where: {
             AND: [
-              { user: { netID: exists.netID } },
+              { user: { email: exists.email } },
               { project: { projectNum: student['Project Number'] } },
             ],
           },
@@ -277,7 +277,7 @@ async function handleStudentFile(data: StudentFileData[]) {
           // Case 1
           const newWorksOn = await prisma.worksOn.create({
             data: {
-              user: { connect: { netID: exists.netID } },
+              user: { connect: { email: exists.email } },
               project: {
                 connect: { projectNum: Number(student['Project Number']) },
               },
@@ -288,7 +288,7 @@ async function handleStudentFile(data: StudentFileData[]) {
           // Next, add a PreviousRecord for the existing student with the new project
           const previousRecord = await prisma.previousRecord.create({
             data: {
-              user: { connect: { netID: exists.netID } },
+              user: { connect: { email: exists.email } },
               project: { connect: { projectNum: student['Project Number'] } },
               role: { connect: { roleID: 3 } },
             },
@@ -318,12 +318,15 @@ async function handleStudentFile(data: StudentFileData[]) {
 
       // If the student does not exist, create a new student
       else {
+        // First validate email and netID
+        const netID = validateEmailAndReturnNetID(student['Email'])
+
         const user = await prisma.user.create({
           data: {
             firstName: student['First Name'],
             lastName: student['Last Name'],
             email: student['Email'].toLowerCase(),
-            netID: student['Email'].toLowerCase().split('@')[0],
+            netID: netID,
             active: student['Deactivation Date'] ? false : true,
             role: {
               connect: {
@@ -339,7 +342,7 @@ async function handleStudentFile(data: StudentFileData[]) {
         // After creating the student, connect them to the project
         const worksOn = await prisma.worksOn.create({
           data: {
-            user: { connect: { netID: user.netID } },
+            user: { connect: { email: user.email } },
             project: { connect: { projectNum: student['Project Number'] } },
             startDate: new Date(), // TODO: Change this to the actual start date
           },
@@ -348,7 +351,7 @@ async function handleStudentFile(data: StudentFileData[]) {
         // Finally, add a PreviousRecord for the student
         const previousRecord = await prisma.previousRecord.create({
           data: {
-            user: { connect: { netID: user.netID } },
+            user: { connect: { email: user.email } },
             project: { connect: { projectNum: student['Project Number'] } },
             role: { connect: { roleID: 3 } },
           },
@@ -535,7 +538,7 @@ async function handleProjectFile(data: ProjectFileData[]) {
 
         const worksOn = await prisma.worksOn.create({
           data: {
-            user: { connect: { netID: mentor.netID } },
+            user: { connect: { email: mentor.email } },
             project: { connect: { projectNum: project['Project Number'] } },
             startDate: new Date(), // TODO: Change this to the actual start date
           },

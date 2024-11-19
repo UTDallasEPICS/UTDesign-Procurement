@@ -23,6 +23,7 @@ export default async function handler(
     }
     else if (req.method === 'POST') { //This code block is handling a POST request to create a worksOn entry
         const {netID, projectNum} = req.body // to create new worksOn entry you require a specific user and project
+        // TODO: use email instead of netID
         try {
             const worksOn = await prisma.worksOn.create({
                 data: {

@@ -10,7 +10,8 @@ export default async function handler(
   try {
     // first verify the user and get the project they are working on
     /// using the works on
-    const user = await prisma.user.findUnique({
+    // TODO: use email instead of netID
+    const user = await prisma.user.findFirst({
       where: {
         netID: req.body.netID,
       },

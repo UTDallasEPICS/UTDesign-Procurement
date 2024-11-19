@@ -36,7 +36,9 @@ export default async function handler(
     const { netID, projectInfo } = req.body
     // first get user's netID ??? from req.body
     //console.log("netid",netID);
-    const user = await prisma.user.findUnique({
+
+    // TODO: use email instead of netID
+    const user = await prisma.user.findFirst({
       where: {
         netID: netID,
       },
