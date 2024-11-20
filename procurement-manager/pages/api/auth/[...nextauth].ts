@@ -46,6 +46,7 @@ export const authOptions: NextAuthOptions = {
 
         const { roleID } = credentials as any
 
+        // TODO fix
         try {
           const user = await prisma.user.findFirst({
             where: { roleID: parseInt(roleID) },
@@ -77,7 +78,7 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       let res = null
       if (token.email)
-        res = await prisma.user.findFirst({
+        res = await prisma.user.findUnique({
           where: { email: token.email },
         })
       if (res) token.name = await res?.firstName

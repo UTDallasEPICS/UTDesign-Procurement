@@ -11,7 +11,7 @@ export default async function handler(
         try {
             const user = await prisma.user.findUnique({
                 where: {
-                    netID: req.body.netID
+                    email: req.body.email
                 }
             })
             

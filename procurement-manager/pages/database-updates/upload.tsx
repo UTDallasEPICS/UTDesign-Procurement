@@ -65,14 +65,11 @@ async function handleSubmit(
         const errorFileURL = URL.createObjectURL(errorFile)
         setErrorFileURL(errorFileURL)
 
+        let errorMsg =
+          'Upload successful, but there were errors found in the uploaded files. Here is a file containing all the errors.'
         if (emailErrorFile)
-          setStatus(
-            'Upload successful, but there were errors found in the uploaded files. Here is a file containing all the errors. Error file has been emailed to admins.',
-          )
-        else
-          setStatus(
-            'Upload successful, but there were errors found in the uploaded files. Here is a file containing all the errors.',
-          )
+          errorMsg += ' Error file has been emailed to admins.';
+        setStatus(errorMsg)
       }
     } else {
       setStatus('Upload failed. Please try again.')

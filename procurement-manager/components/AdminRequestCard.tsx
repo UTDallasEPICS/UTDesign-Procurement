@@ -396,13 +396,12 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
                 trackingInfo: newOrders[i].trackingInfo,
                 shippingCost: newOrders[i].shippingCost,
                 requestID: details.requestID,
-                netID: user.netID,
               })
               if (response.status === 201) {
                 console.log('Order updated:', response.data)
               }
             } catch (error) {
-              console.error('Failed to insert order:', error)
+              console.error('Failed to update order:', error)
             }
           }
         }
@@ -424,7 +423,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
               trackingInfo: newOrdersToInsert[i].trackingInfo,
               shippingCost: newOrdersToInsert[i].shippingCost,
               requestID: details.requestID,
-              netID: user.netID,
+              email: user.email,
             })
             if (response.status === 201) {
               console.log('New order inserted:', response.data)

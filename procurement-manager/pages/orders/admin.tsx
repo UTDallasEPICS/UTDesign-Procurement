@@ -106,7 +106,7 @@ export default function Admin({
    */
   async function getAdmin() {
     const response = await axios.post('/api/request-form/get', {
-      netID: user.netID,
+      email: user.email,
     })
     const [projects, requestsOfMultipleProjects] = await Promise.all([
       response.data.projects,
@@ -147,7 +147,7 @@ export default function Admin({
     setShowRejectModal(false)
     try {
       const response = await axios.post('/api/process/update', {
-        netID: user.netID,
+        email: user.email,
         requestID: selectedRequestID,
         comment: rejectionReason,
         status: Status.REJECTED,

@@ -7,6 +7,7 @@
 
 import { NextApiRequest, NextApiResponse } from 'next'
 import { prisma } from '@/db'
+import { validateEmailAndReturnNetID } from '@/lib/netid'
 
 export default async function handler(
   req: NextApiRequest,
@@ -35,12 +36,14 @@ export default async function handler(
   ) {
     const { firstName, lastName, email, responsibilities, roleID } = req.body
     try {
+      const requiresValidNetID = roleID == 3; // check if student
+      const netID = validateEmailAndReturnNetID(email, requiresValidNetID);
       const user = await prisma.user.create({
         data: {
           firstName,
           lastName,
           email,
-          netID: email.split('@')[0], // gets netID from email
+          netID: netID, // gets netID from email
           active: true,
           responsibilities,
           role: {

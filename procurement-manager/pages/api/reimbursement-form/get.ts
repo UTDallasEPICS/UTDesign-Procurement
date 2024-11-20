@@ -6,15 +6,15 @@ import { prisma } from '@/db'
 import {Reimbursement} from ".prisma/client";
 import { Project, Status, Process } from "@prisma/client";
 export default async function handler(
-req: NextApiRequest,
-res: NextApiResponse
+    req: NextApiRequest,
+    res: NextApiResponse
 ) {
-
     try {
         if (req.method !== 'POST') throw new Error('Invalid method')
-        const { netID } = req.body
+        const { email } = req.body
+
         const user = await prisma.user.findUnique({
-        where: { netID: netID },
+            where: { email: email },
         })
         if (!user) throw new Error('user not found')
         let projects: Project[]
