@@ -25,13 +25,13 @@ import {
   Status,
 } from '@prisma/client'
 import axios from 'axios'
-import { json } from 'stream/consumers'
 interface AdminRequestCardProps {
   user: User
   project: Project
   details: RequestDetails
   onReject: () => void
-  // onAccept: () => void
+  setStatusOrdered: () => void
+  setStatusReceived: () => void
   onSave: () => void
   collapsed: boolean
 }
@@ -40,7 +40,8 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
   project,
   details,
   onReject,
-  // onAccept,
+  setStatusOrdered,
+  setStatusReceived,
   onSave,
   collapsed,
 }) => {
@@ -63,6 +64,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
   // TODO:: implement add/delete orders feature similar to add/delete items feature for request-form/index.ts
   const [orders, setOrders] = useState<
     {
+      orderID: number
       orderNumber: string
       trackingInfo: string
       orderDetails: string
@@ -103,8 +105,10 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
       }
     }),
   )
+
   // state for tracking the unique item IDs for items that were updated
   const [itemIDs, setItemIDs] = useState<number[]>([])
+
   /**
    * this function calculates the total cost for all items in a request
    * @returns Prisma Decimal value for total request expenses
@@ -119,12 +123,14 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
     })
     return new Prisma.Decimal(totalCost)
   }
-  const [orderTotal, setOrderTotal] =
-    useState<Prisma.Decimal>(calculateTotalCost())
+
+  const [orderTotal, setOrderTotal] = useState<Prisma.Decimal>(calculateTotalCost())
+
   // Show cards by default and rerenders everytime collapsed changes
   useEffect(() => {
     setCollapse(collapsed)
   }, [collapsed])
+
   // Get the student and mentor that requested and approved the order - only runs once
   useEffect(() => {
     getStudentThatRequested()
@@ -132,6 +138,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
     getVendors()
     getOrders()
   }, [])
+
   // set request item and order arrays to data retrieved from request
   useEffect(() => {
     setItems(
@@ -144,11 +151,13 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
       }),
     )
   }, [vendors])
+
   useEffect(() => {
     setOrders(
       reqOrders.length !== 0
         ? reqOrders.map((reqOrder, reqOrderIndex) => {
             return {
+              orderID: reqOrder.orderID,
               orderNumber: reqOrder.orderNumber,
               trackingInfo: reqOrder.trackingInfo,
               orderDetails: reqOrder.orderDetails,
@@ -163,6 +172,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
     )
     setOrderTotal(calculateTotalCost())
   }, [reqOrders])
+
   /**
    * This function provides the data received from our API of the student that requested the order
    * @returns User object of the student that requested the order
@@ -179,6 +189,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
       else console.log(error)
     }
   }
+
   /**
    * This function provides the data received from our API of the mentor that approved the order
    * @returns User object of the mentor that approved the order
@@ -195,6 +206,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
       else console.log(error)
     }
   }
+
   /**
    * this function is used to retrieve the vendors needed for request
    */
@@ -215,6 +227,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
       else console.log(error)
     }
   }
+
   /**
    * this function is used to retrieve the orders associated with request
    */
@@ -231,6 +244,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
       console.error('Failed to fetch orders:', error)
     }
   }
+
   /**
    * This function handles changes to inputs whenever user is editing the input fields in the request card for request item
    * @param e - the onChange event passed by the input field
@@ -264,6 +278,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
       })
     }
   }
+
   //Handles adding new items to the newItems state
   const handleAddItem = () => {
     setNewItems([
@@ -279,6 +294,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
       },
     ])
   }
+
   //Handles deleting items
   const handleDeleteItem = (index: number) => {
     if (index < items.length) {
@@ -289,6 +305,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
       )
     }
   }
+
   /**
    * This function handles changes to inputs whenever user is editing the input fields in the request card for orders
    * @param e - the onChange event passed by the input field
@@ -308,6 +325,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
       ),
     )
   }
+
   //Handles deleting orders
   const handleDeleteOrder = async (index: number, deletedItem: number) => {
     if (index < orders.length) {
@@ -333,6 +351,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
       deletedItem,
     ])
   }
+
   //Handles adding new items to the newItems state
   const handleAddOrders = () => {
     setOrders([
@@ -346,6 +365,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
       },
     ])
   }
+
   /**
    * this function adds a item ID for any updated item data to the list of updated item IDs
    * @param value item ID for item data that admin edited
@@ -355,6 +375,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
     storeItemIDs.push(value) // add new value to array
     setItemIDs(storeItemIDs) // Set the state with the updated array
   }
+  
   // TODO:: add form validation to make sure input values follow requirements (no characters for numeric values, etc.)
   // use this as reference: https://react-bootstrap.netlify.app/docs/forms/validation/
   // TODO:: add editable field for otherExpenses for a request
@@ -475,6 +496,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
       else console.log(error)
     }
   }
+  
   return (
     <Row className='mb-4'>
       <Col>
@@ -561,15 +583,18 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
                     >
                       Accept
                     </Button>)} */}
-                    <Button
-                      className={`${styles.cardBtn} ${styles.rejectBtn}`}
-                      variant='danger'
-                      style={{ minWidth: '150px', marginRight: '20px' }}
-                      onClick={onReject}
-                    >
-                      Reject
-                    </Button>{' '}
-                    {!editable && (
+
+                    {details.Process[0].status == Status.APPROVED && (
+                      <Button
+                        className={`${styles.cardBtn} ${styles.rejectBtn}`}
+                        variant='danger'
+                        onClick={onReject}
+                      >
+                        Reject
+                      </Button>
+                    )}
+
+                    {!editable && details.Process[0].status == Status.APPROVED && (
                       <Button
                         className={`${styles.editBtn} ${styles.cardBtn}`}
                         variant='warning'
@@ -578,6 +603,28 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
                         Edit
                       </Button>
                     )}
+
+                    {details.Process[0].status == Status.APPROVED && (
+                      <Button
+                      className={`${styles.cardBtn} ${styles.rejectBtn}`}
+                      variant='success'
+                      onClick={setStatusOrdered}
+                      >
+                        Ordered
+                      </Button>
+                    )}
+
+                    {details.Process[0].status == Status.ORDERED && (
+                      <Button
+                      className={`${styles.cardBtn} ${styles.rejectBtn}`}
+                      variant='success'
+                      onClick={setStatusReceived}
+                      >
+                        Received
+                      </Button>
+                    )}
+                    
+
                   </Col>
                 </Row>
                 {/* REQUEST ITEMS */}
@@ -860,7 +907,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
                         <Col xs={12} className='d-flex justify-content-end'>
                           {editable && (
                             <Button
-                              className={styles.cardBtn}
+                              className={`${styles.cardBtn} mb-3`}
                               variant='success'
                               onClick={handleAddItem}
                             >
@@ -959,7 +1006,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
                                       onClick={() =>
                                         handleDeleteOrder(
                                           orderIndex,
-                                          parseInt(order.orderNumber),
+                                          parseInt(order.orderDetails),
                                         )
                                       }
                                     >

@@ -199,6 +199,27 @@ export default function Admin({
       else console.log(error)
     }
   }
+
+  const updateStatus = async (status: string, pID: number) => {
+    try {
+      const response = await axios.post('/api/process/update', {
+        netID: user.netID,
+        processID: pID,
+        status: status,
+      })
+
+      if (response.status === 200) {
+        getAdminReimbursements()
+        getAdminRequests()
+      }
+    } catch (error) {
+      if (error instanceof Error) console.log(error.message)
+      else if (axios.isAxiosError(error))
+        console.log(error.message, error.status)
+      else console.log(error)
+    }
+  }
+  
   // /**
   //  * This function is called after the mentor submits the acceptance
   //  * BUGGY
@@ -272,6 +293,7 @@ export default function Admin({
     }
     return false
   }
+
   const [userData, setUserData] = useState<
     {
       projName: string
@@ -279,6 +301,7 @@ export default function Admin({
       vendorName: RequestItem[]
     }[]
   >([])
+
   const [userSearchData, setUserSearchData] = useState<
     {
       projName: string
@@ -286,6 +309,7 @@ export default function Admin({
       vendorName: RequestItem[]
     }[]
   >([])
+
   //Nihita - ***THIS PART OF THE CODE HAS BUGS***
   //Set all the states for the variables
   //Use these states to store the json data from the database api calls
@@ -424,6 +448,8 @@ export default function Admin({
                     project={project}
                     details={request}
                     onReject={() => handleReject(request.Process[0].processID)}
+                    setStatusOrdered={() => updateStatus(Status.ORDERED, request.Process[0].processID)}
+                    setStatusReceived={() => updateStatus(Status.DELIVERED, request.Process[0].processID)}
                     onSave={() => getAdminRequests()}
                     collapsed={isOpen[projIndex]}
                   />

@@ -44,7 +44,9 @@ export default async function handler(
             projectID: project.projectID,
             Process: {
               some: {
-                status: Status.APPROVED,
+                status: {
+                  in: [Status.APPROVED, Status.ORDERED,]
+                } 
               },
             },
           },
