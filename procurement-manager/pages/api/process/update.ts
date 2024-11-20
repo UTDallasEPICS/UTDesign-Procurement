@@ -32,7 +32,7 @@ export default async function handler(
 
     // Finds the user and request based on the email and requestID provided in the request body
     const [user, request] = await Promise.all([
-      await prisma.user.findFirst({ where: { email: email } }),
+      await prisma.user.findUnique({ where: { email: email } }),
       await prisma.request.findUnique({
         where: { requestID: requestID },
         include: { Process: true },
