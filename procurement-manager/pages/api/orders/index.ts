@@ -79,9 +79,10 @@ export default async function handleOrders(
         res.status(201).json(newOrder)
       }
     }
-  } else {
-    res.status(405).json({ message: 'Method not allowed' })
+
+    res.status(403).json({ message: 'Forbidden' })
   }
+  res.status(405).json({ message: 'Method not allowed' })
 }
 //Export the API route handlers:
 export { handleOrders }
