@@ -683,8 +683,8 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
                 {
                   items.map((reqItems, reqIndex) => {
                     // only shows processed requests for order history - i.e. were approved and ordered, or were rejected
-                    if ((requests[projectIndex][reqIndex]?.Process[0].status === Status.DELIVERED && processed(requests[projectIndex][reqIndex].requestID) === true) || 
-                    requests[projectIndex][reqIndex]?.Process[0].status === Status.REJECTED) 
+                    if ((requests[projectIndex][reqIndex]?.Process[0].status === Status.RECEIVED && processed(requests[projectIndex][reqIndex].requestID) === true) || 
+                    requests[projectIndex][reqIndex]?.Process[0].status === Status.REJECTED)
                   {
                     return (
                       <div key={reqIndex}>
