@@ -449,7 +449,7 @@ export default function Admin({
                     details={request}
                     onReject={() => handleReject(request.Process[0].processID)}
                     setStatusOrdered={() => updateStatus(Status.ORDERED, request.Process[0].processID)}
-                    setStatusReceived={() => updateStatus(Status.DELIVERED, request.Process[0].processID)}
+                    setStatusReceived={() => updateStatus(Status.RECEIVED, request.Process[0].processID)}
                     onSave={() => getAdminRequests()}
                     collapsed={isOpen[projIndex]}
                   />

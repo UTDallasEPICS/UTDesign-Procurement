@@ -210,12 +210,13 @@ model ReimbursementUpload {
 // The different status that a process can have
 enum Status {
   UNDER_REVIEW // default status after a request/reimbursement is submitted
+  DRAFT // status after a request/reimbursement is recalled by student and wants to edit before resubmitting
+  CANCELLED // status after a request is cancelled by student and does not need to be requested/reimbursed anymore
   APPROVED // status after a request/reimbursement is approved by mentor
   REJECTED // status after a request/reimbursement is rejected by mentor
   ORDERED // status after a request is ordered by admin
-  DELIVERED // status after a request is delivered to student
-  CANCELLED // status after a request is cancelled by student and does not need to be requested/reimbursed anymore
-  RECALLED // status after a request/reimbursement is recalled by student and wants to edit before resubmitting
+  RECEIVED // status after a request is received by admin
+  PROCESSED // status after a reimbursement is processed by admin
 }
 
 enum VendorStatus {
