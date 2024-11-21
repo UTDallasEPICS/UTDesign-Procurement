@@ -64,7 +64,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
   // TODO:: implement add/delete orders feature similar to add/delete items feature for request-form/index.ts
   const [orders, setOrders] = useState<
     {
-      orderID: number
+      // orderID: number // TODO, as orderID is not created yet
       orderNumber: string
       trackingInfo: string
       orderDetails: string
@@ -157,7 +157,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
       reqOrders.length !== 0
         ? reqOrders.map((reqOrder, reqOrderIndex) => {
             return {
-              orderID: reqOrder.orderID,
+              // orderID: reqOrder.orderID,
               orderNumber: reqOrder.orderNumber,
               trackingInfo: reqOrder.trackingInfo,
               orderDetails: reqOrder.orderDetails,
