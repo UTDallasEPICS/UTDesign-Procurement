@@ -74,7 +74,7 @@ export default function Mentor({ session, user }: MentorProps) {
 
   async function getMentorReimbursements() {
     const nextResponse = await axios.post('/api/reimbursement-form/get', {
-      netID: user.netID,
+      email: user.email,
     })
     const [reimbursementsOfMultipleProjects] = await Promise.all([
       nextResponse.data.reimbursements

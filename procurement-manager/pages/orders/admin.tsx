@@ -144,7 +144,7 @@ export default function Admin({
 
   async function getAdminReimbursements() {
     const nextResponse = await axios.post('/api/reimbursement-form/get', {
-      netID: user.netID,
+      email: user.email,
     })
     const [reimbursementsOfMultipleProjects] = await Promise.all([
       nextResponse.data.reimbursements
@@ -203,7 +203,7 @@ export default function Admin({
   const updateStatus = async (status: string, pID: number) => {
     try {
       const response = await axios.post('/api/process/update', {
-        netID: user.netID,
+        email: user.email,
         processID: pID,
         status: status,
       })
