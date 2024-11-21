@@ -58,6 +58,7 @@ export default async function handler(
     // INPUT ARRAY OF ITEMS INTO DATABASE
     const items = req.body.items
     items.forEach(async (item: Item) => {
+      console.log('CONSOLE: Item', item)
       await createItem(reimbursementID, item)
     })
 
@@ -103,8 +104,9 @@ async function createReimbursement(
             student: {
             connect: { email: body.studentEmail },
             },
-            status: body.status,
+            status: Status.UNDER_REVIEW,
             additionalInfo: optionalFields.additionalInfo,
+            expense: body.totalExpenses
         },
         include: {
             ReimbursementItem: true,
@@ -121,6 +123,7 @@ async function createReimbursement(
         where: { projectNum: body.projectNum },
     })
     console.log('project', project?.totalExpenses)
+    
     // Update the totalExpenses in the project
     const updateExpense = await prisma.project.update({
         where: { projectNum: body.projectNum },
@@ -142,7 +145,7 @@ async function createItem(reimbursementID: number, itemToPut: Item) {
     vendorID,
   } = itemToPut
 
-  console.log('itemToPut', itemToPut)
+  console.log('CONSOLE: itemToPut', itemToPut)
 
   // TODO :: do error handling
   // NEW ITEM IS INSERTED INTO SERVER
@@ -150,7 +153,7 @@ async function createItem(reimbursementID: number, itemToPut: Item) {
   const newItem = await prisma.reimbursementItem
     .create({
       data: {
-        receiptDate: receiptDate,
+        receiptDate: new Date(receiptDate),
         description: description,
         receiptTotal: receiptTotal,
         reimbursement: {

@@ -4,10 +4,11 @@
 
 import React, { useEffect, useState } from 'react'
 import { Row } from 'react-bootstrap'
-import OrderCard from '../../components/StudentRequestCard'
+import RequestCard from '../../components/StudentRequestCard'
+import ReimburseCard from '../../components/StudentReimbursementCard'
 import ProjectHeader from '../../components/ProjectHeader'
 import { Prisma, Project, User } from '@prisma/client'
-import { RequestDetails } from '@/lib/types'
+import { ReimbursementDetails, RequestDetails } from '@/lib/types'
 import axios from 'axios'
 import { Session, getServerSession } from 'next-auth'
 import { authOptions } from '../api/auth/[...nextauth]'
@@ -31,13 +32,18 @@ interface StudentProps {
 export default function Student({ session, user }: StudentProps) {
   // state for opening the collapsed cards - an array due to multiple projects
   const [isOpen, setIsOpen] = useState<boolean[]>([])
+
   // state for the requests inside the different projects associated to the user
   const [projectRequests, setProjectRequests] = useState<RequestDetails[][]>([])
+  const [projectReimbursements, setProjectReimbursements] = useState<ReimbursementDetails[][]>([])
+
   // state for the projects associated to the user
   const [projects, setProjects] = useState<Project[]>([])
 
   useEffect(() => {
-    getStudent()
+    getStudentReimbursements()
+    getStudentRequests()
+    console.log("TEST")
   }, [])
 
   // Client-side data fetching whenever we need to refetch the data and rerender the page but can be done in getServerSideProps
@@ -45,7 +51,7 @@ export default function Student({ session, user }: StudentProps) {
    * This function is called when the page needs to be rerendered with the updated data
    * This function calls our api that gets all projects associated to the user and their requests
    */
-  async function getStudent() {
+  async function getStudentRequests() {
     const response = await axios.post('/api/request-form/get', {
       email: user.email,
     })
@@ -56,6 +62,20 @@ export default function Student({ session, user }: StudentProps) {
     setProjects(projects)
     setProjectRequests(requestsOfMultipleProjects)
     setIsOpen(projects.map(() => true))
+    //console.log('request (Student)', requestsOfMultipleProjects)
+    //console.log('setRequest (Student)', projectRequests)
+  }
+
+  async function getStudentReimbursements() {
+    const nextResponse = await axios.post('/api/reimbursement-form/get', {
+      netID: user.netID,
+    })
+    const [reimbursementsOfMultipleProjects] = await Promise.all([
+      nextResponse.data.reimbursements
+    ])
+    setProjectReimbursements(reimbursementsOfMultipleProjects)
+    //console.log('reimbursement (Student)', reimbursementsOfMultipleProjects)
+    //console.log('setReimbursement (Student)', projectReimbursements)
   }
 
   /**
@@ -89,6 +109,7 @@ export default function Student({ session, user }: StudentProps) {
       <Row className='my-4'>
         <h1>Welcome back {user && user.firstName}</h1>
       </Row>
+      
       {projects.map((project, projIndex) => {
         return (
           <Row className='big-row my-4' key={projIndex}>
@@ -103,12 +124,13 @@ export default function Student({ session, user }: StudentProps) {
               onToggleCollapse={() => toggleCards(projIndex)}
               isOpen={isOpen[projIndex]}
             />
-            {/* <Collapse in={isOpen[projIndex]}>
-              <div className='w-100'> */}
-            {projectRequests[projIndex].length > 0 ? (
+                          
+            {
+            projectRequests[projIndex]?.length > 0 ? (
               projectRequests[projIndex].map((request, reqIndex) => {
                 return (
-                  <OrderCard
+                  //console.log('projectRequests:: ', projectRequests),
+                  <RequestCard
                     key={reqIndex}
                     details={request}
                     collapsed={isOpen[projIndex]}
@@ -116,49 +138,27 @@ export default function Student({ session, user }: StudentProps) {
                 )
               })
             ) : (
-              <p className='my-4'>There are no requests in this project.</p>
+              <p className='my-4'>There are no procurement requests in this project.</p>
             )}
-            {/* </div>
-            </Collapse> */}
+
+            {
+            projectReimbursements[projIndex]?.length > 0 ? (
+              projectReimbursements[projIndex].map((reimbursement, reimIndex) => {
+                return (
+                  //console.log('projectReimbursements:: ', projectReimbursements),
+                  <ReimburseCard
+                    key={reimIndex}
+                    details={reimbursement}
+                    collapsed={isOpen[projIndex]}
+                  />
+                )
+              })
+            ) : (
+              <p className='my-4'>There are no reimbursement requests in this project.</p>
+            )}
           </Row>
         )
       })}
-      {/* <Container>
-        <Row className='big-row'>
-          <ProjectHeader
-            projectName='Project 1: Diagnostic Capstone'
-            expenses={project1Expenses}
-            available={500 - project1Expenses}
-            budgetTotal={500}
-            onToggleCollapse={() => toggleCollapse('project1')}
-            isOpen={isOpen.project1}
-          />
-          <Collapse in={isOpen.project1}>
-            <div className='w-100'>
-              {project1Cards.map((card, index) => (
-                <OrderCard key={index} {...card} />
-              ))}
-            </div>
-          </Collapse>
-        </Row>
-        <Row className='big-row'>
-          <ProjectHeader
-            projectName='Project 2: Point of Nerve Conduction'
-            expenses={project2Expenses}
-            available={1000 - project2Expenses}
-            budgetTotal={1000}
-            onToggleCollapse={() => toggleCollapse('project2')}
-            isOpen={isOpen.project2}
-          />
-          <Collapse in={isOpen.project2}>
-            <div className='w-100'>
-              {project2Cards.map((card, index) => (
-                <OrderCard key={index} {...card} />
-              ))}
-            </div>
-          </Collapse>
-        </Row>
-      </Container> */}
     </>
   )
 }

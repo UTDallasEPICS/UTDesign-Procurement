@@ -1,8 +1,8 @@
 /**
- * This component is a card that displays the details of a request made by a student
+ * This component is a card that displays the details of a reimbursement request made by a student
  */
 
-import { RequestDetails } from '@/lib/types'
+import { ReimbursementDetails } from '@/lib/types'
 import axios from 'axios'
 import { User } from 'next-auth'
 import React, { useEffect, useState } from 'react'
@@ -18,13 +18,14 @@ import {
 } from 'react-bootstrap'
 import styles from '@/styles/RequestCard.module.scss'
 import { Status } from '@prisma/client'
+import { Decimal } from '@prisma/client/runtime'
 
-interface RequestCardProps {
-  details: RequestDetails
+interface ReimbursementCardProps {
+  details: ReimbursementDetails
   collapsed: boolean
 }
 
-const StudentRequestCard: React.FC<RequestCardProps> = ({
+const StudentReimbursementCard: React.FC<ReimbursementCardProps> = ({
   details,
   collapsed,
 }) => {
@@ -41,7 +42,7 @@ const StudentRequestCard: React.FC<RequestCardProps> = ({
   // state that contains the values of the input fields in the request card
   const [inputValues, setInputValues] = useState(
     // initialized by the details prop
-    details.RequestItem.map((item) => {
+    details.ReimbursementItem.map((item) => {
       return { ...item }
     })
   )
@@ -131,11 +132,12 @@ const StudentRequestCard: React.FC<RequestCardProps> = ({
 
         {/* UNCOLLAPSED ROW */}
         <Row className='smaller-row'>
-          {/* REQUEST NUMBER */}
+        
+          {/* REIMBURSEMENT NUMBER */}
           <Col xs={12} lg={3}>
             <Card.Title>
               <h4 className={styles.headingLabel}>
-                Request #{details.requestID}
+                Reimbursement #{details.reimbursementID}
               </h4>
             </Card.Title>
           </Col>
@@ -153,27 +155,14 @@ const StudentRequestCard: React.FC<RequestCardProps> = ({
             </p>
           </Col>
 
-          {/* DATE NEEDED */}
-          <Col xs={6} lg={2}>
-            <h6 className={styles.headingLabel}>Date Needed</h6>
-            <p>
-              {new Date(details.dateNeeded).toLocaleDateString(undefined, {
-                weekday: 'short',
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric',
-              })}
-            </p>
-          </Col>
-
           {/* ORDER SUBTOTAL */}
           <Col xs={6} lg={2}>
             <h6 className={styles.headingLabel}>Order Subtotal</h6>
             <p>
               $
-              {details.RequestItem.reduce(
+              {details.ReimbursementItem.reduce(
                 (total, item) =>
-                  total + item.quantity * (item.unitPrice as any),
+                    total + 1 * (item.receiptTotal as any),
                 0
               ).toFixed(2)}
             </p>
@@ -246,22 +235,33 @@ const StudentRequestCard: React.FC<RequestCardProps> = ({
                     <thead>
                       <tr>
                         <th>#</th>
-                        <th>Description</th>
+                        <th>Receipt Date</th>
                         <th>Vendor</th>
-                        <th>URL</th>
-                        <th>Part #</th>
-                        <th>Qty</th>
-                        <th>Unit Price</th>
-                        <th>Total</th>
-                        <th>Order #</th>
-                        <th>Tracking Info</th>
+                        <th>Description</th>
+                        <th>Receipt Total</th>
                       </tr>
                     </thead>
                     <tbody>
                       {inputValues.map((item, itemIndex) => {
                         return (
+
                           <tr key={itemIndex}>
                             <td>{itemIndex + 1}</td>
+
+                            <td>
+                                <Form.Control
+                                    name = 'receiptDate'
+                                    value = {new Date(item.receiptDate).toLocaleDateString(undefined, {
+                                        weekday: 'short',
+                                        year: 'numeric',
+                                        month: 'short',
+                                        day: 'numeric',
+                                      })}
+                                />
+                            </td>
+
+                            <td>{item.vendorID}</td>
+
                             <td>
                               <Form.Control
                                 name='description'
@@ -274,71 +274,21 @@ const StudentRequestCard: React.FC<RequestCardProps> = ({
                                 }
                               />
                             </td>
-                            <td>{item.vendorID}</td>
+
                             <td>
-                              <Form.Control
-                                name='url'
-                                value={item.url}
-                                onChange={(e) =>
-                                  handleInputChange(
-                                    e as React.ChangeEvent<HTMLInputElement>,
-                                    itemIndex
-                                  )
-                                }
-                              />
-                            </td>
-                            <td>
-                              <Form.Control
-                                name='partNumber'
-                                value={item.partNumber}
-                                onChange={(e) =>
-                                  handleInputChange(
-                                    e as React.ChangeEvent<HTMLInputElement>,
-                                    itemIndex
-                                  )
-                                }
-                              />
-                            </td>
-                            <td>
-                              <Form.Control
-                                name='quantity'
-                                value={item.quantity}
-                                onChange={(e) =>
-                                  handleInputChange(
-                                    e as React.ChangeEvent<HTMLInputElement>,
-                                    itemIndex
-                                  )
-                                }
-                              />
-                            </td>
-                            <td>
-                              <Form.Control
-                                name='unitPrice'
-                                value={item.unitPrice.toString()}
-                                onChange={(e) =>
-                                  handleInputChange(
-                                    e as React.ChangeEvent<HTMLInputElement>,
-                                    itemIndex
-                                  )
-                                }
-                              />
-                            </td>
-                            <td>
-                              <InputGroup>
-                                <InputGroup.Text>$</InputGroup.Text>
-                                <Form.Control
-                                  value={(
-                                    item.quantity * (item.unitPrice as any)
-                                  ).toFixed(2)}
-                                  disabled
-                                />
-                              </InputGroup>
-                            </td>
-                            <td>
-                              <Form.Control />
-                            </td>
-                            <td>
-                              <Form.Control />
+                                <InputGroup>
+                                    <InputGroup.Text>$</InputGroup.Text>
+                                    <Form.Control
+                                        name='recieptTotal'
+                                        value={item.receiptTotal.toString()}
+                                        onChange={(e) =>
+                                            handleInputChange(
+                                            e as React.ChangeEvent<HTMLInputElement>,
+                                            itemIndex
+                                            )
+                                        }
+                                    />
+                                </InputGroup>
                             </td>
                           </tr>
                         )
@@ -365,4 +315,4 @@ const StudentRequestCard: React.FC<RequestCardProps> = ({
   )
 }
 
-export default StudentRequestCard
+export default StudentReimbursementCard

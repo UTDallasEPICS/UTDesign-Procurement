@@ -8,10 +8,11 @@ import React, { useEffect, useState } from 'react'
 import { Row, Button, Modal, Form } from 'react-bootstrap'
 import AdminRequestCard from '@/components/AdminRequestCard'
 import ProjectHeader from '@/components/ProjectHeader'
-import ReimbursementCard from '@/components/AdminReimbursementCard'
+import AdminReimbursementCard from '@/components/AdminReimbursementCard'
 import { prisma } from '@/db'
 import { RequestDetails } from '@/lib/types'
-import { Prisma, Project, Status, User, Order, RequestItem } from '@prisma/client';
+import { ReimbursementDetails } from '@/lib/types'
+import { Prisma, Project, Status, User, Order, RequestItem } from '@prisma/client'
 import RejectionModal from '@/components/RejectionModal'
 import axios from 'axios'
 import { Session, getServerSession } from 'next-auth'
@@ -29,6 +30,7 @@ export async function getServerSideProps(context: any) {
   const projects = await prisma.project.findMany()
 
   const requestOfMultipleProjects: RequestDetails[][] = []
+  const reimbursementsOfMultipleProjects: ReimbursementDetails[][] = []
 
   
   // Next.js recommends that instead of calling from '/api/request-form/get', just perform the query here
@@ -50,6 +52,22 @@ export async function getServerSideProps(context: any) {
         project: true,
       },
     })
+    const reimbursements = await prisma.reimbursement.findMany({
+      where: {
+        projectID: project.projectID,
+        Process: {
+          some: {
+            status: Status.APPROVED
+          }
+        }
+      },
+      include: {
+        ReimbursementItem: true,
+        Process: true,
+        project: true,
+      },
+    })
+    reimbursementsOfMultipleProjects.push(reimbursements)
     requestOfMultipleProjects.push(requests)
   }
 
@@ -59,6 +77,7 @@ export async function getServerSideProps(context: any) {
       user: user,
       // needed to stringify the object first to avoid non-serializable error
       reqs: JSON.parse(JSON.stringify(requestOfMultipleProjects)),
+      reims: JSON.parse(JSON.stringify(reimbursementsOfMultipleProjects)),
       projs: JSON.parse(JSON.stringify(projects)),
     },
   }
@@ -68,6 +87,7 @@ interface AdminProps {
   session: Session | null
   user: User
   reqs: RequestDetails[][]
+  reims: ReimbursementDetails[][]
   projs: Project[]
 }
 
@@ -75,20 +95,23 @@ export default function Admin({
   session,
   user,
   reqs,
+  reims,
   projs,
 }: AdminProps): JSX.Element {
+
   // state for opening the collapsed cards - an array due to multiple projects
   const [isOpen, setIsOpen] = useState<boolean[]>([])
+
   // state for the modal for rejecting requests
   const [showRejectModal, setShowRejectModal] = useState(false)
+
   // state to set the request number for the reject modal to show
-  const [selectedRequestID, setSelectedRequestID] = useState<number | null>(
-    null,
-  )
+  const [selectedProcessID, setSelectedProcessID] = useState<number | null>(null)
+
   // state for the requests inside the different projects associated to the user
-  const [rejectionReason, setRejectionReason] = useState('')
-  const [projectRequests, setProjectRequests] =
-    useState<RequestDetails[][]>(reqs)
+  const [projectRequests, setProjectRequests] = useState<RequestDetails[][]>(reqs)
+  const [projectReimbursements, setProjectReimbursements] = useState<ReimbursementDetails[][]>([])
+
   // state for the projects associated to the user
   const [projects, setProjects] = useState<Project[]>(projs)
   const [projectReqsWithOrders, setProjectReqsWithOrders] =
@@ -96,6 +119,8 @@ export default function Admin({
 
   // Opens all the cards by default
   useEffect(() => {
+    getAdminReimbursements()
+    getAdminRequests()
     setIsOpen(projects.map(() => true))
   }, [])
 
@@ -104,7 +129,7 @@ export default function Admin({
    * This function is called when the page needs to be rerendered with the updated data
    * This function calls our api that gets all the projects and their requests with the status of approved
    */
-  async function getAdmin() {
+  async function getAdminRequests() {
     const response = await axios.post('/api/request-form/get', {
       email: user.email,
     })
@@ -117,12 +142,22 @@ export default function Admin({
     setIsOpen(projects.map(() => true))
   }
 
+  async function getAdminReimbursements() {
+    const nextResponse = await axios.post('/api/reimbursement-form/get', {
+      netID: user.netID,
+    })
+    const [reimbursementsOfMultipleProjects] = await Promise.all([
+      nextResponse.data.reimbursements
+    ])
+    setProjectReimbursements(reimbursementsOfMultipleProjects)
+  }
+
   /**
    * This function is called after the admin clicks the reject button on a request.
    * @param requestID - The requestID of the request being rejected.
    */
-  const handleReject = (requestID: number) => {
-    setSelectedRequestID(requestID)
+  const handleReject = (processID: number) => {
+    setSelectedProcessID(processID)
     setShowRejectModal(true)
   }
 
@@ -143,18 +178,19 @@ export default function Admin({
    * This function is called after the admin submits the rejection reason through the RejectionModal.
    * @param reason - The reason for rejecting the request.
    */
-  const handleSubmitRejection = async () => {
+  const handleSubmitRejection = async (reason: string) => {
     setShowRejectModal(false)
     try {
       const response = await axios.post('/api/process/update', {
         email: user.email,
-        requestID: selectedRequestID,
-        comment: rejectionReason,
+        processID: selectedProcessID,
+        comment: reason,
         status: Status.REJECTED,
       })
 
       if (response.status === 200) {
-        getAdmin()
+        getAdminReimbursements()
+        getAdminRequests()
       }
     } catch (error) {
       if (error instanceof Error) console.log(error.message)
@@ -379,44 +415,49 @@ export default function Admin({
               onToggleCollapse={() => toggleCards(projIndex)}
               isOpen={isOpen[projIndex]}
             />
-            {projectRequests[projIndex].map((request, reqIndex) => {
-              return (
-                <AdminRequestCard
-                  key={reqIndex}
-                  user={user}
-                  project={project}
-                  details={request}
-                  onReject={() => handleReject(request.requestID)}
-                  onSave={() => getAdmin()}
-                  collapsed={isOpen[projIndex]}
-                />
-              )
-            })}
+            {projectRequests[projIndex]?.length > 0 ? (
+              projectRequests[projIndex].map((request, reqIndex) => {
+                return (
+                  <AdminRequestCard
+                    key={reqIndex}
+                    user={user}
+                    project={project}
+                    details={request}
+                    onReject={() => handleReject(request.Process[0].processID)}
+                    onSave={() => getAdminRequests()}
+                    collapsed={isOpen[projIndex]}
+                  />
+                )
+              })
+            ) : (
+              <p className='my-4'>There are no procurement requests in this project.</p>
+            )}
+            
+            {projectReimbursements[projIndex]?.length > 0 ? (
+              projectReimbursements[projIndex].map((reimbursement, reimIndex) => {
+                return (
+                  <AdminReimbursementCard
+                    key={reimIndex}
+                    user={user}
+                    project={project}
+                    details={reimbursement}
+                    onReject={() => handleReject(reimbursement.Process[0].processID)}
+                    onSave={() => getAdminReimbursements()} 
+                    collapsed={isOpen[projIndex]}
+                  />
+                )
+              })
+            ) : (
+              <p className='my-4'>There are no reimbursement requests in this project.</p>
+            )}
           </Row>
         )
       })}
-      <Modal show={showRejectModal} onHide={() => setShowRejectModal(false)}>
-        <Modal.Header closeButton>
-          <Modal.Title>Reason for Rejection</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Form.Control
-            as='textarea'
-            rows={3}
-            value={rejectionReason}
-            onChange={(e) => setRejectionReason(e.target.value)}
-            placeholder='Enter the reason for rejection'
-          />
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant='secondary' onClick={() => setShowRejectModal(false)}>
-            Cancel
-          </Button>
-          <Button variant='primary' onClick={handleSubmitRejection}>
-            Submit Rejection
-          </Button>
-        </Modal.Footer>
-      </Modal>
+      <RejectionModal
+        show={showRejectModal}
+        onHide={() => setShowRejectModal(false)}
+        onSubmit={handleSubmitRejection}
+      />
     </>
   )
 }
