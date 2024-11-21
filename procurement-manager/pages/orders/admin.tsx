@@ -144,7 +144,7 @@ export default function Admin({
 
   async function getAdminReimbursements() {
     const nextResponse = await axios.post('/api/reimbursement-form/get', {
-      netID: user.netID,
+      email: user.email,
     })
     const [reimbursementsOfMultipleProjects] = await Promise.all([
       nextResponse.data.reimbursements
