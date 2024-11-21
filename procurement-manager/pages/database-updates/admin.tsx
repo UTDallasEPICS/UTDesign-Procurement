@@ -95,7 +95,64 @@ export default function admin({
       setColData([
         { field: 'vendorID' },
         { field: 'vendorName' },
-        { field: 'vendorStatus' },
+        {
+          field: 'vendorStatus',
+          cellRenderer: (params: any) => {
+            const currentStatus = params.value;
+        
+            // Function to handle dropdown change
+            const handleDropdownChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+              const newStatus = e.target.value;
+        
+              // Update the local data immediately for UI responsiveness
+              params.data.vendorStatus = newStatus;
+              params.api.refreshCells({ rowNodes: [params.node], force: true });
+        
+              // Make an API call to update the database
+              try {
+                const response = await fetch('/api/vendor/updateStatus', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({
+                    vendorID: params.data.vendorID,
+                    newStatus,
+                  }),
+                });
+        
+                if (!response.ok) {
+                  console.error('Failed to update vendor status in the database.');
+                  // Optionally, revert UI changes if the API call fails
+                  params.data.vendorStatus = currentStatus;
+                  params.api.refreshCells({ rowNodes: [params.node], force: true });
+                }
+              } catch (error) {
+                console.error('Error updating vendor status:', error);
+                // Revert UI changes in case of an error
+                params.data.vendorStatus = currentStatus;
+                params.api.refreshCells({ rowNodes: [params.node], force: true });
+              }
+            };
+        
+            return (
+              <select
+                value={currentStatus}
+                onChange={handleDropdownChange}
+                style={{
+                  padding: '5px',
+                  borderRadius: '5px',
+                  backgroundColor: currentStatus === 'APPROVED' ? 'green' : 'red',
+                  color: 'white',
+                  border: 'none',
+                }}
+              >
+                <option value="APPROVED">APPROVED</option>
+                <option value="DENIED">DENIED</option>
+              </select>
+            );
+          },
+        },
         { field: 'vendorEmail' },
         { field: 'vendorURL' },
       ])
