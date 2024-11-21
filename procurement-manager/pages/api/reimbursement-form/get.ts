@@ -12,7 +12,7 @@ export default async function handler(
     /// using the works on
     const user = await prisma.user.findUnique({
       where: {
-        netID: req.body.netID,
+        email: req.body.email,
       },
       include: {
         WorksOn: true,

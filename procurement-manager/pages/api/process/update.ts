@@ -26,13 +26,13 @@ export default async function handler(
     }
 
     //post method as we are getting info
-    const { netID, processID, comment, status } = req.body
+    const { email, processID, comment, status } = req.body
 
-    // TODO: proper auth instead of passing netID
+    // TODO: proper auth instead of passing email
 
     // Finds the user and request based on the netID and ID provided in the request body
     const [user, process] = await Promise.all([
-      await prisma.user.findUnique({ where: { netID: netID } }),
+      await prisma.user.findUnique({ where: { email: email } }),
       await prisma.process.findUnique({
         where: { processID },
         include: { request: true, reimbursement: true },

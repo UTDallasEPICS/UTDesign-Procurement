@@ -61,7 +61,7 @@ export default function Mentor({ session, user }: MentorProps) {
    */
   async function getMentorRequests() {
     const response = await axios.post('/api/request-form/get', {
-      netID: user.netID,
+      email: user.email,
     })
     const [projects, requestsOfMultipleProjects] = await Promise.all([
       response.data.projects,
@@ -125,7 +125,7 @@ export default function Mentor({ session, user }: MentorProps) {
     setShowRejectModal(false)
     try {
       const response = await axios.post('/api/process/update', {
-        netID: user.netID,
+        email: user.email,
         processID: selectedProcessID,
         comment: reason,
         status: Status.REJECTED,
@@ -151,7 +151,7 @@ export default function Mentor({ session, user }: MentorProps) {
   async function handleApprove(processID: number) {
     try {
       const res = await axios.post('/api/process/update', {
-        netID: user.netID,
+        email: user.email,
         processID: processID,
         comment: 'Approved',
         status: Status.APPROVED,
