@@ -18,14 +18,14 @@ export interface RequestDetails extends Request {
   project: Project
   RequestItem: RequestItem[]
   OtherExpense: OtherExpense[]
-  Process: Process[]
+  process: Process
   // maybe add the RequestUpload here
 }
 
 export interface ReimbursementDetails extends Reimbursement {
   project: Project
   ReimbursementItem: ReimbursementItem[]
-  Process: Process[]
+  process: Process
 }
 
 export interface ValidFile {

@@ -179,7 +179,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
    */
   async function getStudentThatRequested() {
     try {
-      if (!details.Process[0].mentorID) return null
+      if (!details.process.mentorID) return null
       const user = await axios.get(`/api/user/${details.studentID}`)
       if (user.status === 200) setStudentThatRequested(user.data)
       return user
@@ -196,8 +196,8 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
    */
   async function getMentorThatApproved() {
     try {
-      if (!details.Process[0].mentorID) return null
-      const user = await axios.get(`/api/user/${details.Process[0].mentorID}`)
+      if (!details.process.mentorID) return null
+      const user = await axios.get(`/api/user/${details.process.mentorID}`)
       if (user.status === 200) setMentorThatApproved(user.data)
       return user
     } catch (error) {
@@ -547,7 +547,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
               {/* STATUS */}
               <Col xs={6} lg={3}>
                 <h6 className={styles.headingLabel}>Status</h6>
-                <p>{details.Process[0].status}</p>
+                <p>{details.process.status}</p>
               </Col>
             </Row>
             {/* COLLAPSED ROW */}
@@ -575,7 +575,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
                   {/* REJECT/EDIT BUTTONS */}
                   <Col xs={12} lg={5}>
                     {/* TODO Admins can delete instead of rejecting, shouldn't need to approve */}
-                    {/* {details.Process[0].status == Status.UNDER_REVIEW && (<Button
+                    {/* {details.process.status == Status.UNDER_REVIEW && (<Button
                       className={`${styles.cardBtn} ${styles.rejectBtn}`}
                       variant='success'
                       style={{ minWidth: '150px', marginRight: '20px' }}
@@ -584,7 +584,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
                       Accept
                     </Button>)} */}
 
-                    {details.Process[0].status == Status.APPROVED && (
+                    {details.process.status == Status.APPROVED && (
                       <Button
                         className={`${styles.cardBtn} ${styles.rejectBtn}`}
                         variant='danger'
@@ -594,7 +594,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
                       </Button>
                     )}
 
-                    {!editable && details.Process[0].status == Status.APPROVED && (
+                    {!editable && details.process.status == Status.APPROVED && (
                       <Button
                         className={`${styles.editBtn} ${styles.cardBtn}`}
                         variant='warning'
@@ -604,7 +604,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
                       </Button>
                     )}
 
-                    {details.Process[0].status == Status.APPROVED && (
+                    {details.process.status == Status.APPROVED && (
                       <Button
                       className={`${styles.cardBtn} ${styles.rejectBtn}`}
                       variant='success'
@@ -614,7 +614,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
                       </Button>
                     )}
 
-                    {details.Process[0].status == Status.ORDERED && (
+                    {details.process.status == Status.ORDERED && (
                       <Button
                       className={`${styles.cardBtn} ${styles.rejectBtn}`}
                       variant='success'

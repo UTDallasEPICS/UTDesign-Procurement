@@ -62,7 +62,7 @@ const StudentReimbursementCard: React.FC<ReimbursementCardProps> = ({
    */
   async function getStudentThatRequested() {
     try {
-      if (!details.Process[0].mentorID) return null
+      if (!details.process.mentorID) return null
       const user = await axios.get(`/api/user/${details.studentID}`)
       if (user.status === 200) setStudentThatRequested(user.data)
       return user
@@ -79,8 +79,8 @@ const StudentReimbursementCard: React.FC<ReimbursementCardProps> = ({
    */
   async function getMentorThatApproved() {
     try {
-      if (!details.Process[0].mentorID) return null
-      const user = await axios.get(`/api/user/${details.Process[0].mentorID}`)
+      if (!details.process.mentorID) return null
+      const user = await axios.get(`/api/user/${details.process.mentorID}`)
       if (user.status === 200) setMentorThatApproved(user.data)
       return user
     } catch (error) {
@@ -171,7 +171,7 @@ const StudentReimbursementCard: React.FC<ReimbursementCardProps> = ({
           {/* STATUS */}
           <Col xs={6} lg={3}>
             <h6 className={styles.headingLabel}>Status</h6>
-            <p>{details.Process[0].status}</p>
+            <p>{details.process.status}</p>
           </Col>
         </Row>
 
@@ -199,7 +199,7 @@ const StudentReimbursementCard: React.FC<ReimbursementCardProps> = ({
                 <p>{mentorThatApproved?.email}</p>
               </Col>
 
-              {details.Process[0].status === Status.REJECTED && (
+              {details.process.status === Status.REJECTED && (
                 <Col xs={12} lg={5}>
                   {!editable && (
                     <Button
@@ -212,14 +212,14 @@ const StudentReimbursementCard: React.FC<ReimbursementCardProps> = ({
                   )}
                   <h6 className={styles.headingLabel}>Comments: </h6>
                   <p>
-                    {!details.Process[0].adminProcessedComments
+                    {!details.process.adminProcessedComments
                       ? 'No Comments from Admin'
-                      : 'Admin: ' + details.Process[0].adminProcessedComments}
+                      : 'Admin: ' + details.process.adminProcessedComments}
                   </p>
                   <p>
-                    {!details.Process[0].mentorProcessedComments
+                    {!details.process.mentorProcessedComments
                       ? 'No Comments from Mentor'
-                      : 'Mentor: ' + details.Process[0].mentorProcessedComments}
+                      : 'Mentor: ' + details.process.mentorProcessedComments}
                   </p>
                 </Col>
               )}

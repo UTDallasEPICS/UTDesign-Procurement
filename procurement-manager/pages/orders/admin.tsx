@@ -39,15 +39,13 @@ export async function getServerSideProps(context: any) {
     const requests = await prisma.request.findMany({
       where: {
         projectID: project.projectID,
-        Process: {
-          some: {
-            status: Status.APPROVED,
-          },
+        process: {
+          status: Status.APPROVED,
         },
       },
       include: {
         RequestItem: true,
-        Process: true,
+        process: true,
         OtherExpense: true,
         project: true,
       },
@@ -55,15 +53,13 @@ export async function getServerSideProps(context: any) {
     const reimbursements = await prisma.reimbursement.findMany({
       where: {
         projectID: project.projectID,
-        Process: {
-          some: {
-            status: Status.APPROVED
-          }
-        }
+        process: {
+          status: Status.APPROVED
+        },
       },
       include: {
         ReimbursementItem: true,
-        Process: true,
+        process: true,
         project: true,
       },
     })
@@ -447,9 +443,9 @@ export default function Admin({
                     user={user}
                     project={project}
                     details={request}
-                    onReject={() => handleReject(request.Process[0].processID)}
-                    setStatusOrdered={() => updateStatus(Status.ORDERED, request.Process[0].processID)}
-                    setStatusReceived={() => updateStatus(Status.RECEIVED, request.Process[0].processID)}
+                    onReject={() => handleReject(request.process.processID)}
+                    setStatusOrdered={() => updateStatus(Status.ORDERED, request.process.processID)}
+                    setStatusReceived={() => updateStatus(Status.RECEIVED, request.process.processID)}
                     onSave={() => getAdminRequests()}
                     collapsed={isOpen[projIndex]}
                   />
@@ -467,7 +463,7 @@ export default function Admin({
                     user={user}
                     project={project}
                     details={reimbursement}
-                    onReject={() => handleReject(reimbursement.Process[0].processID)}
+                    onReject={() => handleReject(reimbursement.process.processID)}
                     onSave={() => getAdminReimbursements()} 
                     collapsed={isOpen[projIndex]}
                   />

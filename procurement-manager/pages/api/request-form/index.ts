@@ -89,8 +89,12 @@ export default async function handler(
     if (typeof body.projectNum === 'string')
       body.projectNum = parseInt(body.projectNum)
 
+    // CREATE NEW PROCESS WITH STATUS OF UNDER_REVIEW INTO DATABASE
+    const process = await createProcess()
+    const processID = process.processID
+
     // FINALLY CREATE THE REQUEST FORM AND INSERT TO DATABASE
-    const requestForm = await createRequest(body, dateSubmitted, optionalFields)
+    const requestForm = await createRequest(body, dateSubmitted, processID, optionalFields)
     const requestID = requestForm.requestID
 
     // INPUT ARRAY OF ITEMS INTO DATABASE
@@ -98,9 +102,6 @@ export default async function handler(
     items.forEach(async (item: Item) => {
       await createItem(requestID, item)
     })
-
-    // CREATE NEW PROCESS WITH STATUS OF UNDER_REVIEW INTO DATABASE
-    await createProcess(requestID)
 
     res.status(200).json({
       message: 'POST was a success',
@@ -128,6 +129,7 @@ export default async function handler(
 async function createRequest(
   body: any,
   dateSubmitted: Date,
+  processID: number,
   optionalFields: Optionals,
 ) {
   try {
@@ -142,12 +144,15 @@ async function createRequest(
         student: {
           connect: { email: body.studentEmail },
         },
+        process: {
+          connect: { processID: processID },
+        },
         additionalInfo: optionalFields.additionalInfo,
         expense: body.totalExpenses,
       },
       include: {
         RequestItem: true,
-        Process: true,
+        process: true,
       },
     })
     console.log(requestForm)
@@ -234,18 +239,14 @@ async function createItem(reqID: number, itemToPut: Item) {
 }
 
 // Creates a new Process into the database
-async function createProcess(reqID: number) {
+async function createProcess() {
   const newProcess = await prisma.process
     .create({
       data: {
-        status: Status.UNDER_REVIEW,
-        request: {
-          connect: { requestID: reqID },
-        },
+        status: Status.UNDER_REVIEW
       },
     })
     .catch(async (e) => {
-      await prisma.request.delete({ where: { requestID: reqID } })
       throw new Error(e)
     })
   return newProcess

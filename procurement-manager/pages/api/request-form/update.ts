@@ -67,17 +67,13 @@ export default async function handler(
         request = await prisma.request.update({
           where: {
             requestID: oldRequestForm.requestID,
+            processID: process.processID,
           },
           data: {
-            Process: {
+            process: {
               update: {
-                where: {
-                  processID: parseInt(body.processID)
-                },
-                data: {
-                  // TODO:: use type checking (could allow admin to pass in status string like "approved" and create status using Status.APPROVED, etc. for different ones)
-                  status: body.status
-                }
+                // TODO:: use type checking (could allow admin to pass in status string like "approved" and create status using Status.APPROVED, etc. for different ones)
+                status: body.status
               }
             }
           },
