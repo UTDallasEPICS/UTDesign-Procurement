@@ -1,6 +1,5 @@
-
 import React, { useState } from 'react';
-import { Modal, Button, Form } from 'react-bootstrap';
+import { Modal, Form, Nav, Button } from 'react-bootstrap';
 
 interface AddOptionModalProps {
   show: boolean;
@@ -8,72 +7,143 @@ interface AddOptionModalProps {
 }
 
 const AddOptionModal: React.FC<AddOptionModalProps> = ({ show, onHide }) => {
-  const [showUserForm, setShowUserForm] = useState(false);
-  const [showProjectForm, setShowProjectForm] = useState(false);
+  const [activeTab, setActiveTab] = useState('user');
+  
+  const [userForm, setUserForm] = useState({
+    email: '',
+    firstName: '',
+    lastName: '',
+    roleID: 3  // Default to student (3), mentor is roleID 2
+  });
 
-  const handleAddUserClick = () => {
-    setShowUserForm(true);
-    setShowProjectForm(false);
+  const [projectForm, setProjectForm] = useState({
+    projectNumber: '',
+    startingBudget: '',
+    expenses: '',
+    projectType: '',
+    sponsorCompany: '',
+    costCenter: '',
+    additionalInformation: ''
+  });
+
+  const handleUserSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const response = await fetch('/api/admin-add', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          type: 'user',
+          data: userForm
+        }),
+      });
+      
+      if (!response.ok) throw new Error('Failed to add user');
+      onHide();
+    } catch (error) {
+      console.error('Error adding user:', error);
+    }
   };
 
-  const handleAddProjectClick = () => {
-    setShowProjectForm(true);
-    setShowUserForm(false);
+  const handleProjectSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const response = await fetch('/api/admin-add', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          type: 'project',
+          data: projectForm
+        }),
+      });
+      
+      if (!response.ok) throw new Error('Failed to add project');
+      onHide();
+    } catch (error) {
+      console.error('Error adding project:', error);
+    }
   };
 
   return (
     <Modal show={show} onHide={onHide}>
       <Modal.Header closeButton>
-        <Modal.Title>Select Add Option</Modal.Title>
+        <Modal.Title>Add</Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        <p>What would you like to add?</p>
-        <Button variant="secondary" className="mx-2" onClick={handleAddUserClick}>
-          Add User
-        </Button>
-        {showUserForm && (
-          <Form>
-          <Form.Group controlId="addUser">
-            <Form.Label>Email:</Form.Label>
-            <Form.Control as="textarea" rows={1} />
-            <Form.Label>First Name:</Form.Label>
-            <Form.Control as="textarea" rows={1} />
-            <Form.Label>Last Name:</Form.Label>
-            <Form.Control as="textarea" rows={1} />
-          </Form.Group>
-        </Form>
-        )}
+        <Nav variant="tabs" className="mb-3">
+          <Nav.Item>
+            <Nav.Link onClick={() => setActiveTab('user')}>Add User</Nav.Link>
+          </Nav.Item>
+          <Nav.Item>
+            <Nav.Link onClick={() => setActiveTab('project')}>Add Project</Nav.Link>
+          </Nav.Item>
+        </Nav>
 
-        <Button variant="primary" className="mx-2" onClick={handleAddProjectClick}>
-          Add Project
-        </Button>
-        {showProjectForm && (
-          <Form>
-          <Form.Group controlId="addUser">
-            <Form.Label>Project Number:</Form.Label>
-            <Form.Control as="textarea" rows={1} />
-            <Form.Label>Starting Budget:</Form.Label>
-            <Form.Control as="textarea" rows={1} />
-            <Form.Label>Expenses:</Form.Label>
-            <Form.Control as="textarea" rows={1} />
-            <Form.Label>Project Type:</Form.Label>
-            <Form.Control as="textarea" rows={1} />
-            <Form.Label>Sponsor Company:</Form.Label>
-            <Form.Control as="textarea" rows={1} />
-            <Form.Label>Cost Center:</Form.Label>
-            <Form.Control as="textarea" rows={1} />
-            <Form.Label>Addidtional Information:</Form.Label>
-            <Form.Control as="textarea" rows={1} />
-          </Form.Group>
-        </Form>
-      
+        {activeTab === 'user' ? (
+          <Form onSubmit={handleUserSubmit}>
+            <Form.Group className="mb-3">
+              <Form.Label>Email</Form.Label>
+              <Form.Control 
+                type="email" 
+                value={userForm.email}
+                onChange={(e) => setUserForm({...userForm, email: e.target.value})}
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>First Name</Form.Label>
+              <Form.Control 
+                type="text" 
+                value={userForm.firstName}
+                onChange={(e) => setUserForm({...userForm, firstName: e.target.value})}
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Last Name</Form.Label>
+              <Form.Control 
+                type="text" 
+                value={userForm.lastName}
+                onChange={(e) => setUserForm({...userForm, lastName: e.target.value})}
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Role</Form.Label>
+              <div>
+                <Form.Check
+                  type="radio"
+                  label="Student"
+                  name="role"
+                  checked={userForm.roleID === 3}
+                  onChange={() => setUserForm({...userForm, roleID: 3})}
+                />
+                <Form.Check
+                  type="radio"
+                  label="Mentor"
+                  name="role"
+                  checked={userForm.roleID === 2}
+                  onChange={() => setUserForm({...userForm, roleID: 2})}
+                />
+              </div>
+            </Form.Group>
+            <Button type="submit">Submit</Button>
+          </Form>
+        ) : (
+          <Form onSubmit={handleProjectSubmit}>
+            <Form.Group className="mb-3">
+              <Form.Label>Project Number</Form.Label>
+              <Form.Control 
+                type="text" 
+                value={projectForm.projectNumber}
+                onChange={(e) => setProjectForm({...projectForm, projectNumber: e.target.value})}
+              />
+            </Form.Group>
+            <Button type="submit">Submit</Button>
+          </Form>
         )}
       </Modal.Body>
-      <Modal.Footer>
-        <Button variant="secondary" onClick={onHide}>
-          Close
-        </Button>
-      </Modal.Footer>
     </Modal>
   );
 };

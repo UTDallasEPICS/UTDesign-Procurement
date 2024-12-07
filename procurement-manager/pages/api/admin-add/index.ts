@@ -1,1 +1,83 @@
-//need to make the api for the admin add function with eerav
+import { NextApiRequest, NextApiResponse } from 'next'
+import { prisma } from '@/db'
+
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' })
+  }
+  const { type, data } = req.body // type will be either 'user' or 'project'
+
+  try {
+    if (type === 'user') {
+      const { email, firstName, lastName, roleID } = data
+      
+      // Check if email matches UTD format (3 letters followed by 6 digits)
+      const netIDMatch = email.match(/^([a-zA-Z]{3}\d{6})@utdallas\.edu$/);
+      
+      if (roleID ===3 && !netIDMatch) {
+        return res.status(400).json({ 
+          error: 'Invalid email format. Must be a UTD email (e.g., ABC123456@utdallas.edu)' 
+        });
+      }
+
+      
+      //if no net ID is found then netID will be empty string otherwise it will be whatever is parsed from the email
+      const netID = netIDMatch ? netIDMatch[1] : "---------";
+      
+      try {
+        const user = await prisma.user.create({
+          data: {
+            firstName,
+            lastName,
+            email,
+            netID: netID,
+            active: true,
+            role: {
+              connect: { roleID: roleID }
+            },
+            responsibilities: '',
+          },
+        })
+        return res.status(201).json(user)
+      } catch (error) {
+        console.error('Error in admin-add:', error)
+        return res.status(500).json({ error: 'Failed to add user' })
+      }
+    }
+
+    if (type === 'project') {
+      const {
+        projectNumber,
+        startingBudget,
+        expenses,
+        projectType,
+        sponsorCompany,
+        costCenter,
+        additionalInformation
+      } = data
+
+      const project = await prisma.project.create({
+        data: {
+          projectTitle: projectNumber,
+          projectNum: projectNumber,
+          startingBudget: parseFloat(startingBudget),
+          totalExpenses: parseFloat(expenses),
+          projectType,
+          sponsorCompany,
+          costCenter,
+          additionalInfo: additionalInformation,
+          activationDate: new Date(),
+        },
+      })
+      return res.status(201).json(project)
+    }
+
+    return res.status(400).json({ error: 'Invalid type specified' })
+  } catch (error) {
+    console.error('Error in admin-add:', error)
+    return res.status(500).json({ error: 'Failed to add record' })
+  }
+}

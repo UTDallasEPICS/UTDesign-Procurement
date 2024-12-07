@@ -20,7 +20,10 @@ export default async function handler(
   JSON response with an error message and a status code of 500 (indicating that there was a server
   error). */  
   if (req.method === 'GET') {
+
     try {
+      
+
       const users = await prisma.user.findMany()
       res.status(200).json(users)
     } catch (error) {
