@@ -15,6 +15,8 @@ import 'ag-grid-community/styles/ag-grid.css'
 import 'ag-grid-community/styles/ag-theme-quartz.css'
 import { CellValueChangedEvent } from 'ag-grid-community'
 import AdminAddButtonModal from '@/components/AdminAddButtonModal'
+import AdminDeleteModal from '@/components/AdminDeleteModal'
+import AdminDeactivateModal from '@/components/AdminDeactivateModal'
 
 export async function getServerSideProps() {
   const users = await prisma.user.findMany()
@@ -43,9 +45,16 @@ export default function admin({
   users,
   projects,
 }: AdminProps): JSX.Element {
-  const [tableType, setTableType] = useState<string>('user') // either user or project
+  const [showModal, setShowModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showDeactivateModal, setShowDeactivateModal] = useState(false);
+  const [tableType, setTableType] = useState<string>('user');
   const [colData, setColData] = useState<any>([])
-  const [showModal, setShowModal] = useState(false)
+  const [defaultColDef, setDefaultColDef] = useState<any>({
+    editable: true,
+    filter: true,
+    cellStyle: { textAlign: 'left' }
+  })
 
   const handleAddUserClick = () => {
     setShowModal(true)
@@ -54,11 +63,6 @@ export default function admin({
   const handleAddProjectClick = () => {
     setShowModal(true)
   }
-
-  const [defaultColDef, setDefaultColDef] = useState<any>({
-    editable: true,
-    filter: true,
-  })
 
   const onCellValueChanged = (event: CellValueChangedEvent) => {
     if (event.rowIndex === null) return
@@ -73,9 +77,26 @@ export default function admin({
         { field: 'lastName' },
         { field: 'email' },
         { field: 'roleID' },
-        { field: 'active' },
+        { 
+          field: 'active',
+          valueFormatter: (params: any) => params.value ? 'Active' : 'Inactive',
+          cellRenderer: (params: any) => params.value ? 'Active' : 'Inactive',
+          editable: false,
+          type: 'textColumn',
+          cellStyle: { textAlign: 'left' }
+        },
         { field: 'responsibilities' },
-        { field: 'deactivationDate' },
+        { 
+          field: 'deactivationDate',
+          valueFormatter: (params: any) => {
+            if (!params.value) return '';
+            return new Date(params.value).toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
+            });
+          }
+        },
       ])
     } else if (tableType === 'project') {
       setColData([
@@ -86,8 +107,28 @@ export default function admin({
         { field: 'totalExpenses' },
         { field: 'projectType' },
         { field: 'sponsorCompany' },
-        { field: 'activationDate' },
-        { field: 'deactivationDate' },
+        { 
+          field: 'activationDate',
+          valueFormatter: (params: any) => {
+            if (!params.value) return '';
+            return new Date(params.value).toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
+            });
+          }
+        },
+        { 
+          field: 'deactivationDate',
+          valueFormatter: (params: any) => {
+            if (!params.value) return '';
+            return new Date(params.value).toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
+            });
+          }
+        },
         { field: 'additionalInfo' },
         { field: 'costCenter' },
       ])
@@ -123,7 +164,32 @@ export default function admin({
                 onHide={() => setShowModal(false)}
               />
 
-              <Button variant="danger" className="mx-2">Delete</Button>
+              <Button 
+                variant="danger"
+                className="mx-2"
+                onClick={() => setShowDeleteModal(true)}
+              >
+                Delete
+              </Button>
+              <AdminDeleteModal
+                show={showDeleteModal}
+                onHide={() => setShowDeleteModal(false)}
+                type={tableType}
+              />
+
+              <Button 
+                variant="warning"
+                className="mx-2"
+                onClick={() => setShowDeactivateModal(true)}
+              >
+                Deactivate
+              </Button>
+              <AdminDeactivateModal
+                show={showDeactivateModal}
+                onHide={() => setShowDeactivateModal(false)}
+                type={tableType}
+              />
+
               <Link href={'/database-updates/upload'}>
                 <Button>Upload Files</Button>
               </Link>
@@ -143,6 +209,7 @@ export default function admin({
               pagination={true}
               onCellValueChanged={onCellValueChanged}
               stopEditingWhenCellsLoseFocus={true}
+              suppressRowDeselection={true}
             />
           </div>
         </Col>
