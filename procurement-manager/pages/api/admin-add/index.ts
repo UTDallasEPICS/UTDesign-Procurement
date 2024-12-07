@@ -50,29 +50,42 @@ export default async function handler(
 
     if (type === 'project') {
       const {
-        projectNumber,
+        projectTitle,
+        projectNum,
         startingBudget,
-        expenses,
         projectType,
         sponsorCompany,
         costCenter,
-        additionalInformation
+        additionalInfo,
+        initialExpenses
       } = data
 
-      const project = await prisma.project.create({
-        data: {
-          projectTitle: projectNumber,
-          projectNum: projectNumber,
-          startingBudget: parseFloat(startingBudget),
-          totalExpenses: parseFloat(expenses),
-          projectType,
-          sponsorCompany,
-          costCenter,
-          additionalInfo: additionalInformation,
-          activationDate: new Date(),
-        },
-      })
-      return res.status(201).json(project)
+      try {
+        // Validate numeric fields
+        if (isNaN(parseFloat(startingBudget)) || isNaN(parseFloat(initialExpenses))) {
+          return res.status(400).json({ 
+            error: 'Starting budget and expenses must be valid numbers' 
+          });
+        }
+
+        const project = await prisma.project.create({
+          data: {
+            projectTitle,
+            projectNum: parseInt(projectNum),
+            startingBudget: parseFloat(startingBudget),
+            projectType,
+            sponsorCompany,
+            costCenter: costCenter ? parseInt(costCenter) : null,
+            additionalInfo,
+            activationDate: new Date(),
+            totalExpenses: parseFloat(initialExpenses),
+          },
+        })
+        return res.status(201).json(project)
+      } catch (error) {
+        console.error('Error in admin-add:', error)
+        return res.status(500).json({ error: 'Failed to add project' })
+      }
     }
 
     return res.status(400).json({ error: 'Invalid type specified' })

@@ -17,13 +17,14 @@ const AddOptionModal: React.FC<AddOptionModalProps> = ({ show, onHide }) => {
   });
 
   const [projectForm, setProjectForm] = useState({
-    projectNumber: '',
+    projectTitle: '',
+    projectNum: '',
     startingBudget: '',
-    expenses: '',
     projectType: '',
     sponsorCompany: '',
+    additionalInfo: '',
     costCenter: '',
-    additionalInformation: ''
+    initialExpenses: '0'
   });
 
   const handleUserSubmit = async (e: React.FormEvent) => {
@@ -131,13 +132,73 @@ const AddOptionModal: React.FC<AddOptionModalProps> = ({ show, onHide }) => {
             <Button type="submit">Submit</Button>
           </Form>
         ) : (
+          
           <Form onSubmit={handleProjectSubmit}>
+            <Form.Group className="mb-3">
+              <Form.Label>Project Title</Form.Label>
+              <Form.Control 
+                type="text" 
+                value={projectForm.projectTitle}
+                onChange={(e) => setProjectForm({...projectForm, projectTitle: e.target.value})}
+              />
+            </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label>Project Number</Form.Label>
               <Form.Control 
+                type="number" 
+                value={projectForm.projectNum}
+                onChange={(e) => setProjectForm({...projectForm, projectNum: e.target.value})}
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Starting Budget</Form.Label>
+              <Form.Control 
+                type="number" 
+                step="0.01"
+                value={projectForm.startingBudget}
+                onChange={(e) => setProjectForm({...projectForm, startingBudget: e.target.value})}
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Expenses</Form.Label>
+              <Form.Control 
+                type="number" 
+                step="0.01"
+                value={projectForm.initialExpenses}
+                onChange={(e) => setProjectForm({...projectForm, initialExpenses: e.target.value})}
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Project Type</Form.Label>
+              <Form.Control 
                 type="text" 
-                value={projectForm.projectNumber}
-                onChange={(e) => setProjectForm({...projectForm, projectNumber: e.target.value})}
+                value={projectForm.projectType}
+                onChange={(e) => setProjectForm({...projectForm, projectType: e.target.value})}
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Sponsor Company</Form.Label>
+              <Form.Control 
+                type="text" 
+                value={projectForm.sponsorCompany}
+                onChange={(e) => setProjectForm({...projectForm, sponsorCompany: e.target.value})}
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Additional Information</Form.Label>
+              <Form.Control 
+                as="textarea"
+                rows={3}
+                value={projectForm.additionalInfo}
+                onChange={(e) => setProjectForm({...projectForm, additionalInfo: e.target.value})}
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Cost Center</Form.Label>
+              <Form.Control 
+                type="text" 
+                value={projectForm.costCenter}
+                onChange={(e) => setProjectForm({...projectForm, costCenter: e.target.value})}
               />
             </Form.Group>
             <Button type="submit">Submit</Button>
