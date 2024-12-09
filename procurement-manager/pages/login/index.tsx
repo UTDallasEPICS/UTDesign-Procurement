@@ -4,12 +4,10 @@ import { Container, Row, Col, Form, Button } from 'react-bootstrap'
 import { signIn } from 'next-auth/react'
 import axios from 'axios'
 
-async function validateUser(NetID: string) {
+async function validateUser(email: string) {
   // HTTP POST request (to get updated data role ID based on request/param net ID)
   // used existing API from request form since it already has param net ID and returns role ID
-  const response = await axios.post('/api/request-form/get', {
-    netID: NetID,
-  })
+  const response = await axios.post('/api/request-form/get', { email })
   return response // JSON object with role ID or error if user does not exist
 }
 
@@ -25,7 +23,8 @@ export default function Login() {
     const loginFormat = /^[a-zA-Z]{3}\d{6}$/
     if (loginInput.match(loginFormat)) {
       try {
-        const response = await validateUser(loginInput) // first make sure response is successful then get role ID
+        // TODO: use an endpoint that takes netID or email interchangeably (different from request-form/get)
+        const response = await validateUser(loginInput.toLowerCase() + '@utdallas.edu') // first make sure response is successful then get role ID
         const roleID: number = response.data.userRole
         const result = await signIn('credentials', {
           roleID: roleID,
@@ -33,7 +32,7 @@ export default function Login() {
           callbackUrl: '/orders',
         })
       } catch (error) {
-        console.error('Error:', error)
+        console.warn('Login error:', error)
         setError('Invalid NetID, user does not exist')
       }
     } else {

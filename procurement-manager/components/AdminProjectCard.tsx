@@ -383,9 +383,9 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
             projectWorksOn = worksOns.filter((worksOn) => (worksOn.projectID === project.projectID))
   
             deactivateRes = await axios.post('/api/worksOn/deactivate/', {
-            netID: mentorArr[mentorIndex].netID,
-            projectNum: newProject.projectNum,
-            startDate: projectWorksOn[0].startDate,
+              email: mentorArr[mentorIndex].email,
+              projectNum: newProject.projectNum,
+              startDate: projectWorksOn[0].startDate,
             })
             if (deactivateRes.status === 200) {
               console.log("deactivated mentor")
@@ -402,7 +402,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
               console.log(userRes.data)
             }
             worksOnRes = await axios.post('/api/worksOn/', {
-              netID: userRes.data.user.netID,
+              email: userRes.data.user.email,
               projectNum: newProject.projectNum,
             })
             if (worksOnRes.status === 201) {
@@ -430,9 +430,9 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
             projectWorksOn = worksOns.filter((worksOn) => (worksOn.projectID === project.projectID))
   
             deactivateRes = await axios.post('/api/worksOn/deactivate/', {
-            netID: studentArr[studentIndex].netID,
-            projectNum: newProject.projectNum,
-            startDate: projectWorksOn[0].startDate,
+              email: studentArr[studentIndex].email,
+              projectNum: newProject.projectNum,
+              startDate: projectWorksOn[0].startDate,
             })
             if (deactivateRes.status === 200) {
               console.log("deactivated student")
@@ -449,7 +449,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
               console.log(userRes.data)
             }
             worksOnRes = await axios.post('/api/worksOn/', {
-              netID: userRes.data.user.netID,
+              email: userRes.data.user.email,
               projectNum: newProject.projectNum,
             })
             if (worksOnRes.status === 201) {

@@ -87,7 +87,7 @@ export default function Admin({
    */
   async function getAdmin() {
     const response = await axios.post('/api/request-form/get', {
-      netID: user.netID,
+      email: user.email,
     })
     const [projects, requestsOfMultipleProjects] = await Promise.all([
       response.data.projects,

@@ -1,62 +1,43 @@
 /**
- * This component is the card that the Admin will see in the Orders Page
+ * This component is a card that displays the details of a request that a student has submitted in the Mentor's Orders page
  */
+
+import { Prisma, User } from '@prisma/client'
 import React, { useEffect, useState } from 'react'
-import { prisma } from '@/db'
-import { ReimbursementDetails } from '@/lib/types'
-import {
-  Row,
-  Col,
-  Card,
-  Button,
-  Table,
-  Form,
-  InputGroup,
-  Collapse,
-} from 'react-bootstrap'
+import { Card, Button, Col, Row, Collapse, Form, Table } from 'react-bootstrap'
 import styles from '@/styles/RequestCard.module.scss'
-import { Prisma, User, Project, Vendor, Order, ReimbursementItem } from '@prisma/client'
+import { ReimbursementDetails } from '@/lib/types'
 import axios from 'axios'
 
-interface AdminRequestCardProps {
-  user: User
-  project: Project
+interface ReimbursementCardProps {
   details: ReimbursementDetails
   onReject: () => void
-  onSave: () => void
+  onApprove: () => void
   collapsed: boolean
 }
 
-const AdminReimbursementCard: React.FC<AdminRequestCardProps> = ({
-  user,
-  project,
+const MentorReimbursementCard: React.FC<ReimbursementCardProps> = ({
   details,
   onReject,
-  onSave,
+  onApprove,
   collapsed,
 }) => {
 
   // state for the student that requested the order
   const [studentThatRequested, setStudentThatRequested] = useState<User>()
 
-  // state for the mentor that approved the order
-  const [mentorThatApproved, setMentorThatApproved] = useState<User>()
-
   // state for the collapse for request details
   const [collapse, setCollapse] = useState<boolean | undefined>(false)
 
-  // state for editing the request details
-  const [editable, setEditable] = useState<boolean>(false)
-  
   // Show cards by default and rerenders everytime collapsed changes
   useEffect(() => {
     setCollapse(collapsed)
   }, [collapsed])
 
-  // Get the student and mentor that requested and approved the order - only runs once
+  // Get the student that requested the order
   useEffect(() => {
     getStudentThatRequested()
-    getMentorThatApproved()
+    // getMentorThatApproved()
   }, [])
 
   /**
@@ -76,27 +57,10 @@ const AdminReimbursementCard: React.FC<AdminRequestCardProps> = ({
     }
   }
 
-  /**
-   * This function provides the data received from our API of the mentor that approved the order
-   * @returns User object of the mentor that approved the order
-   */
-  async function getMentorThatApproved() {
-    try {
-      if (!details.Process[0].mentorID) return null
-      const user = await axios.get(`/api/user/${details.Process[0].mentorID}`)
-      if (user.status === 200) setMentorThatApproved(user.data)
-      return user
-    } catch (error) {
-      if (axios.isAxiosError(error) || error instanceof Error)
-        console.log(error.message)
-      else console.log(error)
-    }
-  }
-
   return (
     <Row className='mb-4'>
       <Col>
-        <Card style={{ backgroundColor: '#f8f9fa' }}>
+        <Card style={{ backgroundColor: 'rgb(240, 240, 240)' }}>
           <Card.Body>
             <Row className='smaller-row'>
 
@@ -165,34 +129,27 @@ const AdminReimbursementCard: React.FC<AdminRequestCardProps> = ({
                   <Col xs={12} lg={4}>
                     <h6 className={styles.headingLabel}>Requested by:</h6>
                     <p>{studentThatRequested?.email}</p>
-
-                    <h6 className={styles.headingLabel}>Approved by:</h6>
-                    <p>{mentorThatApproved?.email}</p>
                   </Col>
 
-                  {/* REJECT/EDIT BUTTONS */}
+                  {/* REJECT/Approve BUTTONS */}
                   <Col xs={12} lg={5}>
                     <Button
-                      className={`${styles.cardBtn} ${styles.rejectBtn}`}
                       variant='danger'
                       style={{ minWidth: '150px', marginRight: '20px' }}
                       onClick={onReject}
                     >
                       Reject
                     </Button>{' '}
-                    {!editable && (
-                      <Button
-                        className={`${styles.editBtn} ${styles.cardBtn}`}
-                        variant='warning'
-                        onClick={(e) => setEditable(true)}
-                      >
-                        Edit
-                      </Button>
-                    )}
+                    <Button
+                      variant='success'
+                      style={{ minWidth: '150px', marginRight: '20px' }}
+                      onClick={onApprove}
+                    >
+                      Approve
+                    </Button>{' '}
                   </Col>
                 </Row>
 
-                {/* REQUEST ITEMS */}
                 <Row className='my-2'>
                   <Table responsive striped>
                     <thead>
@@ -235,4 +192,4 @@ const AdminReimbursementCard: React.FC<AdminRequestCardProps> = ({
   )
 }
 
-export default AdminReimbursementCard
+export default MentorReimbursementCard

@@ -31,7 +31,7 @@ interface AdminRequestCardProps {
   project: Project
   details: RequestDetails
   onReject: () => void
-  onAccept: () => void
+  // onAccept: () => void
   onSave: () => void
   collapsed: boolean
 }
@@ -40,7 +40,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
   project,
   details,
   onReject,
-  onAccept,
+  // onAccept,
   onSave,
   collapsed,
 }) => {
@@ -396,13 +396,12 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
                 trackingInfo: newOrders[i].trackingInfo,
                 shippingCost: newOrders[i].shippingCost,
                 requestID: details.requestID,
-                netID: user.netID,
               })
               if (response.status === 201) {
                 console.log('Order updated:', response.data)
               }
             } catch (error) {
-              console.error('Failed to insert order:', error)
+              console.error('Failed to update order:', error)
             }
           }
         }
@@ -424,7 +423,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
               trackingInfo: newOrdersToInsert[i].trackingInfo,
               shippingCost: newOrdersToInsert[i].shippingCost,
               requestID: details.requestID,
-              netID: user.netID,
+              email: user.email,
             })
             if (response.status === 201) {
               console.log('New order inserted:', response.data)
@@ -537,7 +536,9 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
                   <Col xs={12} lg={3}>
                     <h6 className={styles.headingLabel}>Additional info:</h6>
                     <p>
-                      {!details.additionalInfo ? 'none' : details.additionalInfo}
+                      {!details.additionalInfo
+                        ? 'none'
+                        : details.additionalInfo}
                     </p>
                     <h6 className={styles.headingLabel}>Sponsor:</h6>
                     <p>{details.project.sponsorCompany}</p>
@@ -552,14 +553,14 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
                   {/* REJECT/EDIT BUTTONS */}
                   <Col xs={12} lg={5}>
                     {/* TODO Admins can delete instead of rejecting, shouldn't need to approve */}
-                    {details.Process[0].status == Status.UNDER_REVIEW && (<Button
+                    {/* {details.Process[0].status == Status.UNDER_REVIEW && (<Button
                       className={`${styles.cardBtn} ${styles.rejectBtn}`}
                       variant='success'
                       style={{ minWidth: '150px', marginRight: '20px' }}
                       onClick={onAccept}
                     >
                       Accept
-                    </Button>)}
+                    </Button>)} */}
                     <Button
                       className={`${styles.cardBtn} ${styles.rejectBtn}`}
                       variant='danger'
@@ -727,7 +728,9 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
                           {newItems.map((item, itemIndex) => {
                             return (
                               <tr key={itemIndex + items.length}>
-                                <td width={20}>{itemIndex + items.length + 1}</td>
+                                <td width={20}>
+                                  {itemIndex + items.length + 1}
+                                </td>
                                 <td>
                                   <Form.Control
                                     name='description'

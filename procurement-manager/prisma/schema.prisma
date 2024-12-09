@@ -21,7 +21,7 @@ datasource db {
 // This model signifies a user in the database. A user can have a roleID of student (3), mentor (2), or admin (1)
 model User {
   userID           Int              @id @unique @default(autoincrement()) // unique identifier for each user
-  netID            String           @unique // parsed from email in our API 
+  netID            String? // parsed from email in our API; netID can be null for mentors or UTD faculty, so cannot be @unique
   firstName        String // possibly given by SSO?
   lastName         String // possibly given by SSO?
   email            String           @unique // possibly given by SSO?
@@ -172,6 +172,7 @@ model Reimbursement {
   dateSubmitted     DateTime // date the reimbursement form was submitted
   status            String // status of the reimbursement form
   additionalInfo    String? // any additional information and why the reimbursement is being requested 
+  expense           Decimal             @default(0)
   // RELATIONSHIPS HERE ::
   project           Project             @relation(fields: [projectID], references: [projectID]) // the project that the reimbursement is in
   projectID         Int
