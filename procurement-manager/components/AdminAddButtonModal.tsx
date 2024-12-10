@@ -13,7 +13,8 @@ const AddOptionModal: React.FC<AddOptionModalProps> = ({ show, onHide }) => {
     email: '',
     firstName: '',
     lastName: '',
-    roleID: 3  // Default to student (3), mentor is roleID 2
+    roleID: 3,  // Default to student (3)
+    projectNum: ''  // Add this field
   });
 
   const [projectForm, setProjectForm] = useState({
@@ -37,7 +38,10 @@ const AddOptionModal: React.FC<AddOptionModalProps> = ({ show, onHide }) => {
         },
         body: JSON.stringify({
           type: 'user',
-          data: userForm
+          data: {
+            ...userForm,
+            projectNum: userForm.projectNum ? parseInt(userForm.projectNum) : undefined
+          }
         }),
       });
       
@@ -128,6 +132,15 @@ const AddOptionModal: React.FC<AddOptionModalProps> = ({ show, onHide }) => {
                   onChange={() => setUserForm({...userForm, roleID: 2})}
                 />
               </div>
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Project Number Assigned to User (Optional)</Form.Label>
+              <Form.Control 
+                type="number" 
+                value={userForm.projectNum}
+                onChange={(e) => setUserForm({...userForm, projectNum: e.target.value})}
+                placeholder="Enter project number if applicable"
+              />
             </Form.Group>
             <Button type="submit">Submit</Button>
           </Form>
