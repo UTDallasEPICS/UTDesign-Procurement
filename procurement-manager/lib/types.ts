@@ -67,8 +67,8 @@ export interface ProjectFileData {
   ['Project Start']: number
   ['Project Type']: string
   ['Title']: string
-  ['TM First Name']: string
-  ['TM Last Name']: string
+  ['Faculty Advisor']: string
+  ['Faculty Email']: string
   ['__rowNum__']: number
   // Not found in sample files but required in the database
   ['Starting Budget']: number
