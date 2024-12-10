@@ -17,6 +17,8 @@ import { CellValueChangedEvent } from 'ag-grid-community'
 import AdminAddButtonModal from '@/components/AdminAddButtonModal'
 import AdminDeleteModal from '@/components/AdminDeleteModal'
 import AdminDeactivateModal from '@/components/AdminDeactivateModal'
+import AdminReactivateModal from '@/components/AdminReactivateModal'
+import AdminSortByProjectModal from '@/components/AdminSortByProjectModal'
 
 export async function getServerSideProps() {
   const users = await prisma.user.findMany()
@@ -48,6 +50,8 @@ export default function admin({
   const [showModal, setShowModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showDeactivateModal, setShowDeactivateModal] = useState(false);
+  const [showReactivateModal, setShowReactivateModal] = useState(false);
+  const [showSortByProjectModal, setShowSortByProjectModal] = useState(false);
   const [tableType, setTableType] = useState<string>('user');
   const [colData, setColData] = useState<any>([])
   const [defaultColDef, setDefaultColDef] = useState<any>({
@@ -76,7 +80,17 @@ export default function admin({
         { field: 'firstName' },
         { field: 'lastName' },
         { field: 'email' },
-        { field: 'roleID' },
+        { 
+          field: 'roleID',
+          valueFormatter: (params: any) => {
+            const roleMap: { [key: number]: string } = {
+              1: 'Admin',
+              2: 'Mentor',
+              3: 'Student'
+            };
+            return roleMap[params.value] || params.value;
+          }
+        },
         { 
           field: 'active',
           valueFormatter: (params: any) => params.value ? 'Active' : 'Inactive',
@@ -176,7 +190,19 @@ export default function admin({
                 onHide={() => setShowDeleteModal(false)}
                 type={tableType}
               />
-
+              <Button 
+                variant="warning"
+                className="mx-2"
+                style={{ backgroundColor: '#98FB98', borderColor: '#98FB98', color: 'black' }}
+                onClick={() => setShowReactivateModal(true)}
+              >
+                Reactivate
+              </Button>
+              <AdminReactivateModal
+                show={showReactivateModal}
+                onHide={() => setShowReactivateModal(false)}
+                type={tableType}
+              />
               <Button 
                 variant="warning"
                 className="mx-2"
@@ -188,6 +214,18 @@ export default function admin({
                 show={showDeactivateModal}
                 onHide={() => setShowDeactivateModal(false)}
                 type={tableType}
+              />
+              <Button 
+                variant="warning"
+                className="mx-2"
+                style={{ backgroundColor: '#9370DB', borderColor: '#9370DB', color: 'black' }}
+                onClick={() => setShowSortByProjectModal(true)}
+              >
+                Sort by Project
+              </Button>
+              <AdminSortByProjectModal
+                show={showSortByProjectModal}
+                onHide={() => setShowSortByProjectModal(false)}
               />
 
               <Link href={'/database-updates/upload'}>

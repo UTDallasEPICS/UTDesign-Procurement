@@ -1,5 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import { prisma } from '@/db'
+import { Prisma } from '@prisma/client' 
 
 export default async function handler(
   req: NextApiRequest,
@@ -12,7 +13,7 @@ export default async function handler(
 
   try {
     if (type === 'user') {
-      const { email, firstName, lastName, roleID } = data
+      const { email, firstName, lastName, roleID, projectNum } = data
       
       // Check if email matches UTD format (3 letters followed by 6 digits)
       const netIDMatch = email.match(/^([a-zA-Z]{3}\d{6})@utdallas\.edu$/);
@@ -39,10 +40,23 @@ export default async function handler(
               connect: { roleID: roleID }
             },
             responsibilities: '',
+            ...(projectNum && {
+              WorksOn: {
+                create: {
+                  project: {
+                    connect: { projectNum: projectNum }
+                  },
+                  startDate: new Date(),
+                }
+              }
+            })
           },
         })
         return res.status(201).json(user)
       } catch (error) {
+        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+          return res.status(400).json({ error: 'Project number not found' })
+        }
         console.error('Error in admin-add:', error)
         return res.status(500).json({ error: 'Failed to add user' })
       }
