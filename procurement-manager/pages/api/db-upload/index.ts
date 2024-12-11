@@ -312,7 +312,7 @@ async function handleStudentFile(data: StudentFileData[]) {
           data: {
             firstName: student['First Name'],
             lastName: student['Last Name'],
-            active: student['Deactivation Date'] ? false : true,
+            active: student['Deactivation Date'] ? (new Date(student['Deactivation Date']) > new Date()) : true,
             deactivationDate: student['Deactivation Date']
               ? new Date(student['Deactivation Date'])
               : null,
@@ -331,7 +331,7 @@ async function handleStudentFile(data: StudentFileData[]) {
             lastName: student['Last Name'],
             email: studentEmail,
             netID: netID,
-            active: student['Deactivation Date'] ? false : true,
+            active: student['Deactivation Date'] ? (new Date(student['Deactivation Date']) > new Date()) : true,
             role: {
               connect: {
                 roleID: 3,
