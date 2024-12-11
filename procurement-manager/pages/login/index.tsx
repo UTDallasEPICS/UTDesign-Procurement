@@ -51,9 +51,9 @@ export default function Login() {
                 <Form onSubmit={(e) => handleLogin(e)}>
                   <div className="text-center">
                     <Image
-                      src="./images/utdLogo.png"
-                      width={280}
-                      height={210}
+                      src="/images/utdLogo.png"
+                      width={300}
+                      height={200}
                       style={{ marginBottom: 30 }}
                       alt="UTD logo"
                     />
