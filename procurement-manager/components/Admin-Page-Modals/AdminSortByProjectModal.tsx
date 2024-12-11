@@ -31,7 +31,7 @@ export default function AdminSortByProjectModal({ show, onHide }: AdminSortByPro
 
       setSearchResults([]);
       
-      const response = await fetch('/api/admin-sort', {
+      const response = await fetch('/api/admin-APIs/admin-sort', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

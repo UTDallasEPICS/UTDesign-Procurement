@@ -1,21 +1,22 @@
 import React, { useState } from 'react';
 import { Modal, Button, Form } from 'react-bootstrap';
 
-interface DeleteModalProps {
+interface AdminReactivateModalProps {
   show: boolean;
   onHide: () => void;
   type: string;
 }
 
-const AdminDeleteModal: React.FC<DeleteModalProps> = ({ show, onHide, type }) => {
+export default function AdminReactivateModal({ show, onHide, type }: AdminReactivateModalProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
 
-  const handleDelete = async (itemsToDelete: any[]) => {
+  const handleReactivate = async (itemsToReactivate: any[]) => {
     try {
-      for (const item of itemsToDelete) {
-        const response = await fetch('/api/admin-delete', {
-          method: 'DELETE',
+      for (const item of itemsToReactivate) {
+        const endpoint = type === 'user' ? '/api/admin-APIs/reactivate-user' : '/api/admin-APIs/reactivate-project';
+        const response = await fetch(endpoint, {
+          method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
@@ -25,18 +26,18 @@ const AdminDeleteModal: React.FC<DeleteModalProps> = ({ show, onHide, type }) =>
           }),
         });
         
-        if (!response.ok) throw new Error(`Failed to delete ${type}`);
+        if (!response.ok) throw new Error(`Failed to reactivate ${type}`);
       }
       onHide();
       window.location.reload();
     } catch (error) {
-      console.error(`Error deleting ${type}:`, error);
+      console.error(`Error reactivating ${type}:`, error);
     }
   };
 
   const handleSearch = async () => {
     try {
-      const response = await fetch('/api/admin-search', {
+      const response = await fetch('/api/admin-APIs/admin-search', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -58,7 +59,7 @@ const AdminDeleteModal: React.FC<DeleteModalProps> = ({ show, onHide, type }) =>
   return (
     <Modal show={show} onHide={onHide} size="lg">
       <Modal.Header closeButton>
-        <Modal.Title>Delete {type === 'user' ? 'Users' : 'Projects'}</Modal.Title>
+        <Modal.Title>Reactivate {type === 'user' ? 'Users' : 'Projects'}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <Form.Group className="mb-3">
@@ -93,10 +94,11 @@ const AdminDeleteModal: React.FC<DeleteModalProps> = ({ show, onHide, type }) =>
               ))}
             </ul>
             <Button 
-              variant="danger" 
-              onClick={() => handleDelete(searchResults)}
+              variant="success"
+              style={{ backgroundColor: '#98FB98', borderColor: '#98FB98', color: 'black' }}
+              onClick={() => handleReactivate(searchResults)}
             >
-              Delete Found Items
+              Reactivate Found Items
             </Button>
           </>
         )}
@@ -108,6 +110,4 @@ const AdminDeleteModal: React.FC<DeleteModalProps> = ({ show, onHide, type }) =>
       </Modal.Footer>
     </Modal>
   );
-};
-
-export default AdminDeleteModal; 
+} 

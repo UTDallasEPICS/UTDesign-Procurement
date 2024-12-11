@@ -1,21 +1,21 @@
 import React, { useState } from 'react';
 import { Modal, Button, Form } from 'react-bootstrap';
 
-interface AdminReactivateModalProps {
+interface DeleteModalProps {
   show: boolean;
   onHide: () => void;
   type: string;
 }
 
-export default function AdminReactivateModal({ show, onHide, type }: AdminReactivateModalProps) {
+const AdminDeleteModal: React.FC<DeleteModalProps> = ({ show, onHide, type }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
 
-  const handleReactivate = async (itemsToReactivate: any[]) => {
+  const handleDelete = async (itemsToDelete: any[]) => {
     try {
-      for (const item of itemsToReactivate) {
-        const response = await fetch('/api/admin-reactivate/user', {
-          method: 'POST',
+      for (const item of itemsToDelete) {
+        const response = await fetch('/api/admin-APIs/delete', {
+          method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',
           },
@@ -25,18 +25,18 @@ export default function AdminReactivateModal({ show, onHide, type }: AdminReacti
           }),
         });
         
-        if (!response.ok) throw new Error(`Failed to reactivate ${type}`);
+        if (!response.ok) throw new Error(`Failed to delete ${type}`);
       }
       onHide();
       window.location.reload();
     } catch (error) {
-      console.error(`Error reactivating ${type}:`, error);
+      console.error(`Error deleting ${type}:`, error);
     }
   };
 
   const handleSearch = async () => {
     try {
-      const response = await fetch('/api/admin-search', {
+      const response = await fetch('/api/admin-APIs/admin-search', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -58,7 +58,7 @@ export default function AdminReactivateModal({ show, onHide, type }: AdminReacti
   return (
     <Modal show={show} onHide={onHide} size="lg">
       <Modal.Header closeButton>
-        <Modal.Title>Reactivate {type === 'user' ? 'Users' : 'Projects'}</Modal.Title>
+        <Modal.Title>Delete {type === 'user' ? 'Users' : 'Projects'}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <Form.Group className="mb-3">
@@ -93,11 +93,10 @@ export default function AdminReactivateModal({ show, onHide, type }: AdminReacti
               ))}
             </ul>
             <Button 
-              variant="success"
-              style={{ backgroundColor: '#98FB98', borderColor: '#98FB98', color: 'black' }}
-              onClick={() => handleReactivate(searchResults)}
+              variant="danger" 
+              onClick={() => handleDelete(searchResults)}
             >
-              Reactivate Found Items
+              Delete Found Items
             </Button>
           </>
         )}
@@ -109,4 +108,6 @@ export default function AdminReactivateModal({ show, onHide, type }: AdminReacti
       </Modal.Footer>
     </Modal>
   );
-} 
+};
+
+export default AdminDeleteModal; 

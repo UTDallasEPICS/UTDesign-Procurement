@@ -20,7 +20,7 @@ export default function AdminDeactivateModal({
 
   const handleSearch = async () => {
     try {
-      const response = await fetch('/api/admin-search', {
+      const response = await fetch('/api/admin-APIs/admin-search', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -43,7 +43,7 @@ export default function AdminDeactivateModal({
     setIsDeactivating(true);
     try {
       for (const item of searchResults) {
-        const response = await fetch(`/api/admin-deactivate/${type}`, {
+        const response = await fetch(`/api/admin-APIs/deactivate-${type}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

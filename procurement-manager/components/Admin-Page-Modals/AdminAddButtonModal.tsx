@@ -31,7 +31,7 @@ const AddOptionModal: React.FC<AddOptionModalProps> = ({ show, onHide }) => {
   const handleUserSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await fetch('/api/admin-add', {
+      const response = await fetch('/api/admin-APIs/add', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -55,7 +55,7 @@ const AddOptionModal: React.FC<AddOptionModalProps> = ({ show, onHide }) => {
   const handleProjectSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await fetch('/api/admin-add', {
+      const response = await fetch('/api/admin-APIs/add', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
