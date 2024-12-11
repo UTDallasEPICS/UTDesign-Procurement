@@ -185,17 +185,19 @@ async function analyzeFile(
 
       // Check type of file (student, non-student, project)
       for (let i = 0; i < data.length; i++) {
-        if (data[i]['Email'] && data[i]['Project Number']) {
+        if (data[i]['Project Number'] && data[i]['Title']) {
+          fileType = FILE_TYPE.PROJECT
+          break
+        } else if (data[i]['Email'] && data[i]['Project Number']) {
           fileType = FILE_TYPE.STUDENT
           break
-        } else if (data[i]['Faculty Email']) {
+        } else if (data[i]['Faculty Email'] && data[i]['First Name'] && data[i]['Last Name']) {
           fileType = FILE_TYPE.NON_STUDENT
-          break
-        } else if (data[i]['Project Number'] && data[i]['Title']) {
-          fileType = FILE_TYPE.PROJECT
           break
         }
       }
+
+      console.log(file.originalFilename, fileType)
 
       // Process the file based on its type and update the database
       switch (fileType) {
@@ -310,7 +312,7 @@ async function handleStudentFile(data: StudentFileData[]) {
           data: {
             firstName: student['First Name'],
             lastName: student['Last Name'],
-            active: student['Deactivation Date'] ? false : true,
+            active: student['Deactivation Date'] ? (new Date(student['Deactivation Date']) > new Date()) : true,
             deactivationDate: student['Deactivation Date']
               ? new Date(student['Deactivation Date'])
               : null,
@@ -329,7 +331,7 @@ async function handleStudentFile(data: StudentFileData[]) {
             lastName: student['Last Name'],
             email: studentEmail,
             netID: netID,
-            active: student['Deactivation Date'] ? false : true,
+            active: student['Deactivation Date'] ? (new Date(student['Deactivation Date']) > new Date()) : true,
             role: {
               connect: {
                 roleID: 3,
@@ -527,14 +529,13 @@ async function handleProjectFile(data: ProjectFileData[]) {
         // After creating the project, connect the mentor to the project
         const mentor = await prisma.user.findFirst({
           where: {
-            AND: [
-              { firstName: project['TM First Name'] },
-              { lastName: project['TM Last Name'] },
-            ],
+            email: project['Faculty Email']
           },
         })
 
+        
         if (!mentor) throw new Error('Mentor not found')
+        console.log(mentor.email)
 
         const worksOn = await prisma.worksOn.create({
           data: {
