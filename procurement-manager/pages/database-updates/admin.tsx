@@ -41,7 +41,7 @@ interface AdminProps {
   projects: Project[]
 }
 
-export default function admin({
+export default function Admin({
   title,
   description,
   users,

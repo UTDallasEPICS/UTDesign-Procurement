@@ -280,8 +280,7 @@ export default function Upload({ title }: { title: string }) {
               <Row className='mt-4'>
                 <Col className='d-flex flex-column justify-content-center align-items-center'>
                   <p>
-                    Please don't refresh the page while database is being
-                    updated
+                    Please do not refresh the page while database is being updated
                   </p>
                   <Spinner animation='border' role='status'>
                     <span className='visually-hidden'>Loading...</span>

@@ -3,7 +3,7 @@
  */
 
 import React, { useState, useEffect, useRef } from 'react'
-import { Container, Row, Col, Button, InputGroup } from 'react-bootstrap'
+import { Container, Row, Col, Button, InputGroup, FormControl } from 'react-bootstrap'
 import Form from 'react-bootstrap/Form'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import styles from '@/styles/reimbursement.module.css'
@@ -353,7 +353,7 @@ const StudentReimbursement = ({ user, listOfProjects }: StudentRequestProps) => 
                   <Form.Control
                     type='date'
                     value={item.receiptDate}
-                    onChange={(e) => handleDateChange(e, index)}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleDateChange(e, index)}
                     required
                   />
                 </Form.Group>

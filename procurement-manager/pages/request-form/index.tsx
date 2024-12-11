@@ -469,7 +469,7 @@ const StudentRequest = ({
             </Form.Group>
           </Col>
         </Row>
-        // OTHER option ---
+        {/* OTHER option --- */}
         <Row className='my-4'>
           <Col md={4}>
             <Form.Group controlId='vendorSelect'>

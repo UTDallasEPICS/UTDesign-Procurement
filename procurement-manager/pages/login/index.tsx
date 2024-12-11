@@ -3,6 +3,7 @@ import styles from '@/styles/Login.module.scss'
 import { Container, Row, Col, Form, Button } from 'react-bootstrap'
 import { signIn } from 'next-auth/react'
 import axios from 'axios'
+import Image from 'next/image'
 
 async function validateUser(email: string) {
   // HTTP POST request (to get updated data role ID based on request/param net ID)
@@ -49,7 +50,7 @@ export default function Login() {
               <div className={styles.wrapper}>
                 <Form onSubmit={(e) => handleLogin(e)}>
                   <div className="text-center">
-                    <img
+                    <Image
                       src="./images/utdLogo.png"
                       width={280}
                       height={210}
