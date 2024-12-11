@@ -41,6 +41,10 @@ interface AdminProps {
   projects: Project[]
 }
 
+interface DatePickerParams {//type issue resolved calender into string
+  value?: string | Date;
+}
+
 export default function Admin({
   title,
   description,
@@ -59,6 +63,8 @@ export default function Admin({
     filter: true,
     cellStyle: { textAlign: 'left' }
   })
+  const [userData, setUserData] = useState<User[]>(users);
+  const [projectData, setProjectData] = useState<Project[]>(projects);
 
   const handleAddUserClick = () => {
     setShowModal(true)
@@ -68,9 +74,40 @@ export default function Admin({
     setShowModal(true)
   }
 
-  const onCellValueChanged = (event: CellValueChangedEvent) => {
-    if (event.rowIndex === null) return
-  }
+  const onCellValueChanged = async (event: CellValueChangedEvent) => {
+    if (event.rowIndex === null) return;
+
+    try {
+      let value = event.newValue;
+      
+      // Convert string date to DateTime for date fields
+      if (event.colDef.field === 'deactivationDate' && value) {
+        value = new Date(value).toISOString();
+      }
+
+      const response = await fetch('/api/admin-edit/admin-edit', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          type: tableType,
+          id: tableType === 'user' ? event.data.userID : event.data.projectID,
+          field: event.colDef.field,
+          value: value
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update');
+      }
+      
+      event.node.setDataValue(event.colDef.field!, event.newValue);
+    } catch (error) {
+      console.error('Error updating:', error);
+      event.node.setDataValue(event.colDef.field!, event.oldValue);
+    }
+  };
 
   useEffect(() => {
     if (tableType === 'user') {
@@ -102,6 +139,8 @@ export default function Admin({
         { field: 'responsibilities' },
         { 
           field: 'deactivationDate',
+          cellEditor: 'datePicker',
+          cellEditorPopup: true,
           valueFormatter: (params: any) => {
             if (!params.value) return '';
             return new Date(params.value).toLocaleDateString('en-US', {
@@ -109,12 +148,18 @@ export default function Admin({
               month: 'long',
               day: 'numeric'
             });
+          },
+          valueParser: (params: any) => {
+            return params.newValue;
           }
         },
       ])
     } else if (tableType === 'project') {
       setColData([
-        { field: 'projectID' },
+        { 
+          field: 'projectID',
+          editable: false
+        },
         { field: 'projectTitle' },
         { field: 'projectNum' },
         { field: 'startingBudget' },
@@ -134,6 +179,8 @@ export default function Admin({
         },
         { 
           field: 'deactivationDate',
+          cellEditor: 'datePicker',
+          cellEditorPopup: true,
           valueFormatter: (params: any) => {
             if (!params.value) return '';
             return new Date(params.value).toLocaleDateString('en-US', {
@@ -141,6 +188,9 @@ export default function Admin({
               month: 'long',
               day: 'numeric'
             });
+          },
+          valueParser: (params: any) => {
+            return params.newValue;
           }
         },
         { field: 'additionalInfo' },
@@ -218,10 +268,10 @@ export default function Admin({
               <Button 
                 variant="warning"
                 className="mx-2"
-                style={{ backgroundColor: '#9370DB', borderColor: '#9370DB', color: 'black' }}
+                style={{ backgroundColor: '#9370DB', borderColor: '#9370DB', color: 'white' }}
                 onClick={() => setShowSortByProjectModal(true)}
               >
-                Sort by Project
+                Search by Project
               </Button>
               <AdminSortByProjectModal
                 show={showSortByProjectModal}
@@ -240,7 +290,7 @@ export default function Admin({
         <Col>
           <div className='ag-theme-quartz' style={{ width: '100%', height: '75vh' }}>
             <AgGridReact
-              rowData={tableType === 'user' ? users : projects}
+              rowData={tableType === 'user' ? userData : projectData}
               columnDefs={colData}
               defaultColDef={defaultColDef}
               autoSizeStrategy={{ type: 'fitCellContents' }}
@@ -254,4 +304,31 @@ export default function Admin({
       </Row>
     </>
   )
+}
+
+function getDatePicker() {
+  function DatePicker() {}
+  DatePicker.prototype.init = function(params: DatePickerParams) {
+    this.eInput = document.createElement('input');
+    this.eInput.type = 'date';
+    this.eInput.classList.add('ag-input');
+    this.eInput.style.height = '100%';
+    this.eInput.value = params.value ? new Date(params.value).toISOString().split('T')[0] : '';
+  };
+  DatePicker.prototype.getGui = function() {
+    return this.eInput;
+  };
+  DatePicker.prototype.afterGuiAttached = function() {
+    this.eInput.focus();
+    this.eInput.select();
+  };
+  DatePicker.prototype.getValue = function() {
+    return this.eInput.value;
+  };
+  DatePicker.prototype.destroy = function() {};
+  DatePicker.prototype.isPopup = function() {
+    return true;
+  };
+
+  return DatePicker;
 }
