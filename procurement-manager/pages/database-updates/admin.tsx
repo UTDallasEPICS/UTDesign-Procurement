@@ -63,7 +63,10 @@ export default function Admin({
   const [defaultColDef, setDefaultColDef] = useState<any>({
     editable: true,
     filter: true,
-    cellStyle: { textAlign: 'left' }
+    cellStyle: { textAlign: 'left' },
+    components: {
+      datePicker: getDatePicker()
+    }
   })
   const [userData, setUserData] = useState<User[]>(users);
   const [projectData, setProjectData] = useState<Project[]>(projects);
@@ -87,7 +90,7 @@ export default function Admin({
         value = new Date(value).toISOString();
       }
 
-      const response = await fetch('/api/admin-edit/admin-edit', {
+      const response = await fetch('/api/admin-APIs/admin-edit', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -102,6 +105,25 @@ export default function Admin({
 
       if (!response.ok) {
         throw new Error('Failed to update');
+      }
+      
+      // Update local state after successful API call
+      if (tableType === 'user') {
+        setUserData(prevData => 
+          prevData.map(user => 
+            user.userID === event.data.userID 
+              ? { ...user, [event.colDef.field!]: value }
+              : user
+          )
+        );
+      } else {
+        setProjectData(prevData => 
+          prevData.map(project => 
+            project.projectID === event.data.projectID 
+              ? { ...project, [event.colDef.field!]: value }
+              : project
+          )
+        );
       }
       
       event.node.setDataValue(event.colDef.field!, event.newValue);
@@ -315,6 +337,7 @@ export default function Admin({
               rowData={tableType === 'user' ? userData : projectData}
               columnDefs={colData}
               defaultColDef={defaultColDef}
+              components={{ datePicker: getDatePicker() }}
               autoSizeStrategy={{ type: 'fitCellContents' }}
               pagination={true}
               onCellValueChanged={onCellValueChanged}
