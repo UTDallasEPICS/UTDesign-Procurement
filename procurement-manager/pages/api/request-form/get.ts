@@ -12,7 +12,7 @@ export default async function handler(
     /// using the works on
     const user = await prisma.user.findUnique({
       where: {
-        netID: req.body.netID,
+        email: req.body.email,
       },
       include: {
         WorksOn: true,
@@ -28,7 +28,7 @@ export default async function handler(
           userID: user.userID,
           endDate: null // if no end date then user is still in projects, so current projects
       }
-  })
+    })
 
     // this will be the array of Request Forms that will be sent
     let requestsOfMultipleProjects: RequestDetails[][] = []
@@ -115,7 +115,8 @@ export default async function handler(
       }
     }
 
-    console.debug('Requests associated with user: ', requestsOfMultipleProjects)
+    //console.debug('Requests associated with user: ', requestsOfMultipleProjects)
+
     res.status(200).json({
       userRole: user.roleID,
       projects: listOfProjects,

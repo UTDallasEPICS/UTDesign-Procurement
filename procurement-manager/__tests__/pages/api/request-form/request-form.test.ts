@@ -1,5 +1,5 @@
 import mockRequestResponse from '@/lib/mock'
-import handler, { createRequest } from '@/pages/api/request-form'
+import handler from '@/pages/api/request-form'
 import { describe, expect, jest, test, afterAll } from '@jest/globals'
 import { prisma } from '@/db'
 import { prismaMock } from '@/singleton'

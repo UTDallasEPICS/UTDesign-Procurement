@@ -81,7 +81,7 @@ describe('Request Form/GET API', () => {
   it('A POST call with an admin should return all requests', () => {
     axios
       .post(get, {
-        netID: 'ghi000000',
+        email: 'ghi000000@utdallas.edu',
       })
       .then((res) => {
         expect(res.status).toBe(200)
@@ -93,7 +93,7 @@ describe('Request Form/GET API', () => {
   it('A POST call with a mentor should return all requests', () => {
     axios
       .post(get, {
-        netID: 'def000000',
+        email: 'def000000@utdallas.edu',
       })
       .then((res) => {
         expect(res.status).toBe(200)
@@ -105,7 +105,7 @@ describe('Request Form/GET API', () => {
   it('A POST call with a student should return all requests', () => {
     axios
       .post(get, {
-        netID: 'abc000000',
+        email: 'abc000000@utdallas.edu',
       })
       .then((res) => {
         expect(res.status).toBe(200)

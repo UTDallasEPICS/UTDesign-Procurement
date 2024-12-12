@@ -128,6 +128,7 @@ const StudentRequestCard: React.FC<RequestCardProps> = ({
     >
       <Row className='mb-4'></Row>
       <Card.Body>
+
         {/* UNCOLLAPSED ROW */}
         <Row className='smaller-row'>
           {/* REQUEST NUMBER */}
@@ -138,6 +139,7 @@ const StudentRequestCard: React.FC<RequestCardProps> = ({
               </h4>
             </Card.Title>
           </Col>
+
           {/* DATE REQUESTED */}
           <Col xs={6} lg={2}>
             <h6 className={styles.headingLabel}>Date Requested</h6>
@@ -176,6 +178,7 @@ const StudentRequestCard: React.FC<RequestCardProps> = ({
               ).toFixed(2)}
             </p>
           </Col>
+
           {/* STATUS */}
           <Col xs={6} lg={3}>
             <h6 className={styles.headingLabel}>Status</h6>
@@ -187,6 +190,7 @@ const StudentRequestCard: React.FC<RequestCardProps> = ({
         <Collapse in={collapse}>
           <div>
             <Row className='my-4 smaller-row'>
+              
               {/* JUSTIFICATION ADDITIONAL INFO */}
               <Col xs={12} lg={3}>
                 <h6 className={styles.headingLabel}>Additional info:</h6>

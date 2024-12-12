@@ -26,7 +26,7 @@ describe('Request Form GET API', () => {
   test('A POST call called by a student should return 200', async () => {
     const mockHandler = jest.fn(handler)
 
-    const { req, res } = mockRequestResponse('POST', { netID: 'abc000000' })
+    const { req, res } = mockRequestResponse('POST', { email: 'abc000000@utdallas.edu' })
 
     await mockHandler(req, res)
 
@@ -36,7 +36,7 @@ describe('Request Form GET API', () => {
   test('A POST call called by a mentor should return 200', async () => {
     const mockHandler = jest.fn(handler)
 
-    const { req, res } = mockRequestResponse('POST', { netID: 'def000000' })
+    const { req, res } = mockRequestResponse('POST', { email: 'def000000@utdallas.edu' })
 
     await mockHandler(req, res)
 
@@ -46,7 +46,7 @@ describe('Request Form GET API', () => {
   test('A POST call called by an admin should return 200', async () => {
     const mockHandler = jest.fn(handler)
 
-    const { req, res } = mockRequestResponse('POST', { netID: 'ghi000000' })
+    const { req, res } = mockRequestResponse('POST', { email: 'ghi000000@utdallas.edu' })
 
     await mockHandler(req, res)
 

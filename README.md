@@ -187,8 +187,8 @@ Dependencies are the packages used to create the project.
 
 Downlading and setting up mySQL is required first. mySQL Workbench is used then to manually add some data into the tables and can be used to further view changes done to the database.
 
-7. First, we have to create a **.env** file inside of the **procurement-manager** folder.
-8. In the **.env** file, type `DATABASE_URL="mysql://root:password@localhost:3306/procurement"` but change the password to your password when initially setting up mySQL.
+7. Copy the **.env.example** from the **docs** folder into the **procurement-manager** folder and rename it to **.env**.
+8. In the **.env** file, replace YOUR_MYSQL_ROOT_PASSWORD with the password you set when initially setting up mySQL.
 9. (Mac Only) Run this command in the terminal to set up the intial docker container `docker run -d -e MYSQL_ROOT_PASSWORD=<password> -p 3306:3306 mysql mysqld --lower_case_table_names=1` (refer to this [video](https://youtu.be/piekR2i6nRQ) if you are having difficulties) **(ensure the `<password>` is replaced with your mySQL root password)**
 10. To sync your database with the project schema type `npx prisma migrate dev` (make sure your in the procurement-manager folder).
 
@@ -204,21 +204,19 @@ You can also do `npx prisma studio` instead of using mySQL Workbench to see the 
 ### 1️⃣ more thing: 1️⃣
 
 11. In the terminal, enter `openssl rand -base64 32` which will generate random characters and copy it.
-12. In the **.env** file, below the DATABASE_URL type: `NEXTAUTH_SECRET="randomcode"` and paste the randome characters in the randomcode.
-    > This is what makes the fake authentication work
-    > An example .env file can be found in /docs
+12. In the **.env** file, below the DATABASE_URL, fill in EXAMPLE_NEXTAUTH_SECRET by pasting the random characters in the randomcode.
+    > This is what makes the fake authentication work.
+13. (Only for external servers) If setting up the repository in an environment where it's not hosted on localhost, change the NEXTAUTH_URL value to match the external URL.
 
-_NEW THING:_ 13. Add this:
-`NODEMAILER_EMAIL="utdesign.procurementmanager@gmail.com"`
-`NODEMAILER_PASSWORD="nnft zpaq rooq iwkq"`
-This allows the Upload Files page to email error files to admins.
+14. Change the `NODEMAILER_PASSWORD` to be `"nnft zpaq rooq iwkq"`.
+    > This allows the Upload Files page to email error files to admins.
 
 ### 😁 Finally!!! 😁
 
-14. Making sure you are still in the **procurement-manager** folder, type `npm run dev` which runs the website
-15. In your browser, type `localhost:3000/api/test`. This creates all the sample data to run the project.
-16. Finally go to the website in `localhost:3000`.
-17. 🎉🎉 GOOD LUCK AND HAVE FUN! 🎉🎉
+15. Making sure you are still in the **procurement-manager** folder, type `npm run dev` which runs the website
+16. In your browser, type `localhost:3000/api/test`. This creates all the sample data to run the project.
+17. Finally go to the website in `localhost:3000`.
+18. 🎉🎉 GOOD LUCK AND HAVE FUN! 🎉🎉
 
 ---
 

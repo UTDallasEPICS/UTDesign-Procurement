@@ -27,6 +27,7 @@ import {
   FileDataErrorWithName,
 } from '@/lib/types'
 import { sendEmail } from '@/lib/emailService'
+import { validateEmailAndReturnNetID } from '@/lib/netid'
 
 // Needed for XLSX to work with the filesystem
 XLSX.set_fs(fs)
@@ -184,17 +185,19 @@ async function analyzeFile(
 
       // Check type of file (student, non-student, project)
       for (let i = 0; i < data.length; i++) {
-        if (data[i]['Email'] && data[i]['Project Number']) {
-          fileType = FILE_TYPE.STUDENT
-          continue
-        } else if (data[i]['Faculty Email']) {
-          fileType = FILE_TYPE.NON_STUDENT
-          continue
-        } else if (data[i]['Project Number'] && data[i]['Title']) {
+        if (data[i]['Project Number'] && data[i]['Title']) {
           fileType = FILE_TYPE.PROJECT
-          continue
+          break
+        } else if (data[i]['Email'] && data[i]['Project Number']) {
+          fileType = FILE_TYPE.STUDENT
+          break
+        } else if (data[i]['Faculty Email'] && data[i]['First Name'] && data[i]['Last Name']) {
+          fileType = FILE_TYPE.NON_STUDENT
+          break
         }
       }
+
+      console.log(file.originalFilename, fileType)
 
       // Process the file based on its type and update the database
       switch (fileType) {
@@ -248,10 +251,12 @@ async function handleStudentFile(data: StudentFileData[]) {
 
   for (const student of data) {
     try {
+      const studentEmail = student['Email'].toLowerCase()
+
       // First check if the student is already in the database
       const exists = await prisma.user.findUnique({
         where: {
-          email: student['Email'].toLowerCase(),
+          email: studentEmail,
         },
       })
 
@@ -266,7 +271,7 @@ async function handleStudentFile(data: StudentFileData[]) {
         const worksOn = await prisma.worksOn.findFirst({
           where: {
             AND: [
-              { user: { netID: exists.netID } },
+              { user: { email: exists.email } },
               { project: { projectNum: student['Project Number'] } },
             ],
           },
@@ -276,7 +281,7 @@ async function handleStudentFile(data: StudentFileData[]) {
           // Case 1
           const newWorksOn = await prisma.worksOn.create({
             data: {
-              user: { connect: { netID: exists.netID } },
+              user: { connect: { email: exists.email } },
               project: {
                 connect: { projectNum: Number(student['Project Number']) },
               },
@@ -287,7 +292,7 @@ async function handleStudentFile(data: StudentFileData[]) {
           // Next, add a PreviousRecord for the existing student with the new project
           const previousRecord = await prisma.previousRecord.create({
             data: {
-              user: { connect: { netID: exists.netID } },
+              user: { connect: { email: exists.email } },
               project: { connect: { projectNum: student['Project Number'] } },
               role: { connect: { roleID: 3 } },
             },
@@ -302,12 +307,12 @@ async function handleStudentFile(data: StudentFileData[]) {
         // Finally, update the student's information if it has changed
         const modify = await prisma.user.update({
           where: {
-            email: student['Email'],
+            email: studentEmail,
           },
           data: {
             firstName: student['First Name'],
             lastName: student['Last Name'],
-            active: student['Deactivation Date'] ? false : true,
+            active: student['Deactivation Date'] ? (new Date(student['Deactivation Date']) > new Date()) : true,
             deactivationDate: student['Deactivation Date']
               ? new Date(student['Deactivation Date'])
               : null,
@@ -317,13 +322,16 @@ async function handleStudentFile(data: StudentFileData[]) {
 
       // If the student does not exist, create a new student
       else {
+        // First validate email and netID
+        const netID = validateEmailAndReturnNetID(studentEmail)
+
         const user = await prisma.user.create({
           data: {
             firstName: student['First Name'],
             lastName: student['Last Name'],
-            email: student['Email'].toLowerCase(),
-            netID: student['Email'].toLowerCase().split('@')[0],
-            active: student['Deactivation Date'] ? false : true,
+            email: studentEmail,
+            netID: netID,
+            active: student['Deactivation Date'] ? (new Date(student['Deactivation Date']) > new Date()) : true,
             role: {
               connect: {
                 roleID: 3,
@@ -338,7 +346,7 @@ async function handleStudentFile(data: StudentFileData[]) {
         // After creating the student, connect them to the project
         const worksOn = await prisma.worksOn.create({
           data: {
-            user: { connect: { netID: user.netID } },
+            user: { connect: { email: user.email } },
             project: { connect: { projectNum: student['Project Number'] } },
             startDate: new Date(), // TODO: Change this to the actual start date
           },
@@ -347,7 +355,7 @@ async function handleStudentFile(data: StudentFileData[]) {
         // Finally, add a PreviousRecord for the student
         const previousRecord = await prisma.previousRecord.create({
           data: {
-            user: { connect: { netID: user.netID } },
+            user: { connect: { email: user.email } },
             project: { connect: { projectNum: student['Project Number'] } },
             role: { connect: { roleID: 3 } },
           },
@@ -386,25 +394,6 @@ async function handleStudentFile(data: StudentFileData[]) {
 }
 
 /**
- * This function takes the email of the non-student and validates that the netID and the address
- * @param nonStudent
- * @returns NetID of the non-student
- */
-function validateEmailAndReturn(nonStudent: NonStudentFileData) {
-  const netIDFormat = /^[a-zA-Z]{3}\d{6}$/
-  const netID = nonStudent['Faculty Email'].toLowerCase().split('@')[0]
-  const emailOrg = nonStudent['Faculty Email'].toLowerCase().split('@')[1]
-  if (emailOrg !== 'utdallas.edu')
-    throw new Error('Invalid email. Non-students must have a UTD email address')
-  if (!netIDFormat.test(netID))
-    throw new Error(
-      'Invalid netID found from email, should be in the format abc123456',
-    )
-
-  return netID
-}
-
-/**
  * Handles the non-student file by iterating over the rows of the non-student file
  * and updating the database accordingly
  * @param data
@@ -416,19 +405,17 @@ async function handleNonStudentFile(data: NonStudentFileData[]) {
   for (const nonStudent of data) {
     try {
       // First check if the non-student is already in the database
+      const nonStudentEmail = nonStudent['Faculty Email'].toLowerCase();
       const exists = await prisma.user.findUnique({
         where: {
-          email: nonStudent['Faculty Email'],
+          email: nonStudentEmail,
         },
       })
 
       if (exists) {
-        // First validate email and netID
-        const netID = validateEmailAndReturn(nonStudent)
-
         const modify = await prisma.user.update({
           where: {
-            email: nonStudent['Faculty Email'],
+            email: nonStudentEmail,
           },
           data: {
             firstName: nonStudent['First Name'],
@@ -440,14 +427,15 @@ async function handleNonStudentFile(data: NonStudentFileData[]) {
       // If the non-student does not exist, create a new non-student
       else {
         // First validate email and netID
-        const netID = validateEmailAndReturn(nonStudent)
+        const netID = validateEmailAndReturnNetID(nonStudentEmail, false)
 
         // TODO: Change the roleID to the correct one
+        // but mentor role should be fine because we're not uploading admins - colin (11/18/24)
         const user = await prisma.user.create({
           data: {
             firstName: nonStudent['First Name'],
             lastName: nonStudent['Last Name'],
-            email: nonStudent['Faculty Email'].toLowerCase(),
+            email: nonStudentEmail,
             netID: netID,
             active: true,
             role: {
@@ -541,18 +529,17 @@ async function handleProjectFile(data: ProjectFileData[]) {
         // After creating the project, connect the mentor to the project
         const mentor = await prisma.user.findFirst({
           where: {
-            AND: [
-              { firstName: project['TM First Name'] },
-              { lastName: project['TM Last Name'] },
-            ],
+            email: project['Faculty Email']
           },
         })
 
+        
         if (!mentor) throw new Error('Mentor not found')
+        console.log(mentor.email)
 
         const worksOn = await prisma.worksOn.create({
           data: {
-            user: { connect: { netID: mentor.netID } },
+            user: { connect: { email: mentor.email } },
             project: { connect: { projectNum: project['Project Number'] } },
             startDate: new Date(), // TODO: Change this to the actual start date
           },

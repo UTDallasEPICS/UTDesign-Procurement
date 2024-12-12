@@ -1,16 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import { prisma } from '@/db'
 
-interface OrderData {
-  dateOrdered: Date;
-  orderNumber: string;
-  orderDetails: string;
-  trackingInfo: string;
-  shippingCost: number;
-  requestID: string;
-  netID: string;
-}
-
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse

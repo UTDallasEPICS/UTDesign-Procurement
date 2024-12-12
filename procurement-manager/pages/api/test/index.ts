@@ -4,7 +4,7 @@
 import { PrismaClient } from '@prisma/client'
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/binary'
 import { NextApiRequest, NextApiResponse } from 'next'
-const prisma = new PrismaClient()
+import { prisma } from '@/db'
 
 export default async function handler(
   req: NextApiRequest,
@@ -102,7 +102,7 @@ export default async function handler(
     // Connect student to project 1
     await prisma.worksOn.create({
       data: {
-        user: { connect: { netID: 'abc000000' } },
+        user: { connect: { email: 'abc000000@utdallas.edu' } },
         project: { connect: { projectNum: 10000 } },
         startDate: new Date(),
       },
@@ -111,7 +111,7 @@ export default async function handler(
     // Connect mentor to project 1
     await prisma.worksOn.create({
       data: {
-        user: { connect: { netID: 'def000000' } },
+        user: { connect: { email: 'def000000@utdallas.edu' } },
         project: { connect: { projectNum: 10000 } },
         startDate: new Date(),
       },
@@ -120,7 +120,7 @@ export default async function handler(
     // Connect mentor to project 2
     await prisma.worksOn.create({
       data: {
-        user: { connect: { netID: 'def000000' } },
+        user: { connect: { email: 'def000000@utdallas.edu' } },
         project: { connect: { projectNum: 20000 } },
         startDate: new Date(),
       },

@@ -7,6 +7,7 @@
 
 import { NextApiRequest, NextApiResponse } from 'next'
 import { prisma } from '@/db'
+import { validateEmailAndReturnNetID } from '@/lib/netid'
 
 export default async function handler(
   req: NextApiRequest,
@@ -18,9 +19,12 @@ export default async function handler(
   `findMany` method. If the request is successful, it sends a JSON response with the user data and a
   status code of 200 (indicating that the request was successful). If there is an error, it sends a
   JSON response with an error message and a status code of 500 (indicating that there was a server
-  error). */
+  error). */  
   if (req.method === 'GET') {
+
     try {
+      
+
       const users = await prisma.user.findMany()
       res.status(200).json(users)
     } catch (error) {
@@ -35,12 +39,14 @@ export default async function handler(
   ) {
     const { firstName, lastName, email, responsibilities, roleID } = req.body
     try {
+      const requiresValidNetID = roleID == 3; // check if student
+      const netID = validateEmailAndReturnNetID(email, requiresValidNetID);
       const user = await prisma.user.create({
         data: {
           firstName,
           lastName,
           email,
-          netID: email.split('@')[0], // gets netID from email
+          netID: netID, // gets netID from email
           active: true,
           responsibilities,
           role: {
