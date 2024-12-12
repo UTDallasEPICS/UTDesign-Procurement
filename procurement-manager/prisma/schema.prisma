@@ -254,7 +254,7 @@ model Department {
 model Vendor {
   vendorID          Int                 @id @default(autoincrement()) // unique identifier for each vendor
   vendorName        String // name of the vendor
-  vendorStatus      VendorStatus @default(DENIED)// Vendor Status (Approved, Pending, and Denied) 
+  vendorStatus      VendorStatus @default(PENDING)// Vendor Status (Approved, Pending, and Denied) 
   vendorEmail       String? // Optional field
   vendorURL         String @default("https://default.com")// vendor URL
   RequestItem       RequestItem[]
