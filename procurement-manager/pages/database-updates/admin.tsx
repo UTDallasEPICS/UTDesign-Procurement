@@ -14,12 +14,12 @@ import { AgGridReact } from 'ag-grid-react'
 import 'ag-grid-community/styles/ag-grid.css'
 import 'ag-grid-community/styles/ag-theme-quartz.css'
 import { CellValueChangedEvent } from 'ag-grid-community'
-import AdminAddButtonModal from '@/components/Admin-Page-Modals/AdminAddButtonModal'
-import AdminDeleteModal from '@/components/Admin-Page-Modals/AdminDeleteModal'
-import AdminDeactivateModal from '@/components/Admin-Page-Modals/AdminDeactivateModal'
-import AdminReactivateModal from '@/components/Admin-Page-Modals/AdminReactivateModal'
-import AdminSortByProjectModal from '@/components/Admin-Page-Modals/AdminSortByProjectModal'
-import AdminAssignProjectModal from '@/components/Admin-Page-Modals/AdminAssignProjectModal'
+import AdminAddButtonModal from '@/components/admin-modals/AdminAddButtonModal'
+import AdminDeleteModal from '@/components/admin-modals/AdminDeleteModal'
+import AdminDeactivateModal from '@/components/admin-modals/AdminDeactivateModal'
+import AdminReactivateModal from '@/components/admin-modals/AdminReactivateModal'
+import AdminSortByProjectModal from '@/components/admin-modals/AdminSortByProjectModal'
+import AdminAssignProjectModal from '@/components/admin-modals/AdminAssignProjectModal'
 
 export async function getServerSideProps() {
   const users = await prisma.user.findMany()
@@ -90,7 +90,7 @@ export default function Admin({
         value = new Date(value).toISOString();
       }
 
-      const response = await fetch('/api/admin-APIs/admin-edit', {
+      const response = await fetch('/api/admin-api/admin-edit', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

@@ -14,7 +14,7 @@ export default function AdminReactivateModal({ show, onHide, type }: AdminReacti
   const handleReactivate = async (itemsToReactivate: any[]) => {
     try {
       for (const item of itemsToReactivate) {
-        const endpoint = type === 'user' ? '/api/admin-APIs/reactivate-user' : '/api/admin-APIs/reactivate-project';
+        const endpoint = type === 'user' ? '/api/admin-api/reactivate-user' : '/api/admin-api/reactivate-project';
         const response = await fetch(endpoint, {
           method: 'POST',
           headers: {
@@ -37,7 +37,7 @@ export default function AdminReactivateModal({ show, onHide, type }: AdminReacti
 
   const handleSearch = async () => {
     try {
-      const response = await fetch('/api/admin-APIs/admin-search', {
+      const response = await fetch('/api/admin-api/admin-search', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

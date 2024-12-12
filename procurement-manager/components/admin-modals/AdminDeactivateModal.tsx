@@ -1,42 +1,26 @@
 import React, { useState } from 'react';
 import { Modal, Button, Form } from 'react-bootstrap';
+import { useRouter } from 'next/router';
 
-interface DeleteModalProps {
+interface AdminDeactivateModalProps {
   show: boolean;
   onHide: () => void;
   type: string;
 }
 
-const AdminDeleteModal: React.FC<DeleteModalProps> = ({ show, onHide, type }) => {
+export default function AdminDeactivateModal({
+  show,
+  onHide,
+  type,
+}: AdminDeactivateModalProps) {
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
-
-  const handleDelete = async (itemsToDelete: any[]) => {
-    try {
-      for (const item of itemsToDelete) {
-        const response = await fetch('/api/admin-APIs/delete', {
-          method: 'DELETE',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            type: type,
-            id: type === 'user' ? item.userID : item.projectID
-          }),
-        });
-        
-        if (!response.ok) throw new Error(`Failed to delete ${type}`);
-      }
-      onHide();
-      window.location.reload();
-    } catch (error) {
-      console.error(`Error deleting ${type}:`, error);
-    }
-  };
+  const [isDeactivating, setIsDeactivating] = useState(false);
 
   const handleSearch = async () => {
     try {
-      const response = await fetch('/api/admin-APIs/admin-search', {
+      const response = await fetch('/api/admin-api/admin-search', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -55,10 +39,45 @@ const AdminDeleteModal: React.FC<DeleteModalProps> = ({ show, onHide, type }) =>
     }
   };
 
+  const handleDeactivate = async () => {
+    setIsDeactivating(true);
+    try {
+      for (const item of searchResults) {
+        const response = await fetch(`/api/admin-api/deactivate-${type}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id: type === 'user' ? item.userID : item.projectID
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to deactivate');
+        }
+      }
+      
+      onHide();
+      router.reload();
+    } catch (error) {
+      console.error('Error deactivating:', error);
+    } finally {
+      setIsDeactivating(false);
+    }
+  };
+
+  const formatDate = (date: string | Date | null) => {
+    if (!date) return '';
+    return new Date(date).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
+
   return (
     <Modal show={show} onHide={onHide} size="lg">
       <Modal.Header closeButton>
-        <Modal.Title>Delete {type === 'user' ? 'Users' : 'Projects'}</Modal.Title>
+        <Modal.Title>Deactivate {type === 'user' ? 'Users' : 'Projects'}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <Form.Group className="mb-3">
@@ -84,19 +103,25 @@ const AdminDeleteModal: React.FC<DeleteModalProps> = ({ show, onHide, type }) =>
           <>
             <h6>Search Results:</h6>
             <ul>
-              {searchResults.map((item: any) => (
+              {searchResults.map((item) => (
                 <li key={type === 'user' ? item.userID : item.projectID}>
                   {type === 'user' 
-                    ? `${item.firstName} ${item.lastName} (${item.netID})`
-                    : `${item.projectTitle} (${item.projectNum})`}
+                    ? `${item.firstName} ${item.lastName} (${item.netID})${
+                        item.deactivationDate ? ` - Deactivated: ${formatDate(item.deactivationDate)}` : ''
+                      }`
+                    : `${item.projectTitle} (${item.projectNum})${
+                        item.deactivationDate ? ` - Deactivated: ${formatDate(item.deactivationDate)}` : ''
+                      }`
+                  }
                 </li>
               ))}
             </ul>
             <Button 
-              variant="danger" 
-              onClick={() => handleDelete(searchResults)}
+              variant="warning" 
+              onClick={handleDeactivate}
+              disabled={isDeactivating || searchResults.length === 0}
             >
-              Delete Found Items
+              {isDeactivating ? 'Deactivating...' : 'Deactivate Found Items'}
             </Button>
           </>
         )}
@@ -108,6 +133,4 @@ const AdminDeleteModal: React.FC<DeleteModalProps> = ({ show, onHide, type }) =>
       </Modal.Footer>
     </Modal>
   );
-};
-
-export default AdminDeleteModal; 
+}

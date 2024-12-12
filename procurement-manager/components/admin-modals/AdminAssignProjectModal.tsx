@@ -16,7 +16,7 @@ const AdminAssignProjectModal: React.FC<AssignProjectModalProps> = ({ show, onHi
 
   const handleUserSearch = async () => {
     try {
-      const response = await fetch('/api/admin-APIs/admin-search', {
+      const response = await fetch('/api/admin-api/admin-search', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -37,7 +37,7 @@ const AdminAssignProjectModal: React.FC<AssignProjectModalProps> = ({ show, onHi
 
   const handleProjectSearch = async () => {
     try {
-      const response = await fetch('/api/admin-APIs/admin-search', {
+      const response = await fetch('/api/admin-api/admin-search', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -60,7 +60,7 @@ const AdminAssignProjectModal: React.FC<AssignProjectModalProps> = ({ show, onHi
     if (!selectedUser || !selectedProject) return;
 
     try {
-      const response = await fetch('/api/admin-APIs/assignProj', {
+      const response = await fetch('/api/admin-api/assignProj', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
