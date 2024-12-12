@@ -1,3 +1,4 @@
+import { useRouter } from 'next/router';
 import React, { useState } from 'react';
 import { Modal, Button, Form } from 'react-bootstrap';
 
@@ -8,6 +9,7 @@ interface DeleteModalProps {
 }
 
 const AdminDeleteModal: React.FC<DeleteModalProps> = ({ show, onHide, type }) => {
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
 
@@ -28,7 +30,7 @@ const AdminDeleteModal: React.FC<DeleteModalProps> = ({ show, onHide, type }) =>
         if (!response.ok) throw new Error(`Failed to delete ${type}`);
       }
       onHide();
-      window.location.reload();
+      router.reload()
     } catch (error) {
       console.error(`Error deleting ${type}:`, error);
     }
@@ -76,7 +78,7 @@ const AdminDeleteModal: React.FC<DeleteModalProps> = ({ show, onHide, type }) =>
                 ? "Enter name or NetID..."
                 : "Enter project number..."}
             />
-            <Button onClick={handleSearch}>Search</Button>
+            <Button onSubmit={handleSearch}>Search</Button>
           </div>
         </Form.Group>
 

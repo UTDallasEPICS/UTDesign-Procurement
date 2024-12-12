@@ -1,3 +1,4 @@
+import { useRouter } from 'next/router';
 import React, { useState } from 'react';
 import { Modal, Form, Nav, Button } from 'react-bootstrap';
 
@@ -7,17 +8,21 @@ interface AddOptionModalProps {
 }
 
 const AddOptionModal: React.FC<AddOptionModalProps> = ({ show, onHide }) => {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState('user');
+  const [error, setError] = useState('')
   
-  const [userForm, setUserForm] = useState({
+  const initialUserForm = {
     email: '',
     firstName: '',
     lastName: '',
-    roleID: 3,  // Default to student (3)
-    projectNum: ''  // Add this field
-  });
+    roleID: 3, // Default to student (3)
+    projectNum: '', // Add this field
+  };
 
-  const [projectForm, setProjectForm] = useState({
+  const [userForm, setUserForm] = useState(initialUserForm);
+
+  const initialProjectForm = {
     projectTitle: '',
     projectNum: '',
     startingBudget: '',
@@ -25,8 +30,10 @@ const AddOptionModal: React.FC<AddOptionModalProps> = ({ show, onHide }) => {
     sponsorCompany: '',
     additionalInfo: '',
     costCenter: '',
-    initialExpenses: '0'
-  });
+    initialExpenses: '0',
+  };
+
+  const [projectForm, setProjectForm] = useState(initialProjectForm);
 
   const handleUserSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,9 +51,15 @@ const AddOptionModal: React.FC<AddOptionModalProps> = ({ show, onHide }) => {
           }
         }),
       });
-      
-      if (!response.ok) throw new Error('Failed to add user');
-      onHide();
+
+      if (response.ok) {
+        onHide();
+        setUserForm(initialUserForm)
+        router.reload()
+        return;
+      }
+
+      setError((await response.json())['error'])
     } catch (error) {
       console.error('Error adding user:', error);
     }
@@ -65,9 +78,15 @@ const AddOptionModal: React.FC<AddOptionModalProps> = ({ show, onHide }) => {
           data: projectForm
         }),
       });
-      
-      if (!response.ok) throw new Error('Failed to add project');
-      onHide();
+
+      if (response.ok) {
+        onHide();
+        setProjectForm(initialProjectForm)
+        router.reload()
+        return;
+      }
+
+      setError((await response.json())['error'])
     } catch (error) {
       console.error('Error adding project:', error);
     }
@@ -79,147 +98,244 @@ const AddOptionModal: React.FC<AddOptionModalProps> = ({ show, onHide }) => {
         <Modal.Title>Add</Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        <Nav variant="tabs" className="mb-3">
+        <Nav variant='tabs' className='mb-3'>
           <Nav.Item>
             <Nav.Link onClick={() => setActiveTab('user')}>Add User</Nav.Link>
           </Nav.Item>
           <Nav.Item>
-            <Nav.Link onClick={() => setActiveTab('project')}>Add Project</Nav.Link>
+            <Nav.Link onClick={() => setActiveTab('project')}>
+              Add Project
+            </Nav.Link>
           </Nav.Item>
         </Nav>
 
         {activeTab === 'user' ? (
           <Form onSubmit={handleUserSubmit}>
-            <Form.Group className="mb-3">
+            <Form.Group className='mb-3'>
               <Form.Label>Email</Form.Label>
-              <Form.Control 
-                type="email" 
+              <Form.Control
+                type='email'
                 value={userForm.email}
-                onChange={(e) => setUserForm({...userForm, email: e.target.value})}
+                onChange={(e) => {
+                  setUserForm({ ...userForm, email: e.target.value })
+                  setError('')
+                }}
               />
             </Form.Group>
-            <Form.Group className="mb-3">
+            <Form.Group className='mb-3'>
               <Form.Label>First Name</Form.Label>
-              <Form.Control 
-                type="text" 
+              <Form.Control
+                type='text'
                 value={userForm.firstName}
-                onChange={(e) => setUserForm({...userForm, firstName: e.target.value})}
+                onChange={(e) =>
+                  setUserForm({ ...userForm, firstName: e.target.value })
+                }
               />
             </Form.Group>
-            <Form.Group className="mb-3">
+            <Form.Group className='mb-3'>
               <Form.Label>Last Name</Form.Label>
-              <Form.Control 
-                type="text" 
+              <Form.Control
+                type='text'
                 value={userForm.lastName}
-                onChange={(e) => setUserForm({...userForm, lastName: e.target.value})}
+                onChange={(e) =>
+                  setUserForm({ ...userForm, lastName: e.target.value })
+                }
               />
             </Form.Group>
-            <Form.Group className="mb-3">
+            <Form.Group className='mb-3'>
               <Form.Label>Role</Form.Label>
               <div>
                 <Form.Check
-                  type="radio"
-                  label="Student"
-                  name="role"
+                  type='radio'
+                  label='Student'
+                  name='role'
                   checked={userForm.roleID === 3}
-                  onChange={() => setUserForm({...userForm, roleID: 3})}
+                  onChange={() => {
+                    setUserForm({ ...userForm, roleID: 3 })
+                    setError('')
+                  }}
                 />
                 <Form.Check
-                  type="radio"
-                  label="Mentor"
-                  name="role"
+                  type='radio'
+                  label='Mentor'
+                  name='role'
                   checked={userForm.roleID === 2}
-                  onChange={() => setUserForm({...userForm, roleID: 2})}
+                  onChange={() => {
+                    setUserForm({ ...userForm, roleID: 2 })
+                    setError('')
+                  }}
                 />
               </div>
             </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Project Number Assigned to User (Optional)</Form.Label>
-              <Form.Control 
-                type="number" 
+            <Form.Group className='mb-3'>
+              <Form.Label>
+                Project Number Assigned to User (Optional)
+              </Form.Label>
+              <Form.Control
+                type='number'
                 value={userForm.projectNum}
-                onChange={(e) => setUserForm({...userForm, projectNum: e.target.value})}
-                placeholder="Enter project number if applicable"
+                onChange={(e) => {
+                  setUserForm({ ...userForm, projectNum: e.target.value })
+                  setError('')
+                }}
+                placeholder='Enter project number if applicable'
               />
             </Form.Group>
-            <Button type="submit">Submit</Button>
+
+            {error && (
+              <p
+                style={{
+                  color: 'red',
+                  fontSize: 15,
+                  position: 'absolute',
+                }}
+              >
+                <b>{error}</b>
+              </p>
+            )}
+
+            <Button
+              style={{
+                backgroundColor: 'darkgreen',
+                marginTop: 30,
+                borderColor: 'black',
+              }}
+              type='submit'
+            >
+              Submit
+            </Button>
           </Form>
         ) : (
-          
           <Form onSubmit={handleProjectSubmit}>
-            <Form.Group className="mb-3">
+            <Form.Group className='mb-3'>
               <Form.Label>Project Title</Form.Label>
-              <Form.Control 
-                type="text" 
+              <Form.Control
+                type='text'
                 value={projectForm.projectTitle}
-                onChange={(e) => setProjectForm({...projectForm, projectTitle: e.target.value})}
+                onChange={(e) =>
+                  setProjectForm({
+                    ...projectForm,
+                    projectTitle: e.target.value,
+                  })
+                }
               />
             </Form.Group>
-            <Form.Group className="mb-3">
+            <Form.Group className='mb-3'>
               <Form.Label>Project Number</Form.Label>
-              <Form.Control 
-                type="number" 
+              <Form.Control
+                type='number'
                 value={projectForm.projectNum}
-                onChange={(e) => setProjectForm({...projectForm, projectNum: e.target.value})}
+                onChange={(e) =>
+                  setProjectForm({ ...projectForm, projectNum: e.target.value })
+                }
               />
             </Form.Group>
-            <Form.Group className="mb-3">
+            <Form.Group className='mb-3'>
               <Form.Label>Starting Budget</Form.Label>
-              <Form.Control 
-                type="number" 
-                step="0.01"
+              <Form.Control
+                type='number'
+                step='0.01'
                 value={projectForm.startingBudget}
-                onChange={(e) => setProjectForm({...projectForm, startingBudget: e.target.value})}
+                onChange={(e) =>
+                  setProjectForm({
+                    ...projectForm,
+                    startingBudget: e.target.value,
+                  })
+                }
               />
             </Form.Group>
-            <Form.Group className="mb-3">
+            <Form.Group className='mb-3'>
               <Form.Label>Expenses</Form.Label>
-              <Form.Control 
-                type="number" 
-                step="0.01"
+              <Form.Control
+                type='number'
+                step='0.01'
                 value={projectForm.initialExpenses}
-                onChange={(e) => setProjectForm({...projectForm, initialExpenses: e.target.value})}
+                onChange={(e) =>
+                  setProjectForm({
+                    ...projectForm,
+                    initialExpenses: e.target.value,
+                  })
+                }
               />
             </Form.Group>
-            <Form.Group className="mb-3">
+            <Form.Group className='mb-3'>
               <Form.Label>Project Type</Form.Label>
-              <Form.Control 
-                type="text" 
+              <Form.Control
+                type='text'
                 value={projectForm.projectType}
-                onChange={(e) => setProjectForm({...projectForm, projectType: e.target.value})}
+                onChange={(e) =>
+                  setProjectForm({
+                    ...projectForm,
+                    projectType: e.target.value,
+                  })
+                }
               />
             </Form.Group>
-            <Form.Group className="mb-3">
+            <Form.Group className='mb-3'>
               <Form.Label>Sponsor Company</Form.Label>
-              <Form.Control 
-                type="text" 
+              <Form.Control
+                type='text'
                 value={projectForm.sponsorCompany}
-                onChange={(e) => setProjectForm({...projectForm, sponsorCompany: e.target.value})}
+                onChange={(e) =>
+                  setProjectForm({
+                    ...projectForm,
+                    sponsorCompany: e.target.value,
+                  })
+                }
               />
             </Form.Group>
-            <Form.Group className="mb-3">
+            <Form.Group className='mb-3'>
               <Form.Label>Additional Information</Form.Label>
-              <Form.Control 
-                as="textarea"
+              <Form.Control
+                as='textarea'
                 rows={3}
                 value={projectForm.additionalInfo}
-                onChange={(e) => setProjectForm({...projectForm, additionalInfo: e.target.value})}
+                onChange={(e) =>
+                  setProjectForm({
+                    ...projectForm,
+                    additionalInfo: e.target.value,
+                  })
+                }
               />
             </Form.Group>
-            <Form.Group className="mb-3">
+            <Form.Group className='mb-3'>
               <Form.Label>Cost Center</Form.Label>
-              <Form.Control 
-                type="text" 
+              <Form.Control
+                type='text'
                 value={projectForm.costCenter}
-                onChange={(e) => setProjectForm({...projectForm, costCenter: e.target.value})}
+                onChange={(e) =>
+                  setProjectForm({ ...projectForm, costCenter: e.target.value })
+                }
               />
             </Form.Group>
-            <Button type="submit">Submit</Button>
+
+            {error && (
+              <p
+                style={{
+                  color: 'red',
+                  fontSize: 15,
+                  position: 'absolute',
+                }}
+              >
+                <b>{error}</b>
+              </p>
+            )}
+
+            <Button
+              style={{
+                backgroundColor: 'darkgreen',
+                marginTop: 30,
+                borderColor: 'black',
+              }}
+              type='submit'
+            >
+              Submit
+            </Button>
           </Form>
         )}
       </Modal.Body>
     </Modal>
-  );
+  )
 };
 
 export default AddOptionModal;

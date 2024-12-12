@@ -1,6 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import { prisma } from '@/db'
 import { Prisma } from '@prisma/client' 
+import { validateEmailAndReturnNetID } from '@/lib/netid'
 
 export default async function handler(
   req: NextApiRequest,
@@ -14,27 +15,23 @@ export default async function handler(
   try {
     if (type === 'user') {
       const { email, firstName, lastName, roleID, projectNum } = data
+
+      let netID = validateEmailAndReturnNetID(email, false)
+      // if no net ID is found then netID will be null otherwise it will be whatever is parsed from the email
       
-      // Check if email matches UTD format (3 letters followed by 6 digits)
-      const netIDMatch = email.match(/^([a-zA-Z]{3}\d{6})@utdallas\.edu$/);
-      
-      if (roleID ===3 && !netIDMatch) {
+      if (roleID === 3 && !netID) {
         return res.status(400).json({ 
-          error: 'Invalid email format. Must be a UTD email (e.g., ABC123456@utdallas.edu)' 
+          error: 'Email must be in the format abc123456@utdallas.edu'
         });
       }
 
-      
-      //if no net ID is found then netID will be empty string otherwise it will be whatever is parsed from the email
-      const netID = netIDMatch ? netIDMatch[1] : "---------";
-      
       try {
         const user = await prisma.user.create({
           data: {
             firstName,
             lastName,
             email,
-            netID: netID,
+            netID,
             active: true,
             role: {
               connect: { roleID: roleID }

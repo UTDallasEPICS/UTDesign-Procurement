@@ -95,7 +95,7 @@ export default function AdminDeactivateModal({
                 ? "Enter name or NetID..."
                 : "Enter project number..."}
             />
-            <Button onClick={handleSearch}>Search</Button>
+            <Button onSubmit={handleSearch}>Search</Button>
           </div>
         </Form.Group>
 

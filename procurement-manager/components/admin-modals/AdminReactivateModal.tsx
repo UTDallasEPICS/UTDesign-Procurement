@@ -1,3 +1,4 @@
+import { useRouter } from 'next/router';
 import React, { useState } from 'react';
 import { Modal, Button, Form } from 'react-bootstrap';
 
@@ -8,6 +9,7 @@ interface AdminReactivateModalProps {
 }
 
 export default function AdminReactivateModal({ show, onHide, type }: AdminReactivateModalProps) {
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
 
@@ -29,7 +31,7 @@ export default function AdminReactivateModal({ show, onHide, type }: AdminReacti
         if (!response.ok) throw new Error(`Failed to reactivate ${type}`);
       }
       onHide();
-      window.location.reload();
+      router.reload()
     } catch (error) {
       console.error(`Error reactivating ${type}:`, error);
     }
@@ -77,7 +79,7 @@ export default function AdminReactivateModal({ show, onHide, type }: AdminReacti
                 ? "Enter name or NetID..."
                 : "Enter project number..."}
             />
-            <Button onClick={handleSearch}>Search</Button>
+            <Button onSubmit={handleSearch}>Search</Button>
           </div>
         </Form.Group>
 

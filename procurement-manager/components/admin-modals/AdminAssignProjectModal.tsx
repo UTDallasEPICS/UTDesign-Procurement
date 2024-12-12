@@ -1,3 +1,4 @@
+import { useRouter } from 'next/router';
 import React, { useState } from 'react';
 import { Modal, Button, Form } from 'react-bootstrap';
 
@@ -7,6 +8,7 @@ interface AssignProjectModalProps {
 }
 
 const AdminAssignProjectModal: React.FC<AssignProjectModalProps> = ({ show, onHide }) => {
+  const router = useRouter();
   const [searchUserTerm, setSearchUserTerm] = useState('');
   const [searchProjectTerm, setSearchProjectTerm] = useState('');
   const [selectedUser, setSelectedUser] = useState<any>(null);
@@ -79,6 +81,7 @@ const AdminAssignProjectModal: React.FC<AssignProjectModalProps> = ({ show, onHi
       setSelectedProject(null);
       setUserResults([]);
       setProjectResults([]);
+      router.reload()
     } catch (error) {
       console.error('Error assigning project:', error);
     }
@@ -100,7 +103,7 @@ const AdminAssignProjectModal: React.FC<AssignProjectModalProps> = ({ show, onHi
               onChange={(e) => setSearchUserTerm(e.target.value)}
               placeholder="Enter name or NetID..."
             />
-            <Button onClick={handleUserSearch}>Search</Button>
+            <Button onSubmit={handleUserSearch}>Search</Button>
           </div>
           {userResults.length > 0 && (
             <div className="mb-3">
@@ -114,7 +117,7 @@ const AdminAssignProjectModal: React.FC<AssignProjectModalProps> = ({ show, onHi
                   onClick={() => setSelectedUser(user)}
                   style={{ cursor: 'pointer' }}
                 >
-                  {user.firstName} {user.lastName} ({user.netID})
+                  {user.firstName} {user.lastName} ({user.netID ?? '---------'})
                 </div>
               ))}
             </div>
@@ -131,7 +134,7 @@ const AdminAssignProjectModal: React.FC<AssignProjectModalProps> = ({ show, onHi
               onChange={(e) => setSearchProjectTerm(e.target.value)}
               placeholder="Enter project number or title..."
             />
-            <Button onClick={handleProjectSearch}>Search</Button>
+            <Button onSubmit={handleProjectSearch}>Search</Button>
           </div>
           {projectResults.length > 0 && (
             <div>

@@ -78,7 +78,7 @@ export default function AdminSortByProjectModal({ show, onHide }: AdminSortByPro
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Enter project number..."
             />
-            <Button onClick={handleSearch}>Search</Button>
+            <Button onSubmit={handleSearch}>Search</Button>
           </div>
         </Form.Group>
 
@@ -91,7 +91,7 @@ export default function AdminSortByProjectModal({ show, onHide }: AdminSortByPro
               <ul>
                 {searchResults.map((user: any) => (
                   <li key={user.userID}>
-                    {user.firstName} {user.lastName} ({user.netID})
+                    {user.firstName} {user.lastName} ({user.netID ?? '---------'})
                   </li>
                 ))}
               </ul>
