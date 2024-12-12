@@ -16,7 +16,8 @@ const AdminAssignProjectModal: React.FC<AssignProjectModalProps> = ({ show, onHi
   const [userResults, setUserResults] = useState<any[]>([]);
   const [projectResults, setProjectResults] = useState<any[]>([]);
 
-  const handleUserSearch = async () => {
+  const handleUserSearch = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
     try {
       const response = await fetch('/api/admin-api/admin-search', {
         method: 'POST',
@@ -25,19 +26,22 @@ const AdminAssignProjectModal: React.FC<AssignProjectModalProps> = ({ show, onHi
         },
         body: JSON.stringify({
           type: 'user',
-          searchTerm: searchUserTerm
+          searchTerm: searchUserTerm,
         }),
-      });
-      
-      if (!response.ok) throw new Error('Search failed');
-      const results = await response.json();
-      setUserResults(results);
-    } catch (error) {
-      console.error('Search error:', error);
-    }
-  };
+      })
 
-  const handleProjectSearch = async () => {
+      if (!response.ok) throw new Error('Search failed')
+      const results = await response.json()
+      setUserResults(results)
+    } catch (error) {
+      console.error('Search error:', error)
+    }
+  }
+
+  const handleProjectSearch = async (
+    event: React.FormEvent<HTMLFormElement>,
+  ) => {
+    event.preventDefault()
     try {
       const response = await fetch('/api/admin-api/admin-search', {
         method: 'POST',
@@ -46,17 +50,17 @@ const AdminAssignProjectModal: React.FC<AssignProjectModalProps> = ({ show, onHi
         },
         body: JSON.stringify({
           type: 'project',
-          searchTerm: searchProjectTerm
+          searchTerm: searchProjectTerm,
         }),
-      });
-      
-      if (!response.ok) throw new Error('Search failed');
-      const results = await response.json();
-      setProjectResults(results);
+      })
+
+      if (!response.ok) throw new Error('Search failed')
+      const results = await response.json()
+      setProjectResults(results)
     } catch (error) {
-      console.error('Search error:', error);
+      console.error('Search error:', error)
     }
-  };
+  }
 
   const handleAssign = async () => {
     if (!selectedUser || !selectedProject) return;
@@ -88,90 +92,96 @@ const AdminAssignProjectModal: React.FC<AssignProjectModalProps> = ({ show, onHi
   };
 
   return (
-    <Modal show={show} onHide={onHide} size="lg">
+    <Modal show={show} onHide={onHide} size='lg'>
       <Modal.Header closeButton>
         <Modal.Title>Assign Project to User</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         {/* User Search Section */}
-        <Form.Group className="mb-4">
-          <Form.Label>Search User</Form.Label>
-          <div className="d-flex gap-2 mb-2">
-            <Form.Control
-              type="text"
-              value={searchUserTerm}
-              onChange={(e) => setSearchUserTerm(e.target.value)}
-              placeholder="Enter name or NetID..."
-            />
-            <Button onSubmit={handleUserSearch}>Search</Button>
-          </div>
-          {userResults.length > 0 && (
-            <div className="mb-3">
-              <h6>Select User:</h6>
-              {userResults.map((user) => (
-                <div
-                  key={user.userID}
-                  className={`p-2 border rounded mb-1 cursor-pointer ${
-                    selectedUser?.userID === user.userID ? 'bg-primary text-white' : ''
-                  }`}
-                  onClick={() => setSelectedUser(user)}
-                  style={{ cursor: 'pointer' }}
-                >
-                  {user.firstName} {user.lastName} ({user.netID ?? '---------'})
-                </div>
-              ))}
+        <form onSubmit={handleUserSearch}>
+          <Form.Group className='mb-4'>
+            <Form.Label>Search User</Form.Label>
+            <div className='d-flex gap-2 mb-2'>
+              <Form.Control
+                type='text'
+                value={searchUserTerm}
+                onChange={(e) => setSearchUserTerm(e.target.value)}
+                placeholder='Enter name or NetID...'
+              />
+              <Button type='submit'>Search</Button>
             </div>
-          )}
-        </Form.Group>
+            {userResults.length > 0 && (
+              <div className='mb-3'>
+                <h6>Select User:</h6>
+                {userResults.map((user) => (
+                  <div
+                    key={user.userID}
+                    className={`p-2 border rounded mb-1 cursor-pointer ${
+                      selectedUser?.userID === user.userID
+                        ? 'bg-primary text-white'
+                        : ''
+                    }`}
+                    onClick={() => setSelectedUser(user)}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    {user.firstName} {user.lastName} (
+                    {user.netID ?? '---------'})
+                  </div>
+                ))}
+              </div>
+            )}
+          </Form.Group>
+        </form>
 
         {/* Project Search Section */}
-        <Form.Group className="mb-4">
-          <Form.Label>Search Project</Form.Label>
-          <div className="d-flex gap-2 mb-2">
-            <Form.Control
-              type="text"
-              value={searchProjectTerm}
-              onChange={(e) => setSearchProjectTerm(e.target.value)}
-              placeholder="Enter project number or title..."
-            />
-            <Button onSubmit={handleProjectSearch}>Search</Button>
-          </div>
-          {projectResults.length > 0 && (
-            <div>
-              <h6>Select Project:</h6>
-              {projectResults.map((project) => (
-                <div
-                  key={project.projectID}
-                  className={`p-2 border rounded mb-1 cursor-pointer ${
-                    selectedProject?.projectID === project.projectID ? 'bg-primary text-white' : ''
-                  }`}
-                  onClick={() => setSelectedProject(project)}
-                  style={{ cursor: 'pointer' }}
-                >
-                  {project.projectTitle} (#{project.projectNum})
-                </div>
-              ))}
+        <form onSubmit={handleProjectSearch}>
+          <Form.Group className='mb-4'>
+            <Form.Label>Search Project</Form.Label>
+            <div className='d-flex gap-2 mb-2'>
+              <Form.Control
+                type='text'
+                value={searchProjectTerm}
+                onChange={(e) => setSearchProjectTerm(e.target.value)}
+                placeholder='Enter project number or title...'
+              />
+              <Button type='submit'>Search</Button>
             </div>
-          )}
-        </Form.Group>
+            {projectResults.length > 0 && (
+              <div>
+                <h6>Select Project:</h6>
+                {projectResults.map((project) => (
+                  <div
+                    key={project.projectID}
+                    className={`p-2 border rounded mb-1 cursor-pointer ${
+                      selectedProject?.projectID === project.projectID
+                        ? 'bg-primary text-white'
+                        : ''
+                    }`}
+                    onClick={() => setSelectedProject(project)}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    {project.projectTitle} (#{project.projectNum})
+                  </div>
+                ))}
+              </div>
+            )}
+          </Form.Group>
+        </form>
 
         {selectedUser && selectedProject && (
-          <Button 
-            variant="success" 
-            onClick={handleAssign}
-            className="w-100"
-          >
-            Assign {selectedUser.firstName} {selectedUser.lastName} to {selectedProject.projectTitle}
+          <Button variant='success' onClick={handleAssign} className='w-100'>
+            Assign {selectedUser.firstName} {selectedUser.lastName} to{' '}
+            {selectedProject.projectTitle}
           </Button>
         )}
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="secondary" onClick={onHide}>
+        <Button variant='secondary' onClick={onHide}>
           Cancel
         </Button>
       </Modal.Footer>
     </Modal>
-  );
+  )
 };
 
 export default AdminAssignProjectModal;

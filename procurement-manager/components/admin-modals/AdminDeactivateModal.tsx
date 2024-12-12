@@ -18,7 +18,8 @@ export default function AdminDeactivateModal({
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isDeactivating, setIsDeactivating] = useState(false);
 
-  const handleSearch = async () => {
+  const handleSearch = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
     try {
       const response = await fetch('/api/admin-api/admin-search', {
         method: 'POST',
@@ -27,17 +28,17 @@ export default function AdminDeactivateModal({
         },
         body: JSON.stringify({
           type: type,
-          searchTerm: searchTerm
+          searchTerm: searchTerm,
         }),
-      });
-      
-      if (!response.ok) throw new Error('Search failed');
-      const results = await response.json();
-      setSearchResults(results);
+      })
+
+      if (!response.ok) throw new Error('Search failed')
+      const results = await response.json()
+      setSearchResults(results)
     } catch (error) {
-      console.error('Search error:', error);
+      console.error('Search error:', error)
     }
-  };
+  }
 
   const handleDeactivate = async () => {
     setIsDeactivating(true);
@@ -75,29 +76,35 @@ export default function AdminDeactivateModal({
   };
 
   return (
-    <Modal show={show} onHide={onHide} size="lg">
+    <Modal show={show} onHide={onHide} size='lg'>
       <Modal.Header closeButton>
-        <Modal.Title>Deactivate {type === 'user' ? 'Users' : 'Projects'}</Modal.Title>
+        <Modal.Title>
+          Deactivate {type === 'user' ? 'Users' : 'Projects'}
+        </Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        <Form.Group className="mb-3">
-          <Form.Label>
-            {type === 'user' 
-              ? 'Search by Name or NetID'
-              : 'Search by Project Number'}
-          </Form.Label>
-          <div className="d-flex gap-2">
-            <Form.Control
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder={type === 'user' 
-                ? "Enter name or NetID..."
-                : "Enter project number..."}
-            />
-            <Button onSubmit={handleSearch}>Search</Button>
-          </div>
-        </Form.Group>
+        <form onSubmit={handleSearch}>
+          <Form.Group className='mb-3'>
+            <Form.Label>
+              {type === 'user'
+                ? 'Search by Name or NetID'
+                : 'Search by Project Number'}
+            </Form.Label>
+            <div className='d-flex gap-2'>
+              <Form.Control
+                type='text'
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder={
+                  type === 'user'
+                    ? 'Enter name or NetID...'
+                    : 'Enter project number...'
+                }
+              />
+              <Button type='submit'>Search</Button>
+            </div>
+          </Form.Group>
+        </form>
 
         {searchResults.length > 0 && (
           <>
@@ -105,19 +112,26 @@ export default function AdminDeactivateModal({
             <ul>
               {searchResults.map((item) => (
                 <li key={type === 'user' ? item.userID : item.projectID}>
-                  {type === 'user' 
+                  {type === 'user'
                     ? `${item.firstName} ${item.lastName} (${item.netID})${
-                        item.deactivationDate ? ` - Deactivated: ${formatDate(item.deactivationDate)}` : ''
+                        item.deactivationDate
+                          ? ` - Deactivated: ${formatDate(
+                              item.deactivationDate,
+                            )}`
+                          : ''
                       }`
                     : `${item.projectTitle} (${item.projectNum})${
-                        item.deactivationDate ? ` - Deactivated: ${formatDate(item.deactivationDate)}` : ''
-                      }`
-                  }
+                        item.deactivationDate
+                          ? ` - Deactivated: ${formatDate(
+                              item.deactivationDate,
+                            )}`
+                          : ''
+                      }`}
                 </li>
               ))}
             </ul>
-            <Button 
-              variant="warning" 
+            <Button
+              variant='warning'
               onClick={handleDeactivate}
               disabled={isDeactivating || searchResults.length === 0}
             >
@@ -127,10 +141,10 @@ export default function AdminDeactivateModal({
         )}
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="secondary" onClick={onHide}>
+        <Button variant='secondary' onClick={onHide}>
           Cancel
         </Button>
       </Modal.Footer>
     </Modal>
-  );
+  )
 }
