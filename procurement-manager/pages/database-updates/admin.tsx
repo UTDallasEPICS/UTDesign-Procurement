@@ -4,7 +4,7 @@
 
 
 import React, { useEffect, useState } from 'react'
-import { Button, Col, Nav, Row, Dropdown } from 'react-bootstrap'
+import { Col, Nav, Row, Dropdown, DropdownButton } from 'react-bootstrap'
 import { prisma } from '@/db'
 import { Project, User } from '@prisma/client'
 import Link from 'next/link'
@@ -14,12 +14,12 @@ import { AgGridReact } from 'ag-grid-react'
 import 'ag-grid-community/styles/ag-grid.css'
 import 'ag-grid-community/styles/ag-theme-quartz.css'
 import { CellValueChangedEvent } from 'ag-grid-community'
-import AdminAddButtonModal from '@/components/Admin-Page-Modals/AdminAddButtonModal'
-import AdminDeleteModal from '@/components/Admin-Page-Modals/AdminDeleteModal'
-import AdminDeactivateModal from '@/components/Admin-Page-Modals/AdminDeactivateModal'
-import AdminReactivateModal from '@/components/Admin-Page-Modals/AdminReactivateModal'
-import AdminSortByProjectModal from '@/components/Admin-Page-Modals/AdminSortByProjectModal'
-import AdminAssignProjectModal from '@/components/Admin-Page-Modals/AdminAssignProjectModal'
+import AdminAddButtonModal from '@/components/admin-modals/AdminAddButtonModal'
+import AdminDeleteModal from '@/components/admin-modals/AdminDeleteModal'
+import AdminDeactivateModal from '@/components/admin-modals/AdminDeactivateModal'
+import AdminReactivateModal from '@/components/admin-modals/AdminReactivateModal'
+import AdminSortByProjectModal from '@/components/admin-modals/AdminSortByProjectModal'
+import AdminAssignProjectModal from '@/components/admin-modals/AdminAssignProjectModal'
 
 export async function getServerSideProps() {
   const users = await prisma.user.findMany()
@@ -90,7 +90,7 @@ export default function Admin({
         value = new Date(value).toISOString();
       }
 
-      const response = await fetch('/api/admin-APIs/admin-edit', {
+      const response = await fetch('/api/admin-api/admin-edit', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -232,71 +232,68 @@ export default function Admin({
       <Row>
         <Col>
           <div className={styles['header-btns-container']}>
-            <Nav variant='tabs' defaultActiveKey={'user'} className='flex-grow-1 me-4'>
+            <Nav
+              variant='tabs'
+              defaultActiveKey={'user'}
+              className='flex-grow-1 me-4'
+            >
               <Nav.Item>
-                <Nav.Link eventKey={'user'} onClick={() => setTableType('user')}>
+                <Nav.Link
+                  eventKey={'user'}
+                  onClick={() => setTableType('user')}
+                >
                   Users
                 </Nav.Link>
               </Nav.Item>
               <Nav.Item>
-                <Nav.Link eventKey={'project'} onClick={() => setTableType('project')}>
+                <Nav.Link
+                  eventKey={'project'}
+                  onClick={() => setTableType('project')}
+                >
                   Projects
                 </Nav.Link>
               </Nav.Item>
             </Nav>
 
             <div>
-              <Dropdown className="d-inline-block">
-                <Dropdown.Toggle variant="primary" id="dropdown-admin-actions">
-                  Admin Actions
-                </Dropdown.Toggle>
-
-                <Dropdown.Menu>
-                  <Dropdown.Item 
-                    onClick={() => setShowModal(true)}
-                    style={{ backgroundColor: '#198754', color: 'white' }}
-                  >
-                    Add
-                  </Dropdown.Item>
-                  <Dropdown.Item 
-                    onClick={() => setShowDeleteModal(true)}
-                    style={{ backgroundColor: '#dc3545', color: 'white' }}
-                  >
-                    Delete
-                  </Dropdown.Item>
-                  <Dropdown.Item 
-                    onClick={() => setShowReactivateModal(true)}
-                    style={{ backgroundColor: '#6fa8dc', color: 'white' }}
-                  >
-                    Reactivate
-                  </Dropdown.Item>
-                  <Dropdown.Item 
-                    onClick={() => setShowDeactivateModal(true)}
-                    style={{ backgroundColor: '#f5881d', color: 'white' }}
-                  >
-                    Deactivate
-                  </Dropdown.Item>
-                  <Dropdown.Item 
-                    onClick={() => setShowSortByProjectModal(true)}
-                    style={{ backgroundColor: '#7b68ee', color: 'white' }}
-                  >
-                    Search by Project
-                  </Dropdown.Item>
-                  <Dropdown.Item 
-                    onClick={() => setShowAssignProjectModal(true)}
-                    style={{ backgroundColor: '#20B2AA', color: 'white' }}
-                  >
-                    Assign Project
-                  </Dropdown.Item>
-                  <Dropdown.Item 
-                    as={Link} 
-                    href="/database-updates/upload"
-                    style={{ backgroundColor: '#0d6efd', color: 'white' }}
-                  >
-                    Upload Files
-                  </Dropdown.Item>
-                </Dropdown.Menu>
-              </Dropdown>
+              <DropdownButton id='dropdown-admin-actions' title='Admin Actions'>
+                <Dropdown.Item
+                  onClick={() => setShowModal(true)}
+                >
+                  Add
+                </Dropdown.Item>
+                <Dropdown.Item
+                  onClick={() => setShowDeleteModal(true)}
+                >
+                  Delete
+                </Dropdown.Item>
+                <Dropdown.Item
+                  onClick={() => setShowReactivateModal(true)}
+                >
+                  Reactivate
+                </Dropdown.Item>
+                <Dropdown.Item
+                  onClick={() => setShowDeactivateModal(true)}
+                >
+                  Deactivate
+                </Dropdown.Item>
+                <Dropdown.Item
+                  onClick={() => setShowSortByProjectModal(true)}
+                >
+                  Search by Project
+                </Dropdown.Item>
+                <Dropdown.Item
+                  onClick={() => setShowAssignProjectModal(true)}
+                >
+                  Assign Project
+                </Dropdown.Item>
+                <Dropdown.Item
+                  as={Link}
+                  href='/database-updates/upload'
+                >
+                  Upload Files
+                </Dropdown.Item>
+              </DropdownButton>
 
               <AdminAddButtonModal
                 show={showModal}
@@ -332,7 +329,10 @@ export default function Admin({
 
       <Row>
         <Col>
-          <div className='ag-theme-quartz' style={{ width: '100%', height: '75vh' }}>
+          <div
+            className='ag-theme-quartz'
+            style={{ width: '100%', height: '75vh' }}
+          >
             <AgGridReact
               rowData={tableType === 'user' ? userData : projectData}
               columnDefs={colData}

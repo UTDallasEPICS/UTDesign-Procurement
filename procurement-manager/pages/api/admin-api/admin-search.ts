@@ -26,9 +26,13 @@ export default async function handler(
     }
 
     if (type === 'project') {
+      const searchTermInt = parseInt(searchTerm)
       const projects = await prisma.project.findMany({
         where: {
-          projectNum: parseInt(searchTerm)
+          OR: [
+            ...(Number.isFinite(searchTermInt) ? [{ projectNum: searchTermInt }] : []),
+            { projectTitle: { contains: searchTerm } }
+          ]
         }
       })
       return res.status(200).json(projects)
