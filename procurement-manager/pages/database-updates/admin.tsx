@@ -289,11 +289,12 @@ export default function Admin({
                 style={{
                   padding: '5px',
                   borderRadius: '5px',
-                  backgroundColor: currentStatus === 'APPROVED' ? 'green' : 'red',
-                  color: 'white',
+                  backgroundColor: currentStatus === 'APPROVED' ? 'green' : (currentStatus === 'DENIED' ? 'red' : 'yellow'),
+                  color: currentStatus === 'PENDING' ? 'black' : 'white',
                   border: 'none',
                 }}
               >
+                <option value="PENDING">PENDING</option>
                 <option value="APPROVED">APPROVED</option>
                 <option value="DENIED">DENIED</option>
               </select>
