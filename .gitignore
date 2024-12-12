@@ -3,4 +3,5 @@ procurement-manager/.env
 procurement-manager/uploads
 procurement-manager/exports
 *.xlsx
+!Test*.xlsx
 .DS_Store
