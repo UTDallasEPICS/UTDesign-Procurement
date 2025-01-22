@@ -12,31 +12,47 @@ export default async function handler(
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  const { type, id } = req.body // type will be either 'user' or 'project'
+  const { type, id } = req.body
 
-  //deleting a user
   try {
     if (type === 'user') {
+      // First, delete all WorksOn relationships for this user
+      await prisma.worksOn.deleteMany({
+        where: {
+          userID: id
+        }
+      });
+
+      // Then delete the user
       const user = await prisma.user.delete({
         where: {
           userID: id
         }
-      })
-      return res.status(200).json(user)
+      });
+      
+      return res.status(200).json(user);
     }
-    //deleting a project
+
     if (type === 'project') {
+      // First, delete all WorksOn relationships for this project
+      await prisma.worksOn.deleteMany({
+        where: {
+          projectID: id
+        }
+      });
+
       const project = await prisma.project.delete({
         where: {
           projectID: id
         }
-      })
-      return res.status(200).json(project)
+      });
+      
+      return res.status(200).json(project);
     }
 
-    return res.status(400).json({ error: 'Invalid type specified' })
+    return res.status(400).json({ error: 'Invalid type specified' });
   } catch (error) {
-    console.error('Error in admin-delete:', error)
-    return res.status(500).json({ error: 'Failed to delete record' })
+    console.error('Error in admin-delete:', error);
+    return res.status(500).json({ error: 'Failed to delete record' });
   }
 }
