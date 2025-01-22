@@ -19,6 +19,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         where: { projectID: id },
         data: { [field]: value },
       });
+    } else if (type === 'vendor') {
+      await prisma.vendor.update({
+        where: { vendorID: id },
+        data: { [field]: value },
+      });
     }
 
     res.status(200).json({ message: 'Updated successfully' });

@@ -6,7 +6,7 @@
 import React, { useEffect, useState } from 'react'
 import { Col, Nav, Row, Dropdown, DropdownButton } from 'react-bootstrap'
 import { prisma } from '@/db'
-import { Project, User } from '@prisma/client'
+import { Project, Request, User, Vendor } from '@prisma/client'
 import Link from 'next/link'
 import Head from 'next/head'
 import styles from '@/styles/DatabaseUpdate.module.scss'
@@ -24,6 +24,8 @@ import AdminAssignProjectModal from '@/components/admin-modals/AdminAssignProjec
 export async function getServerSideProps() {
   const users = await prisma.user.findMany()
   const projects = await prisma.project.findMany()
+  const vendors = await prisma.vendor.findMany()
+  // const requests = await prisma.request.findMany()
 
   return {
     props: {
@@ -31,6 +33,8 @@ export async function getServerSideProps() {
       description: 'University of Texas at Dallas',
       users: JSON.parse(JSON.stringify(users)),
       projects: JSON.parse(JSON.stringify(projects)),
+      vendors: JSON.parse(JSON.stringify(vendors)),
+      // requests: JSON.parse(JSON.stringify(requests)),
     },
   }
 }
@@ -40,6 +44,8 @@ interface AdminProps {
   description: String
   users: User[]
   projects: Project[]
+  vendors: Vendor[]
+  // requests: Request[]
 }
 
 interface DatePickerParams {//type issue resolved calender into string
@@ -51,6 +57,8 @@ export default function Admin({
   description,
   users,
   projects,
+  vendors,
+  // requests,
 }: AdminProps): JSX.Element {
   const [showModal, setShowModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -70,6 +78,7 @@ export default function Admin({
   })
   const [userData, setUserData] = useState<User[]>(users);
   const [projectData, setProjectData] = useState<Project[]>(projects);
+  const [vendorData, setVendorData] = useState<Vendor[]>(vendors);
 
   const handleAddUserClick = () => {
     setShowModal(true)
@@ -97,7 +106,7 @@ export default function Admin({
         },
         body: JSON.stringify({
           type: tableType,
-          id: tableType === 'user' ? event.data.userID : event.data.projectID,
+          id: tableType === 'user' ? event.data.userID : (tableType === 'project' ? event.data.projectID : event.data.vendorID),
           field: event.colDef.field,
           value: value
         }),
@@ -116,12 +125,20 @@ export default function Admin({
               : user
           )
         );
-      } else {
+      } else if (tableType === 'project') {
         setProjectData(prevData => 
           prevData.map(project => 
             project.projectID === event.data.projectID 
               ? { ...project, [event.colDef.field!]: value }
               : project
+          )
+        );
+      } else {
+        setVendorData(prevData =>
+          prevData.map(vendor =>
+            vendor.vendorID === event.data.vendorID
+              ? { ...vendor, [event.colDef.field!]: value }
+              : vendor
           )
         );
       }
@@ -220,6 +237,73 @@ export default function Admin({
         { field: 'additionalInfo' },
         { field: 'costCenter' },
       ])
+    } else if (tableType === 'vendor') {
+      setColData([
+        { field: 'vendorID' },
+        { field: 'vendorName' },
+        {
+          field: 'vendorStatus',
+          cellRenderer: (params: any) => {
+            const currentStatus = params.value;
+        
+            // Function to handle dropdown change
+            // TODO test if it works in conjunction with onCellValueChanged
+            const handleDropdownChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+              const newStatus = e.target.value;
+        
+              // Update the local data immediately for UI responsiveness
+              params.data.vendorStatus = newStatus;
+              params.api.refreshCells({ rowNodes: [params.node], force: true });
+        
+              // Make an API call to update the database
+              try {
+                const response = await fetch('/api/vendor/updateStatus', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({
+                    vendorID: params.data.vendorID,
+                    newStatus,
+                  }),
+                });
+        
+                if (!response.ok) {
+                  console.error('Failed to update vendor status in the database.');
+                  // Optionally, revert UI changes if the API call fails
+                  params.data.vendorStatus = currentStatus;
+                  params.api.refreshCells({ rowNodes: [params.node], force: true });
+                }
+              } catch (error) {
+                console.error('Error updating vendor status:', error);
+                // Revert UI changes in case of an error
+                params.data.vendorStatus = currentStatus;
+                params.api.refreshCells({ rowNodes: [params.node], force: true });
+              }
+            };
+        
+            return (
+              <select
+                value={currentStatus}
+                onChange={handleDropdownChange}
+                style={{
+                  padding: '5px',
+                  borderRadius: '5px',
+                  backgroundColor: currentStatus === 'APPROVED' ? 'green' : (currentStatus === 'DENIED' ? 'red' : 'yellow'),
+                  color: currentStatus === 'PENDING' ? 'black' : 'white',
+                  border: 'none',
+                }}
+              >
+                <option value="PENDING">PENDING</option>
+                <option value="APPROVED">APPROVED</option>
+                <option value="DENIED">DENIED</option>
+              </select>
+            );
+          },
+        },
+        { field: 'vendorEmail' },
+        { field: 'vendorURL' },
+      ])
     }
   }, [tableType])
 
@@ -251,6 +335,14 @@ export default function Admin({
                   onClick={() => setTableType('project')}
                 >
                   Projects
+                </Nav.Link>
+              </Nav.Item>
+              <Nav.Item>
+                <Nav.Link
+                  eventKey={'vendor'}
+                  onClick={() => setTableType('vendor')}
+                >
+                  Vendors
                 </Nav.Link>
               </Nav.Item>
             </Nav>
@@ -334,7 +426,7 @@ export default function Admin({
             style={{ width: '100%', height: '75vh' }}
           >
             <AgGridReact
-              rowData={tableType === 'user' ? userData : projectData}
+              rowData={tableType === 'user' ? userData : (tableType === 'project' ? projectData : vendorData)}
               columnDefs={colData}
               defaultColDef={defaultColDef}
               components={{ datePicker: getDatePicker() }}
