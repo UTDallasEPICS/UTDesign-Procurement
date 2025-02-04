@@ -1,6 +1,6 @@
 # UTDesign-Procurement
 
-> [!IMPORTANT]
+> [!CAUTION]
 > READ EVERYTHING BEFORE STARTING ON THE PROJECT!!!
 
 ## Project Background
@@ -78,6 +78,8 @@ The current process for managing procurement paperwork submitted by students fro
 
 ---
 
+<!-- TO DISCUSS: is this section up to date at all? if so, it should probably be decomposed into gh issues instead of being here -->
+
 ## ✅ To-do list (After FALL 2023) ✅
 
 ### Debug & Merge The 3 Branches (dev/suhas, search, nishant/manit)
@@ -110,21 +112,19 @@ nishant/manit: Student view other button is done and vendor tag functionality is
 ### User Workflows
 
 - Student
-  Able to request reimbursement of funds with the reimbursement form (TODO) and the ordering of parts with the request form. Also able to
+  - Able to request reimbursement of funds with the reimbursement form (TODO) and the ordering of parts with the request form. Also able to
   view requests made in the Orders page.
-  The Student opens the Request Form page and fills it out, then press submit.
-  Reimbursement Form. (TODO)
+  - The Student opens the Request Form page and fills it out, then press submit.
+  - Reimbursement Form. (TODO)
 - Mentor
-  Role: Views requests made by the student on the Orders page and can either approve or deny the request to go to the admin.
+  - Role: Views requests made by the student on the Orders page and can either approve or deny the request to go to the admin.
 - Admin
-  Role: Views requests approved by the mentor and can review request orders, edit order request information, add shipment details, and view
-  the history of previous projects and
-  orders. They can also edit information in the DB
-- In the orders page, the admin can edit the request by pressing the edit button, enabling the admin to add/remove shipping details and
+  - Role: Views requests approved by the mentor and can review request orders, edit order request information, add shipment details, and view the history of previous projects and orders. They can also edit information in the DB
+  - In the orders page, the admin can edit the request by pressing the edit button, enabling the admin to add/remove shipping details and
   order details.
-- In the Projects and Order history page, the admin can view the history of previous projects and orders and edit them by pressing the edit
+  - In the Projects and Order history page, the admin can view the history of previous projects and orders and edit them by pressing the edit
   button.
-- In the Database Updates page, the admin can add/delete users and projects (TODO). They are also able to upload files by clicking the
+  - In the Database Updates page, the admin can add/delete users and projects (TODO). They are also able to upload files by clicking the
   Upload Files button.
 
 ## 🔗 Pre-requisites for running the app locally 🔗
@@ -137,30 +137,35 @@ You must have the following tools installed:
   - [Git Installing Guide & Customizing](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
 - [GitHub Desktop](https://desktop.github.com/) (optional, provides a GUI to interact with Git repositories)
 - [MySQL Workbench](https://dev.mysql.com/downloads/workbench/) (optional, provides a GUI to interact with the database)
+
+OS-specific setup:
+
 - macOS only
   - [Docker Desktop](https://docs.docker.com/get-docker/) (optional, provides a GUI to interact with Docker containers)
 - Windows only
   - [MySQL](https://www.mysql.com/downloads/)
 
 
-### 💾 Database stuff 💾
+### 💾 Database setup 💾
 
-This project uses MySQL as the database where all application data is stored. On Windows, you'll install MySQL on your computer directly. On macOS, you'll run your database in a Docker container (see [what is Docker?](https://github.com/UTDallasEPICS/Guides/blob/main/tooling/docker_wsl_setup.md#what-is-docker) on the [Guides](https://github.com/UTDallasEPICS/Guides) repo).
+This project uses MySQL as the database where all application data is stored. On **Windows**, you'll install MySQL on your computer directly. On **macOS**, you'll run your database in a Docker container.
 
-> [!INFO]
-> For a rough overview of SQL and more info about MySQL and Prisma, check out [this page](https://github.com/UTDallasEPICS/Guides/blob/main/architecture_and_systems/databases.md) from the [Guides](https://github.com/UTDallasEPICS/Guides) repo.
+> [!NOTE]
+> For more info about Docker, see ['What is Docker?'](https://github.com/UTDallasEPICS/Guides/blob/main/tooling/docker_wsl_setup.md#what-is-docker) on the [EPICS Guide](https://github.com/UTDallasEPICS/Guides) repo
+>
+> For a rough overview of SQL and more info about MySQL and Prisma, check out [this page](https://github.com/UTDallasEPICS/Guides/blob/main/architecture_and_systems/databases.md) from the [EPICS Guide](https://github.com/UTDallasEPICS/Guides) repo.
 
-#### Windows setup
+#### Setup on Windows
 
 Watch these first (just the installation part):
 
 - [BroCode](https://youtu.be/5OdVJbNCSso?t=142)
 - [Mosh](https://youtu.be/7S_tz1z_5bA?t=292)
 
-> [!IMPORTANT]
+> [!NOTE]
 > REMEMBER THE PASSWORD that you used to create your database! (and make sure you do not use special characters)
 
-#### macOS setup
+#### Setup on macOS
 
 On macOS, we run the database using Docker because (??? would like to know more about this if possible, nw if we don't remember the reason why but would be good to document the reason here).
 
@@ -180,10 +185,8 @@ Ensure that Docker Desktop is installed and running on your computer. In your te
 #### 😎 Using Git CLI (Recommended) 😎
 
 4. Find a folder to save this repository and go there using your terminal. For example mine is saved in `C:\Isaac\Programming`
-   In your terminal, write `git clone https://github.com/UTDallasEPICS/UTDesign-Procurement.git` or the SSH link if you have that set up. Sign in to GitHub if asked.
-
-   Cloning a repository should create a folder for you inside the folder the terminal is in, so don't make a folder like "UTDesign Procurement"
-
+  a. In your terminal, write `git clone https://github.com/UTDallasEPICS/UTDesign-Procurement.git` or the SSH link if you have that set up. Sign in to GitHub if asked.
+  b. Cloning a repository should create a folder for you inside the folder the terminal is in, so don't make a folder like "UTDesign Procurement"
 5. Open the repository in VS Code.
 
 #### 😑 Using GitHub Desktop 😑
@@ -191,31 +194,31 @@ Ensure that Docker Desktop is installed and running on your computer. In your te
 4. Clone a Repository by clicking `File > Clone Repository` and finding it through GitHub.com or through URL tabs.
 5. Open the repository in VS Code.
 
-### 📦 Dependencies setup 📦
+### 📦 Dependency installation 📦
 
 Dependencies are the packages used to create the project.
 
 6. To install the dependencies, in VS Code, create a new terminal in the editor and run `cd procurement-manager/` to make sure that the terminal is in the **procurement-manager** folder (the project itself) and run `npm install` or `npm i`. This will install all the packages as specified in our `package.json` file.
 
-### 💾 Database Setup 💾
+### 💾 Environment configuration 💾
 
-> [!IMPORTANT]
-> The steps in the [database stuff](#-database-stuff-) section need to be complete before continuing with the database setup.
+> [!NOTE]
+> The steps in the [database setup](#-database-setup-) section need to be complete before continuing with environment configuration.
 
 7. Copy the **.env.example** from the **docs** folder into the **procurement-manager** folder and rename it to **.env**.
 8. In the **.env** file, update the line beginning with `DATABASE_URL=`.
-  a. On Windows, replace `YOUR_MYSQL_ROOT_PASSWORD` with the password you set when initially setting up MySQL.
-  b. On macOS, replace `YOUR_MYSQL_ROOT_PASSWORD` with the password specified in the `docker-compose.yml` file (currently `password`).
+  a. On **Windows**, replace `YOUR_MYSQL_ROOT_PASSWORD` with the password you set when initially setting up MySQL.
+  b. On **macOS**, replace `YOUR_MYSQL_ROOT_PASSWORD` with the password specified in the `docker-compose.yml` file (currently `password`).
 9. Open a terminal and change directory to the `procurement-manager` directory. Steps 10 and 11 require you to be in the `procurement-manager` directory.
-10. macOS only: Run `docker compose up` to start the database.
+10. **macOS only**: Run `docker compose up` to start the database.
   a. In the Docker Desktop app, you should see a new Docker container running. In the future, you can run the database server by pressing the Start button on the container in Docker Desktop, or running `docker compose up`  in the terminal.
-11. To sync your database with the project schema type `npx prisma migrate dev`
+11. To sync your database with the project schema type `npx prisma migrate dev`.
 
 
-The `schema.prisma` file under the prisma folder has the schema setup and can be edited to change the database.
-After making any changes to the database, running `npx prisma migrate dev` will also update the database
+The `schema.prisma` file under the `prisma` folder has the schema setup and can be edited to change the database.
+After making any changes to the database schema, running `npx prisma migrate dev` will also update the database.
 
-If you installed MySQL Workbench, you can use it to manually add some data into the tables and view changes done to the database. You can also do `npx prisma studio` instead of using MySQL Workbench to see the database through a locally hostedPrisma.
+If you installed MySQL Workbench, you can use it to manually add some data into the tables and view changes done to the database. You can also run `npx prisma studio` instead of using MySQL Workbench to see the database through a locally-hosted web interface developed by Prisma.
 
 > Some more documentation regarding this is provided here: [Prisma Migrate](https://www.prisma.io/docs/concepts/components/prisma-migrate)
 
@@ -225,6 +228,7 @@ If you installed MySQL Workbench, you can use it to manually add some data into 
 12. In the **.env** file, below the DATABASE_URL, fill in EXAMPLE_NEXTAUTH_SECRET by pasting the random characters in the randomcode.
     > This is what makes the fake authentication work.
 13. (Only for external servers) If setting up the repository in an environment where it's not hosted on localhost, change the NEXTAUTH_URL value to match the external URL.
+  a. More documentation on this option is provided here: https://next-auth.js.org/configuration/options#nextauth_url
 
 <!-- TO DISCUSS: we really need to get rid of this - anyone who has it can send emails on behalf of the utd procurement manager email :skull: -->
 
@@ -234,10 +238,14 @@ If you installed MySQL Workbench, you can use it to manually add some data into 
 ### 😁 Finally!!! 😁
 
 15. Making sure you are still in the **procurement-manager** folder, run `npm run dev` which runs the website.
-16. In your browser, type `localhost:3000/api/test`. This creates all the sample data to run the project.
-17. Finally, go to the website in `localhost:3000`.
+16. In your browser, go to `http://localhost:3000/api/test`. This creates all the sample data to run the project.
+17. Finally, go to the website at `http://localhost:3000`.
 18. 🎉🎉 GOOD LUCK AND HAVE FUN! 🎉🎉
 
+#### Sample Login Credentials
+- Student: `abc000000`
+- Mentor: `def000000`
+- Admin: `ghi000000`
 ---
 
 ## Figma
@@ -266,6 +274,8 @@ The /docs folder contains various documents on the design and schemas of the app
 - [API Route Handlers in Next.js 13](https://www.youtube.com/watch?v=J4pdHM-oG-s&t)
 - [API GET Request](https://youtu.be/GgzWFxIiwK4)
 - [Postman API Testing](https://www.youtube.com/watch?v=CLG0ha_a0q8)
+
+<!-- TODO: would be super nice to add .vscode/extensions.json to the repo and add the extensions there. formatting is a bit inconsistent here too -->
 
 ## ⚡ Recommended VS Code Extensions ⚡
 
