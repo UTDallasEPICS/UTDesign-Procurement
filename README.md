@@ -1,6 +1,7 @@
 # UTDesign-Procurement
 
-## READ EVERYTHING BEFORE STARTING ON THE PROJECT!!!
+> [!IMPORTANT]
+> READ EVERYTHING BEFORE STARTING ON THE PROJECT!!!
 
 ## Project Background
 
@@ -130,28 +131,41 @@ nishant/manit: Student view other button is done and vendor tag functionality is
 
 You must have the following tools installed:
 
-- [VS Code (recomended editor)](https://code.visualstudio.com/download)
+- [VS Code (recommended editor)](https://code.visualstudio.com/download)
 - [Node.js (needed for npm)](https://nodejs.org/en/download/)
 - [Git](https://git-scm.com/)
-- [Git Installing Guide & Customizing](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
-- [Docker (For Mac users only!)](https://docs.docker.com/get-docker/)
+  - [Git Installing Guide & Customizing](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
+- [GitHub Desktop](https://desktop.github.com/) (optional, provides a GUI to interact with Git repositories)
+- [MySQL Workbench](https://dev.mysql.com/downloads/workbench/) (optional, provides a GUI to interact with the database)
+- macOS only
+  - [Docker Desktop](https://docs.docker.com/get-docker/) (optional, provides a GUI to interact with Docker containers)
+- Windows only
+  - [MySQL](https://www.mysql.com/downloads/)
+
 
 ### 💾 Database stuff 💾
 
-#### Watch these first (just the installation part):
+This project uses MySQL as the database where all application data is stored. On Windows, you'll install MySQL on your computer directly. On macOS, you'll run your database in a Docker container (see [what is Docker?](https://github.com/UTDallasEPICS/Guides/blob/main/tooling/docker_wsl_setup.md#what-is-docker) on the [Guides](https://github.com/UTDallasEPICS/Guides) repo).
+
+> [!INFO]
+> For a rough overview of SQL and more info about MySQL and Prisma, check out [this page](https://github.com/UTDallasEPICS/Guides/blob/main/architecture_and_systems/databases.md) from the [Guides](https://github.com/UTDallasEPICS/Guides) repo.
+
+#### Windows setup
+
+Watch these first (just the installation part):
 
 - [BroCode](https://youtu.be/5OdVJbNCSso?t=142)
-- [Mosh (The mac setup will be slightly different than in this video)](https://youtu.be/7S_tz1z_5bA?t=292)
-- **IMPORTANT: REMEMBER THE PASSWORD (and make sure you do not use special characters)**
+- [Mosh](https://youtu.be/7S_tz1z_5bA?t=292)
 
-#### 🔗 Download Links: 🔗
+> [!IMPORTANT]
+> REMEMBER THE PASSWORD that you used to create your database! (and make sure you do not use special characters)
 
-- [mySQL (our database)](https://www.mysql.com/downloads/)
-- [mySQL Workbench (work with database)](https://dev.mysql.com/downloads/workbench/)
+#### macOS setup
 
-### Also if you want, Github Desktop instead of Git will be easier to use.
+On macOS, we run the database using Docker because (??? would like to know more about this if possible, nw if we don't remember the reason why but would be good to document the reason here).
 
-- [Github Desktop](https://desktop.github.com/)
+Ensure that Docker Desktop is installed and running on your computer. In your terminal, run `docker compose up -d` to start your database.
+
 
 ---
 
@@ -163,19 +177,19 @@ You must have the following tools installed:
 
 ### Cloning Repository
 
-#### 😎 Using Git (Recommended) 😎
+#### 😎 Using Git CLI (Recommended) 😎
 
 4. Find a folder to save this repository and go there using your terminal. For example mine is saved in `C:\Isaac\Programming`
-   In your terminal, write `git clone https://github.com/UTDallasEPICS/UTDesign-Procurement.git` or the SSH link if you have that set up. Sign in to Github if asked.
+   In your terminal, write `git clone https://github.com/UTDallasEPICS/UTDesign-Procurement.git` or the SSH link if you have that set up. Sign in to GitHub if asked.
 
    Cloning a repository should create a folder for you inside the folder the terminal is in, so don't make a folder like "UTDesign Procurement"
 
-5. Open the repository in VS Code
+5. Open the repository in VS Code.
 
 #### 😑 Using GitHub Desktop 😑
 
-4. Clone a Repository by clicking `File > Clone Repository` and finding it through Github.com or through URL tabs.
-5. Open the repository in VS Code
+4. Clone a Repository by clicking `File > Clone Repository` and finding it through GitHub.com or through URL tabs.
+5. Open the repository in VS Code.
 
 ### 📦 Dependencies setup 📦
 
@@ -185,19 +199,23 @@ Dependencies are the packages used to create the project.
 
 ### 💾 Database Setup 💾
 
-Downlading and setting up mySQL is required first. mySQL Workbench is used then to manually add some data into the tables and can be used to further view changes done to the database.
+> [!IMPORTANT]
+> The steps in the [database stuff](#-database-stuff-) section need to be complete before continuing with the database setup.
 
 7. Copy the **.env.example** from the **docs** folder into the **procurement-manager** folder and rename it to **.env**.
-8. In the **.env** file, replace YOUR_MYSQL_ROOT_PASSWORD with the password you set when initially setting up mySQL.
-9. (Mac Only) Run this command in the terminal to set up the intial docker container `docker run -d -e MYSQL_ROOT_PASSWORD=<password> -p 3306:3306 mysql mysqld --lower_case_table_names=1` (refer to this [video](https://youtu.be/piekR2i6nRQ) if you are having difficulties) **(ensure the `<password>` is replaced with your mySQL root password)**
-10. To sync your database with the project schema type `npx prisma migrate dev` (make sure your in the procurement-manager folder).
+8. In the **.env** file, update the line beginning with `DATABASE_URL=`.
+  a. On Windows, replace `YOUR_MYSQL_ROOT_PASSWORD` with the password you set when initially setting up MySQL.
+  b. On macOS, replace `YOUR_MYSQL_ROOT_PASSWORD` with the password specified in the `docker-compose.yml` file (currently `password`).
+9. Open a terminal and change directory to the `procurement-manager` directory. Steps 10 and 11 require you to be in the `procurement-manager` directory.
+10. macOS only: Run `docker compose up` to start the database.
+  a. In the Docker Desktop app, you should see a new Docker container running. In the future, you can run the database server by pressing the Start button on the container in Docker Desktop, or running `docker compose up`  in the terminal.
+11. To sync your database with the project schema type `npx prisma migrate dev`
 
-Mac users will see a new docker container in docker desktop and you can run the database server by pressing the start button in the future.
 
-The prisma file under the prisma folder has the schema setup and can be edited to change the database.
+The `schema.prisma` file under the prisma folder has the schema setup and can be edited to change the database.
 After making any changes to the database, running `npx prisma migrate dev` will also update the database
 
-You can also do `npx prisma studio` instead of using mySQL Workbench to see the database through Prisma.
+If you installed MySQL Workbench, you can use it to manually add some data into the tables and view changes done to the database. You can also do `npx prisma studio` instead of using MySQL Workbench to see the database through a locally hostedPrisma.
 
 > Some more documentation regarding this is provided here: [Prisma Migrate](https://www.prisma.io/docs/concepts/components/prisma-migrate)
 
@@ -208,21 +226,23 @@ You can also do `npx prisma studio` instead of using mySQL Workbench to see the 
     > This is what makes the fake authentication work.
 13. (Only for external servers) If setting up the repository in an environment where it's not hosted on localhost, change the NEXTAUTH_URL value to match the external URL.
 
+<!-- TO DISCUSS: we really need to get rid of this - anyone who has it can send emails on behalf of the utd procurement manager email :skull: -->
+
 14. Change the `NODEMAILER_PASSWORD` to be `"nnft zpaq rooq iwkq"`.
     > This allows the Upload Files page to email error files to admins.
 
 ### 😁 Finally!!! 😁
 
-15. Making sure you are still in the **procurement-manager** folder, type `npm run dev` which runs the website
+15. Making sure you are still in the **procurement-manager** folder, run `npm run dev` which runs the website.
 16. In your browser, type `localhost:3000/api/test`. This creates all the sample data to run the project.
-17. Finally go to the website in `localhost:3000`.
+17. Finally, go to the website in `localhost:3000`.
 18. 🎉🎉 GOOD LUCK AND HAVE FUN! 🎉🎉
 
 ---
 
 ## Figma
 
-This contains the UI mocksups of the app and is located in the /docs folder
+This contains the UI mockups of the app and is located in the /docs folder.
 
 ## Workflow Diagrams
 
