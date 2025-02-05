@@ -134,7 +134,7 @@ You must have the following tools installed:
 
 This project uses MySQL as the database where all application data is stored. On Windows**, you'll run MySQL **directly** on your computer. On **macOS**, you'll run MySQL **in a Docker container** on your computer.
 
-> [!NOTE]
+> [!TIP]
 > For more info about Docker, see ['What is Docker?'](https://github.com/UTDallasEPICS/Guides/blob/main/tooling/docker_wsl_setup.md#what-is-docker) on the [EPICS Guide](https://github.com/UTDallasEPICS/Guides) repo.
 >
 > For a rough overview of SQL and more info about MySQL and Prisma, check out [this page](https://github.com/UTDallasEPICS/Guides/blob/main/architecture_and_systems/databases.md) from the [EPICS Guide](https://github.com/UTDallasEPICS/Guides) repo.
@@ -144,7 +144,7 @@ This project uses MySQL as the database where all application data is stored. On
 Download [MySQL](https://www.mysql.com/downloads/), then follow along with the installation instructions in [this video](https://youtu.be/5OdVJbNCSso?t=142). You don't need to watch the whole video, just the section on installing MySQL.
 
 > [!WARNING]
-> **REMEMBER THE PASSWORD** that you used to create your database! (and make sure you do not use special characters)
+> **REMEMBER THE PASSWORD** that you used to create your database! (and make sure you do not use special characters). You'll need it to continue with setup later.
 
 #### Setup on macOS
 
@@ -205,7 +205,7 @@ Dependencies are the packages used to create the project.
 The `schema.prisma` file under the `prisma` folder has the schema setup and can be edited to change the database.
 After making any changes to the database schema, running `npx prisma migrate dev` will also update the database.
 
-> [!NOTE]
+> [!TIP]
 > Some more documentation regarding this is provided here: [Prisma Migrate](https://www.prisma.io/docs/concepts/components/prisma-migrate)
 
 If you installed MySQL Workbench, you can use it to manually add some data into the tables and view changes done to the database. You can also run `npx prisma studio` instead of using MySQL Workbench to see the database through a locally-hosted web interface developed by Prisma.
@@ -267,9 +267,9 @@ The **/docs** folder contains various documents on the design and schemas of the
 
 ## ⚡ Recommended VS Code Extensions ⚡
 
-When opening this project in VS Code, you may see a notification prompt like this one, allowing you to install all these recommended extensions with one click.
+Extensions can add features to VS Code that make working with this project easier. When opening this project in VS Code, you may see a notification prompt like this one, allowing you to install all these recommended extensions with one click. If you missed the prompt, you can open the extensions pane in VS Code and install each extension manually.
 
-ADD IMAGE HERE
+![Screenshot of VS Code prompt asking if user wants to install recommended extensions](https://github.com/user-attachments/assets/e6f47e4f-8da9-4e2b-8226-1827f927de01)
 
 - **Prisma** - formatting and snippets for Prisma
 - **GitLens** - lets you see who last edited code in your editor, includes other helpful Git-related features
