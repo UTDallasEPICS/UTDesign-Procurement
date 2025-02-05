@@ -148,7 +148,7 @@ Download [MySQL](https://www.mysql.com/downloads/), then follow along with the i
 
 #### Setup on macOS
 
-On macOS, we run the database using Docker because (??? would like to know more about this if possible, nw if we don't remember the reason why but would be good to document the reason here).
+Docker is a tool that allows you to run applications like MySQL in 'containers' on your computer. Using Docker is preferred as opposed to installing MySQL on your computer because it is easier to set up and provides isolation between any other MySQL instances you may have on your computer. On Windows, setting up Docker is more of a hassle so we only recommend it on macOS.
 
 Install [Docker Desktop](https://docs.docker.com/desktop/setup/install/mac-install/).
 
