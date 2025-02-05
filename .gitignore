@@ -1,5 +1,6 @@
 procurement-manager/.env
-.vscode
+.vscode/*
+!.vscode/extensions.json
 procurement-manager/uploads
 procurement-manager/exports
 *.xlsx
