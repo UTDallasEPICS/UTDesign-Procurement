@@ -5,14 +5,14 @@
 
 ## Project Background
 
-The current process for managing procurement paperwork submitted by students from EPICS, Capstone, and UTD Makerspace is outdated and inefficient. The workflow involves students filling out Excel sheets and emailing them to their mentors for review. Mentors then either approve the form and forward it to the administrator, Oddrun Mahaffey, for order placement or reject it, providing the student with a reason for the rejection. To streamline this process and make it more convenient for all parties involved, the objective is to create a centralized UTD Procurement Manager website where the entire procedure can be completed online. The web application will primarily benefit students engaged in Capstone, Senior Design, and EPICS projects by simplifying their procurement process and enabling more effective financial management. Furthermore, project mentors and UTDesign staff will experience the advantages of reduced email correspondence and a more streamlined approach to handling requests and budgets, making the system more efficient for all involved parties.
+The current process for managing procurement paperwork submitted by students from EPICS, Capstone, and UTD Makerspace is outdated and inefficient. The workflow involves students filling out Excel sheets and emailing them to their mentors for review. Mentors then either approve the form and forward it to the administrator, Oddrun Mahaffey, for order placement or rejection, providing the student with a reason for the rejection. To streamline this process and make it more convenient for all parties involved, the objective is to create a centralized UTD Procurement Manager website where the entire procedure can be completed online. The web application will primarily benefit students engaged in Capstone, Senior Design, and EPICS projects by simplifying their procurement process and enabling more effective financial management. Furthermore, project mentors and UTDesign staff will experience the advantages of reduced email correspondence and a more streamlined approach to handling requests and budgets, making the system more efficient for all involved parties.
 
 ## Project Introduction
 
 ### Conceptual Overview
 
 - This project seeks to digitalize the process of part and reimbursement requests for ECS Senior Design and EPICS students.
-- Currently, requests are managed through excel sheets, emails, and in-person meetings, so the website will facilitate communication digitally and present financial information in a user-friendly format.
+- Currently, requests are managed through Excel sheets, emails, and in-person meetings, so the website will facilitate communication digitally and present financial information in a user-friendly format.
 - There are 3 types of users: admins, mentors, and students.
   - Admins are able to process or reject requests, and can modify any data in the UTDesign database relating to users, projects, requests, vendors, departments, and so on.
   - Mentors are able to approve requests which will send those requests to be processed by admins, or reject requests. They cannot edit any request data.
@@ -82,8 +82,6 @@ The current process for managing procurement paperwork submitted by students fro
 
 ## ✅ To-do list (After FALL 2023) ✅
 
-### Debug & Merge The 3 Branches (dev/suhas, search, nishant/manit)
-
 ### Front-end
 
 - Update Login Page for UTD SSO Integration.
@@ -101,13 +99,6 @@ The current process for managing procurement paperwork submitted by students fro
 - Update the list of APIs done so far with the new add/delete orders APIs. (docs/api.md)
 - Integrate cloud software to store uploaded request/reimbursement files in the cloud (DB Updates Page & Student View of Request Form).
 - Improve code by implementing type-checking and error handling, and resolve any bugs/TODO comments in code/APIs from previous semesters.
-
-### Notes
-
-Commits have not been made to the main branch due to bugs in different files of the code. The commits are spread across a few branches. Debugging first, and then merging all the branches is ideal. (dev/suhas, search, nishant/manit)
-dev/suhas: functional datePicker, add/delete order features, clickable item links, student request card can be edited if rejected (in progress, needs API to save the updated data), add/delete item features (in progress, need to create API and save the added item), and minor debugging.
-search: The search feature is nearing completion; however, it requires final bug fixes and comprehensive API call testing. Additionally, implement a filter for task status to enhance functionality.
-nishant/manit: Student view other button is done and vendor tag functionality is properly implemented in both student and admin view. Reject and accept buttons are implemented but buggy in admin view. API request for approval for admin view is implemented but untested as admin view in buggy. Reason is unknown for a bug in admin view but potentially because of an api call. In the prisma file vendorStatus, vendorEmail, and vendorURL are properly implemented with no bugs.
 
 ### User Workflows
 
@@ -131,67 +122,63 @@ nishant/manit: Student view other button is done and vendor tag functionality is
 
 You must have the following tools installed:
 
-- [VS Code (recommended editor)](https://code.visualstudio.com/download)
-- [Node.js (needed for npm)](https://nodejs.org/en/download/)
-- [Git](https://git-scm.com/)
-  - [Git Installing Guide & Customizing](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
-- [GitHub Desktop](https://desktop.github.com/) (optional, provides a GUI to interact with Git repositories)
-- [MySQL Workbench](https://dev.mysql.com/downloads/workbench/) (optional, provides a GUI to interact with the database)
-
-OS-specific setup:
-
-- macOS only
-  - [Docker Desktop](https://docs.docker.com/get-docker/) (optional, provides a GUI to interact with Docker containers)
-- Windows only
-  - [MySQL](https://www.mysql.com/downloads/)
+- [VS Code](https://code.visualstudio.com/download) - recommended code editor
+- [Node.js](https://nodejs.org/en/download/) - needed for running the app locally
+- [Git](https://git-scm.com/) - version control system
+  - Helpful reference guide: [Git Installing Guide & Customizing](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
+- [GitHub Desktop](https://desktop.github.com/) - optional, provides a GUI to interact with Git repositories
+- [MySQL Workbench](https://dev.mysql.com/downloads/workbench/) - optional, provides a GUI to interact with the database
 
 
 ### 💾 Database setup 💾
 
-This project uses MySQL as the database where all application data is stored. On **Windows**, you'll install MySQL on your computer directly. On **macOS**, you'll run your database in a Docker container.
+This project uses MySQL as the database where all application data is stored. On Windows**, you'll run MySQL **directly** on your computer. On **macOS**, you'll run MySQL **in a Docker container** on your computer.
 
 > [!NOTE]
-> For more info about Docker, see ['What is Docker?'](https://github.com/UTDallasEPICS/Guides/blob/main/tooling/docker_wsl_setup.md#what-is-docker) on the [EPICS Guide](https://github.com/UTDallasEPICS/Guides) repo
+> For more info about Docker, see ['What is Docker?'](https://github.com/UTDallasEPICS/Guides/blob/main/tooling/docker_wsl_setup.md#what-is-docker) on the [EPICS Guide](https://github.com/UTDallasEPICS/Guides) repo.
 >
 > For a rough overview of SQL and more info about MySQL and Prisma, check out [this page](https://github.com/UTDallasEPICS/Guides/blob/main/architecture_and_systems/databases.md) from the [EPICS Guide](https://github.com/UTDallasEPICS/Guides) repo.
 
 #### Setup on Windows
 
-Watch these first (just the installation part):
+Download [MySQL](https://www.mysql.com/downloads/), then follow along with the installation instructions in [this video](https://youtu.be/5OdVJbNCSso?t=142). You don't need to watch the whole video, just the section on installing MySQL.
 
-- [BroCode](https://youtu.be/5OdVJbNCSso?t=142)
-- [Mosh](https://youtu.be/7S_tz1z_5bA?t=292)
-
-> [!NOTE]
-> REMEMBER THE PASSWORD that you used to create your database! (and make sure you do not use special characters)
+> [!WARNING]
+> **REMEMBER THE PASSWORD** that you used to create your database! (and make sure you do not use special characters)
 
 #### Setup on macOS
 
 On macOS, we run the database using Docker because (??? would like to know more about this if possible, nw if we don't remember the reason why but would be good to document the reason here).
 
-Ensure that Docker Desktop is installed and running on your computer. In your terminal, run `docker compose up -d` to start your database.
+Install [Docker Desktop](https://docs.docker.com/desktop/setup/install/mac-install/).
 
+Once Docker Desktop is installed and running on your computer, open a terminal to the **procurement-manager** folder, then run `docker compose up -d` to start your database.
+
+In the Docker Desktop app, you should see a new Docker container running. In the future, you can run the database server by pressing the Start button on the container in Docker Desktop, or running `docker compose up -d` in the terminal.
 
 ---
 
 ## 🛠️ Setting up local environment 🛠️
 
-1. Install all the required softwares specified above.
-2. Check if you have git and npm installed by typing in your terminal: `git --version` and `npm --version`
-3. If you haven't learned how to use the terminal, please do so first to your respective operating system. Some basics are: `cd` and `mkdir`
+1. Install all the required software specified above.
+2. Check if you have git, Node.js, and npm installed by typing in your terminal: `git --version` and `npm --version`
+3. If you haven't learned how to use the terminal, please do so first to your respective operating system. Some basic commands are `cd`, `pwd`, and `mkdir`.
 
 ### Cloning Repository
 
 #### 😎 Using Git CLI (Recommended) 😎
 
-4. Find a folder to save this repository and go there using your terminal. For example mine is saved in `C:\Isaac\Programming`
-  a. In your terminal, write `git clone https://github.com/UTDallasEPICS/UTDesign-Procurement.git` or the SSH link if you have that set up. Sign in to GitHub if asked.
-  b. Cloning a repository should create a folder for you inside the folder the terminal is in, so don't make a folder like "UTDesign Procurement"
+4. Find a folder to save this repository and go there using your terminal. For example mine is saved in `C:\Isaac\Programming`.
+
+   a. In your terminal, write `git clone https://github.com/UTDallasEPICS/UTDesign-Procurement.git` or the SSH link if you have that set up. Sign in to GitHub if asked.
+
+   b. Cloning a repository should create a folder for you inside the folder the terminal is in, so don't make a folder like "UTDesign Procurement"
+
 5. Open the repository in VS Code.
 
 #### 😑 Using GitHub Desktop 😑
 
-4. Clone a Repository by clicking `File > Clone Repository` and finding it through GitHub.com or through URL tabs.
+4. Clone a repository by clicking `File > Clone Repository` and finding it through GitHub.com or through URL tabs.
 5. Open the repository in VS Code.
 
 ### 📦 Dependency installation 📦
@@ -207,45 +194,48 @@ Dependencies are the packages used to create the project.
 
 7. Copy the **.env.example** from the **docs** folder into the **procurement-manager** folder and rename it to **.env**.
 8. In the **.env** file, update the line beginning with `DATABASE_URL=`.
-  a. On **Windows**, replace `YOUR_MYSQL_ROOT_PASSWORD` with the password you set when initially setting up MySQL.
-  b. On **macOS**, replace `YOUR_MYSQL_ROOT_PASSWORD` with the password specified in the `docker-compose.yml` file (currently `password`).
-9. Open a terminal and change directory to the `procurement-manager` directory. Steps 10 and 11 require you to be in the `procurement-manager` directory.
-10. **macOS only**: Run `docker compose up` to start the database.
-  a. In the Docker Desktop app, you should see a new Docker container running. In the future, you can run the database server by pressing the Start button on the container in Docker Desktop, or running `docker compose up`  in the terminal.
-11. To sync your database with the project schema type `npx prisma migrate dev`.
 
+    - On **Windows**, replace `YOUR_MYSQL_ROOT_PASSWORD` with the password you set when initially setting up MySQL.
+    - On **macOS**, replace `YOUR_MYSQL_ROOT_PASSWORD` with `password`.
+
+9. Open a terminal and change directory to the **procurement-manager** directory. The next step requires you to be in the **procurement-manager** directory.
+
+10. To sync your database with the project schema, run `npx prisma migrate dev`.
 
 The `schema.prisma` file under the `prisma` folder has the schema setup and can be edited to change the database.
 After making any changes to the database schema, running `npx prisma migrate dev` will also update the database.
 
+> [!NOTE]
+> Some more documentation regarding this is provided here: [Prisma Migrate](https://www.prisma.io/docs/concepts/components/prisma-migrate)
+
 If you installed MySQL Workbench, you can use it to manually add some data into the tables and view changes done to the database. You can also run `npx prisma studio` instead of using MySQL Workbench to see the database through a locally-hosted web interface developed by Prisma.
 
-> Some more documentation regarding this is provided here: [Prisma Migrate](https://www.prisma.io/docs/concepts/components/prisma-migrate)
 
 ### 1️⃣ more thing: 1️⃣
 
 11. In the terminal, enter `openssl rand -base64 32` which will generate random characters and copy it.
 12. In the **.env** file, below the DATABASE_URL, fill in EXAMPLE_NEXTAUTH_SECRET by pasting the random characters in the randomcode.
     > This is what makes the fake authentication work.
-13. (Only for external servers) If setting up the repository in an environment where it's not hosted on localhost, change the NEXTAUTH_URL value to match the external URL.
-  a. More documentation on this option is provided here: https://next-auth.js.org/configuration/options#nextauth_url
+13. (Only for external servers) If setting up the repository in an environment where it's not being accessed on  `localhost`, change the `NEXTAUTH_URL` value to match the external URL.
 
-<!-- TO DISCUSS: we really need to get rid of this - anyone who has it can send emails on behalf of the utd procurement manager email :skull: -->
+      - More documentation on this option is provided here: https://next-auth.js.org/configuration/options#nextauth_url
 
-14. Change the `NODEMAILER_PASSWORD` to be `"nnft zpaq rooq iwkq"`.
-    > This allows the Upload Files page to email error files to admins.
+14. Change the `NODEMAILER_PASSWORD` to be `"nnft zpaq rooq iwkq"`. This allows the Upload Files page to email error files to admins.
+<!-- TO DISCUSS: we really need to invalidate this app specific password and remove it from the README - anyone who has it can send emails on behalf of the utd procurement manager email :skull: -->
 
 ### 😁 Finally!!! 😁
 
 15. Making sure you are still in the **procurement-manager** folder, run `npm run dev` which runs the website.
-16. In your browser, go to `http://localhost:3000/api/test`. This creates all the sample data to run the project.
-17. Finally, go to the website at `http://localhost:3000`.
+16. In your browser, go to http://localhost:3000/api/test. This creates all the sample data to run the project.
+17. Finally, go to the website at http://localhost:3000.
 18. 🎉🎉 GOOD LUCK AND HAVE FUN! 🎉🎉
 
 #### Sample Login Credentials
+
 - Student: `abc000000`
 - Mentor: `def000000`
 - Admin: `ghi000000`
+
 ---
 
 ## Figma
@@ -258,7 +248,7 @@ These are located in the /docs folder.
 
 ## Docs
 
-The /docs folder contains various documents on the design and schemas of the app, including documentation on APIs. These should be looked at.
+The **/docs** folder contains various documents on the design and schemas of the app, including documentation on APIs. These should be looked at.
 
 ## ⚡ Resources ⚡
 
@@ -275,19 +265,21 @@ The /docs folder contains various documents on the design and schemas of the app
 - [API GET Request](https://youtu.be/GgzWFxIiwK4)
 - [Postman API Testing](https://www.youtube.com/watch?v=CLG0ha_a0q8)
 
-<!-- TODO: would be super nice to add .vscode/extensions.json to the repo and add the extensions there. formatting is a bit inconsistent here too -->
-
 ## ⚡ Recommended VS Code Extensions ⚡
 
-- Prisma - formatting and snippets for Prisma
-- GitLens - lets you see who edited the code
-- CodeSnap - if you want to take screenshots of code
-- Auto Close Tag, Auto Rename Tag - good for quickly editing the html/component tags
-- ES7+ React/Redux/React-Native Snippets - quickly create components
-- ESLint - shows unused or errors in your code, may need some customizing and research (we should have done a configuration for the project so everybody has the same formatting)
+When opening this project in VS Code, you may see a notification prompt like this one, allowing you to install all these recommended extensions with one click.
+
+ADD IMAGE HERE
+
+- **Prisma** - formatting and snippets for Prisma
+- **GitLens** - lets you see who last edited code in your editor, includes other helpful Git-related features
+- **CodeSnap** - if you want to take screenshots of code
+- **Auto Close Tag, Auto Rename Tag** - good for quickly editing the HTML/component tags
+- **ES7+ React/Redux/React-Native Snippets** - quickly create components
+- **ESLint** - shows unused or errors in your code, may need some customizing and research (we should have done a configuration for the project so everybody has the same formatting)
 - **Live Share** - incredibly useful! it's like Google Docs but for coding
 - **Prettier** - awesome code formatting
-- Thunder Client - good for testing API and alternative to Postman
+- **Thunder Client** - good for testing API and alternative to Postman
 
 ---
 
