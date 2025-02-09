@@ -6,6 +6,7 @@ import { Navbar, Offcanvas, Nav, Button } from 'react-bootstrap'
 import styles from '@/styles/Navbar.module.scss'
 import { signIn, signOut, useSession } from 'next-auth/react'
 import { User } from '@prisma/client'
+import Link from 'next/link'
 
 interface NavbarProps {}
 
@@ -34,19 +35,19 @@ export default function NavBar({}: NavbarProps): JSX.Element {
               {user ? (
                 <>
                   {/* Links everyone can see */}
-                  <Nav.Link href='/orders' className='mx-2'>
+                  <Nav.Link as={Link} href='/orders' className='mx-2'>
                     Orders
                   </Nav.Link>
 
                   {/* Links seen by Admin */}
                   {user.roleID === 1 && (
                     <>
-                      <Nav.Link href='/projects' className='mx-2'>
+                      <Nav.Link as={Link} href='/projects' className='mx-2'>
                         {' '}
                         {/* for now only admin can use projects/order history page */}
                         Projects & Order History
                       </Nav.Link>
-                      <Nav.Link href='/database-updates' className='mx-2'>
+                      <Nav.Link as={Link} href='/database-updates' className='mx-2'>
                         Database Updates
                       </Nav.Link>
                     </>
@@ -55,10 +56,10 @@ export default function NavBar({}: NavbarProps): JSX.Element {
                   {/* Links seen by Student */}
                   {user.roleID === 3 && (
                     <>
-                      <Nav.Link href='/request-form' className='mx-2'>
+                      <Nav.Link as={Link} href='/request-form' className='mx-2'>
                         Request Form
                       </Nav.Link>
-                      <Nav.Link href='/reimbursement' className='mx-2'>
+                      <Nav.Link as={Link} href='/reimbursement' className='mx-2'>
                         Reimbursement Form
                       </Nav.Link>
                     </>
