@@ -49,7 +49,7 @@ export async function getServerSideProps(context: any) {
     console.log('project error: ', error)
   }
 
-  let vendors = await prisma.vendor.findMany({})
+  let vendors = await prisma.vendor.findMany()
   return {
     props: {
       session: session,
@@ -373,9 +373,7 @@ const StudentRequest = ({
     // clean out the items to send to API
     const itemsToSend = items.map((item) => {
       return {
-        description: item.description,
-        url: item.link,
-        partNumber: item.partNumber,
+        ...item,
         quantity: parseInt(item.quantity),
         unitPrice: parseFloat(item.unitCost),
         vendorID: parseInt(item.vendor),
