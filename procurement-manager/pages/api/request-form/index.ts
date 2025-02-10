@@ -32,12 +32,15 @@ interface Item {
   quantity: number
   unitPrice: number
   vendorID: number
+  newVendorName: string
+  newVendorEmail: string
+  newVendorURL: string
   upload:
-    | {
-        attachmentPath: string | undefined
-        attachmentName: string | undefined
-      }
-    | undefined
+  | {
+    attachmentPath: string | undefined
+    attachmentName: string | undefined
+  }
+  | undefined
 }
 
 /**
@@ -180,6 +183,80 @@ async function createRequest(
   }
 }
 
+// async function createItem(reqID: number, itemToPut: Item) {
+//   const {
+//     description,
+//     url,
+//     partNumber,
+//     quantity,
+//     unitPrice,
+//     upload,
+//     vendorID,
+//     newVendorName,
+//     newVendorEmail,
+//     newVendorURL,
+//   } = itemToPut
+
+//   console.log('itemToPut', itemToPut)
+
+//   // TODO :: move this where submitting the request creates a RequestUpload instead of in each RequestItem
+//   // If something was uploaded, create a new RequestUpload to database
+//   let uploadID: number | undefined = undefined
+//   if (upload) {
+//     const newUpload = await prisma.requestUpload.create({
+//       data: {
+//         attachmentPath: upload.attachmentPath,
+//         attachmentName: upload.attachmentName,
+//       },
+//     })
+//     if (newUpload) uploadID = newUpload.uploadID
+//   }
+
+//   if (newVendorName) {
+//     const vendor = await prisma.vendor.create({
+//       data: {
+//         vendorName: newVendorName,
+//         vendorStatus: 'PENDING',
+//         vendorEmail: newVendorEmail || null, // Ensure null is acceptable in the schema
+//         vendorURL: newVendorURL?.trim() || 'https://default.com',
+//       },
+//     });
+//     console.log(`Created new vendor: ${vendor.vendorName} with ID: ${vendor.vendorID}`);
+//   }
+
+//   // TODO :: do error handling
+//   // NEW ITEM IS INSERTED INTO SERVER
+//   const newItem = await prisma.requestItem
+//     .create({
+//       data: {
+//         description: description,
+//         url: url,
+//         partNumber: partNumber,
+//         quantity: quantity,
+//         unitPrice: unitPrice,
+//         request: {
+//           connect: { requestID: reqID },
+//         },
+//         vendor: {
+//           connect: { vendorID: vendorID },
+//         },
+//         // This is not working right now
+//         // upload: {
+//         //   connect: { uploadID: uploadID },
+//         // },
+//       },
+//     })
+//     .catch(async (e) => {
+//       // Deletes the request to show there was an error
+//       await prisma.request.delete({ where: { requestID: reqID } })
+//       // await prisma.requestUpload.delete({ where: { uploadID: uploadID } })
+//       throw new Error(e)
+//     })
+
+//   return newItem
+// }
+
+
 async function createItem(reqID: number, itemToPut: Item) {
   const {
     description,
@@ -189,53 +266,63 @@ async function createItem(reqID: number, itemToPut: Item) {
     unitPrice,
     upload,
     vendorID,
-  } = itemToPut
+    newVendorName,
+    newVendorEmail,
+    newVendorURL,
+  } = itemToPut;
 
-  console.log('itemToPut', itemToPut)
+  console.log("itemToPut", itemToPut);
 
-  // TODO :: move this where submitting the request creates a RequestUpload instead of in each RequestItem
-  // If something was uploaded, create a new RequestUpload to database
-  let uploadID: number | undefined = undefined
+  // Handle upload creation if provided
+  let uploadID: number | undefined = undefined;
   if (upload) {
     const newUpload = await prisma.requestUpload.create({
       data: {
         attachmentPath: upload.attachmentPath,
         attachmentName: upload.attachmentName,
       },
-    })
-    if (newUpload) uploadID = newUpload.uploadID
+    });
+    if (newUpload) uploadID = newUpload.uploadID;
   }
 
-  // TODO :: do error handling
-  // NEW ITEM IS INSERTED INTO SERVER
-  const newItem = await prisma.requestItem
-    .create({
-      data: {
-        description: description,
-        url: url,
-        partNumber: partNumber,
-        quantity: quantity,
-        unitPrice: unitPrice,
-        request: {
-          connect: { requestID: reqID },
-        },
-        vendor: {
-          connect: { vendorID: vendorID },
-        },
-        // This is not working right now
-        // upload: {
-        //   connect: { uploadID: uploadID },
-        // },
-      },
-    })
-    .catch(async (e) => {
-      // Deletes the request to show there was an error
-      await prisma.request.delete({ where: { requestID: reqID } })
-      // await prisma.requestUpload.delete({ where: { uploadID: uploadID } })
-      throw new Error(e)
-    })
+  // Handle vendor creation if "Other" is selected
+  let finalVendorID = vendorID;
 
-  return newItem
+  if (!vendorID && newVendorName) {
+    const newVendor = await prisma.vendor.create({
+      data: {
+        vendorName: newVendorName,
+        vendorStatus: "PENDING",
+        vendorEmail: newVendorEmail || null,
+        vendorURL: newVendorURL?.trim() || "https://default.com",
+      },
+    });
+    console.log(`Created new vendor: ${newVendor.vendorName} with ID: ${newVendor.vendorID}`);
+    finalVendorID = newVendor.vendorID;
+  }
+
+  if (!finalVendorID) {
+    throw new Error("A valid vendorID is required to create a request item.");
+  }
+
+  // Create the new request item
+  const newItem = await prisma.requestItem.create({
+    data: {
+      description,
+      url,
+      partNumber,
+      quantity,
+      unitPrice,
+      request: {
+        connect: { requestID: reqID },
+      },
+      vendor: {
+        connect: { vendorID: finalVendorID },
+      },
+    },
+  });
+
+  return newItem;
 }
 
 // Creates a new Process into the database

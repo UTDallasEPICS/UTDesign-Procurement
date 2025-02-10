@@ -5,16 +5,30 @@ import { prisma } from '@/db'
 import { Prisma, Vendor } from '@prisma/client'
 
 // used for type checking items and orders passed in so that each attribute is valid
-interface Item
-{
-  itemID: number,
-  description: string,
-  url: string,
-  partNumber: string,
-  quantity: number,
-  unitPrice: number,
-  vendorID: number | undefined,
-  vendorName: string | undefined // only vendorName should be passed in but project page not updated so for now made ID and name optional and pass in 1
+// interface Item
+// {
+//   itemID: number,
+//   description: string,
+//   url: string,
+//   partNumber: string,
+//   quantity: number,
+//   unitPrice: number,
+//   vendorID: number | undefined,
+//   vendorName: string | undefined // only vendorName should be passed in but project page not updated so for now made ID and name optional and pass in 1
+// }
+
+interface Item {
+  itemID: number;
+  description: string;
+  url: string;
+  partNumber: string;
+  quantity: number;
+  unitPrice: number;
+  vendorID: number | undefined;  // Can be null or undefined for 'Other' vendor
+  vendorName: string | undefined;      // Vendor name can be undefined
+  newVendorName?: string;              // Optional, for 'Other' vendors
+  newVendorEmail?: string;             // Optional, for 'Other' vendors
+  newVendorURL?: string;               // Optional, for 'Other' vendors
 }
 
 interface Order
@@ -215,6 +229,78 @@ async function updateItem(item: Item)
       console.log(error.message)
   }
 }
+
+// async function updateItem(item: Item) {
+//   try {
+//     let vendor;
+
+//     // Log to check if `newVendorName` is set
+//     console.log(`New Vendor Name: ${item.newVendorName}`);
+
+//     // Handle 'Other' vendor case: Create a new vendor with pending status
+//     if (item.newVendorName) {
+//       vendor = await prisma.vendor.create({
+//         data: {
+//           vendorName: item.newVendorName,
+//           vendorStatus: 'PENDING',
+//           vendorEmail: item.newVendorEmail || null, // Ensure null is acceptable in the schema
+//           vendorURL: item.newVendorURL?.trim() || 'https://default.com',
+//         },
+//       });
+//       console.log(`Created new vendor: ${vendor.vendorName} with ID: ${vendor.vendorID}`);
+//     }
+
+//     // If not 'Other', find the vendor by name or ID
+//     if (!vendor && item.vendorName) {
+//       vendor = await prisma.vendor.findFirst({
+//         where: {
+//           vendorName: item.vendorName,
+//         },
+//       });
+//       if (!vendor) throw new Error('Invalid vendor for item');
+//     }
+
+//     if (!vendor && item.vendorID) {
+//       vendor = await prisma.vendor.findUnique({
+//         where: {
+//           vendorID: Number(item.vendorID),
+//         },
+//       });
+//       if (!vendor) throw new Error('Invalid vendor for item');
+//     }
+
+//     // Validate that the request item exists
+//     const reqItem = await prisma.requestItem.findUnique({
+//       where: {
+//         itemID: item.itemID,
+//       },
+//     });
+//     if (!reqItem) throw new Error('Request item not found');
+
+//     // Update the request item with the new vendor information
+//     const newItem = await prisma.requestItem.update({
+//       where: {
+//         itemID: reqItem.itemID,
+//       },
+//       data: {
+//         description: item.description,
+//         url: item.url,
+//         partNumber: item.partNumber,
+//         quantity: item.quantity,
+//         unitPrice: item.unitPrice,
+//         vendorID: vendor?.vendorID, // Use the vendorID of the new or existing vendor
+//       },
+//     });
+
+//     console.log(`Updated item ${item.itemID} with vendor ${vendor?.vendorName || 'unknown'}`);
+//   } catch (error) {
+//     console.error(error);
+//     if (error instanceof Error) {
+//       console.error(error.message);
+//     }
+//   }
+// }
+
 
 /**
  * This function first checks if the orderID is valid and then updates the data fields for the order

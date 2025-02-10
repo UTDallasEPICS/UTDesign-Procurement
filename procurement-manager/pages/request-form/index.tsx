@@ -104,6 +104,12 @@ const StudentRequest = ({
       quantity: '',
       unitCost: '',
       totalCost: '',
+      isDropdownOpen: false,
+      isNewVendor: false,
+      searchTerm: '',
+      newVendorName: '',
+      newVendorEmail: '',
+      newVendorURL: '',
     },
   ])
   const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null)
@@ -122,11 +128,63 @@ const StudentRequest = ({
   const [newVendorURL, setNewVendorURL] = useState('')
   const [newVendorEmail, setNewVendorEmail] = useState('')
 
-  const handleVendorChange = (e: React.ChangeEvent<any>) => {
-    const value = e.target.value
-    setSelectedVendor(value)
-    setIsNewVendor(value === 'other')
-  }
+  const handleVendorChange = (
+    e: React.ChangeEvent<any> | { target: { value: any } },
+    index: number
+  ) => {
+    const value = e.target.value;
+
+    const newItems = [...items];
+    newItems[index].vendor = value;
+    newItems[index].isNewVendor = value === 'other';
+
+    // Reset new vendor details if selecting a predefined vendor
+    if (value !== 'other') {
+      newItems[index].newVendorName = '';
+      newItems[index].newVendorURL = '';
+      newItems[index].newVendorEmail = '';
+    }
+
+    setItems(newItems);
+  };
+
+  const handleNewVendorChange = (
+    index: number,
+    field: 'newVendorName' | 'newVendorURL' | 'newVendorEmail',
+    value: string
+  ) => {
+    const newItems = [...items];
+    newItems[index][field] = value;
+    setItems(newItems);
+  };
+
+  const handleDropdownToggle = (
+    index: number,
+    isOpen: boolean
+  ) => {
+    const newItems = [...items];
+    newItems[index].isDropdownOpen = isOpen;
+    setItems(newItems);
+  };
+
+  const handleSearchTermChange = (index: number, value: string) => {
+    const newItems = [...items];
+    newItems[index].searchTerm = value;
+    setItems(newItems);
+  };
+
+
+  // const VendorDropdown = ({ vendors, item, handleVendorChange, index }: any) => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  // Filter vendors based on the search term
+  const filteredVendors = vendors.filter(
+    (vendor: any) =>
+      vendor.vendorStatus === 'APPROVED' &&
+      vendor.vendorName.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   //------------
 
   // TODO:: update tooltip whenever item is added or deleted
@@ -249,6 +307,12 @@ const StudentRequest = ({
         quantity: '',
         unitCost: '',
         totalCost: '',
+        isDropdownOpen: false,
+        isNewVendor: false,
+        searchTerm: '',
+        newVendorName: '',
+        newVendorEmail: '',
+        newVendorURL: '',
       },
     ])
   }
@@ -469,73 +533,6 @@ const StudentRequest = ({
             </Form.Group>
           </Col>
         </Row>
-        // OTHER option ---
-        <Row className='my-4'>
-          <Col md={4}>
-            <Form.Group controlId='vendorSelect'>
-              <Form.Label>
-                <strong>Vendor</strong>
-              </Form.Label>
-              <Form.Control
-                as='select'
-                value={selectedVendor}
-                onChange={handleVendorChange}
-              >
-                <option value=''>Select a Vendor</option>
-                {vendors
-                  .filter((vendor) => vendor.vendorStatus === 'APPROVED')
-                  .map((vendor) => (
-                    <option key={vendor.vendorID} value={vendor.vendorID}>
-                      {vendor.vendorName}
-                    </option>
-                  ))}
-                <option value='other'>Other</option>
-              </Form.Control>
-            </Form.Group>
-          </Col>
-        </Row>
-        {isNewVendor && (
-          <Row className='my-4'>
-            <Col md={4}>
-              <Form.Group controlId='newVendorName'>
-                <Form.Label>
-                  <strong>New Vendor Name</strong>
-                </Form.Label>
-                <Form.Control
-                  type='text'
-                  value={newVendorName}
-                  onChange={(e) => setNewVendorName(e.target.value)}
-                  required
-                />
-              </Form.Group>
-            </Col>
-            <Col md={4}>
-              <Form.Group controlId='newVendorURL'>
-                <Form.Label>
-                  <strong>New Vendor URL</strong>
-                </Form.Label>
-                <Form.Control
-                  type='url'
-                  value={newVendorURL}
-                  onChange={(e) => setNewVendorURL(e.target.value)}
-                  required
-                />
-              </Form.Group>
-            </Col>
-            <Col md={4}>
-              <Form.Group controlId='newVendorEmail'>
-                <Form.Label>
-                  <strong>New Vendor Email (Optional)</strong>
-                </Form.Label>
-                <Form.Control
-                  type='email'
-                  value={newVendorEmail}
-                  onChange={(e) => setNewVendorEmail(e.target.value)}
-                />
-              </Form.Group>
-            </Col>
-          </Row>
-        )}
         <h5>
           <strong>Items:</strong>
         </h5>
@@ -555,53 +552,6 @@ const StudentRequest = ({
                     className={styles.sequenceNumberInput}
                     disabled
                   />
-                </Form.Group>
-              </Col>
-
-              {/* VENDOR */}
-              <Col md={1}>
-                <Form.Group controlId={`item${index}Vendor`}>
-                  <Form.Label>
-                    <strong>Vendor</strong>
-                  </Form.Label>
-                  {/* <ReactSearchAutocomplete
-                    items={vendors}
-                    maxResults={15}
-                    // onSearch={handleOnSearch}
-                    // onHover={handleOnHover}
-                    // onSelect={handleOnSelect}
-                    // onFocus={handleOnFocus}
-                    // onClear={handleOnClear}
-                    fuseOptions={{ keys: ['name', 'description'] }} // Search in the description text as well
-                    styling={{ zIndex: 3 }} // To display it on top of the search box below
-                  /> */}
-                  <div className={styles.tooltip}>
-                    <Form.Control
-                      type='text'
-                      value={item.vendor}
-                      onChange={(e) => handleItemChange(e, index, 'vendor')}
-                      required
-                    />
-                    <span
-                      className={styles.tooltiptext}
-                      id={`vendorTooltip${index}`}
-                    >
-                      Tooltip text
-                    </span>
-                  </div>
-
-                  {/* <Form.Select
-                    value={item.vendor}
-                    onChange={(e) => handleItemChange(e, index, 'vendor')}
-                  >
-                    {vendors.map((vendor, vendorIndex) => {
-                      return (
-                        <option key={vendorIndex} value={vendor.vendorID}>
-                          {vendor.vendorName}
-                        </option>
-                      )
-                    })}
-                  </Form.Select> */}
                 </Form.Group>
               </Col>
 
@@ -771,6 +721,148 @@ const StudentRequest = ({
                 </Col>
               </Col>
             </Row>
+            <Row className="my-4">
+              <Col md={4}>
+                <Form.Group controlId={`vendorSelect-${index}`}>
+                  <Form.Label>
+                    <strong>Vendor</strong>
+                  </Form.Label>
+                  {/* Searchable dropdown */}
+                  <div style={{ position: 'relative' }}>
+                    <Form.Control
+                      type="text"
+                      placeholder="Search or select a vendor..."
+                      value={item.searchTerm} // Use the item's specific search term
+                      onChange={(e) => handleSearchTermChange(index, e.target.value)}
+                      onFocus={() => handleDropdownToggle(index, true)}
+                      onBlur={() =>
+                        setTimeout(() => handleDropdownToggle(index, false), 200)
+                      }
+                    />
+                    {item.isDropdownOpen && (
+                      <ul
+                        style={{
+                          position: 'absolute',
+                          width: '100%',
+                          maxHeight: '200px',
+                          overflowY: 'auto',
+                          backgroundColor: 'white',
+                          border: '1px solid #ccc',
+                          borderRadius: '4px',
+                          zIndex: 1000,
+                          listStyle: 'none',
+                          padding: 0,
+                          margin: 0,
+                        }}
+                      >
+                        {vendors
+                          .filter(
+                            (vendor: any) =>
+                              vendor.vendorStatus === 'APPROVED' &&
+                              vendor.vendorName
+                                .toLowerCase()
+                                .includes(item.searchTerm.toLowerCase())
+                          )
+                          .map((vendor: any) => (
+                            <li
+                              key={vendor.vendorID}
+                              style={{
+                                padding: '10px',
+                                cursor: 'pointer',
+                                borderBottom: '1px solid #ddd',
+                              }}
+                              onClick={() => {
+                                handleVendorChange(
+                                  { target: { value: vendor.vendorID } },
+                                  index
+                                );
+                                handleSearchTermChange(index, vendor.vendorName);
+                                handleDropdownToggle(index, false);
+                              }}
+                            >
+                              {vendor.vendorName}
+                            </li>
+                          ))}
+                        <li
+                          style={{
+                            padding: '10px',
+                            cursor: 'pointer',
+                            backgroundColor: '#f9f9f9',
+                          }}
+                          onClick={() => {
+                            handleVendorChange({ target: { value: 'other' } }, index);
+                            handleSearchTermChange(index, 'Other');
+                            handleDropdownToggle(index, false);
+                          }}
+                        >
+                          Other
+                        </li>
+                      </ul>
+                    )}
+                  </div>
+                </Form.Group>
+              </Col>
+            </Row>
+            {item.isNewVendor && (
+              <Row className="my-4">
+                <Col md={4}>
+                  <Form.Group controlId={`newVendorName-${index}`}>
+                    <Form.Label>
+                      <strong>New Vendor Name</strong>
+                    </Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={item.newVendorName || ''}
+                      onChange={(e) =>
+                        setItems((prev) => {
+                          const newItems = [...prev];
+                          newItems[index].newVendorName = e.target.value;
+                          return newItems;
+                        })
+                      }
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+                <Col md={4}>
+                  <Form.Group controlId={`newVendorURL-${index}`}>
+                    <Form.Label>
+                      <strong>New Vendor URL</strong>
+                    </Form.Label>
+                    <Form.Control
+                      type="url"
+                      value={item.newVendorURL || ''}
+                      onChange={(e) =>
+                        setItems((prev) => {
+                          const newItems = [...prev];
+                          newItems[index].newVendorURL = e.target.value;
+                          return newItems;
+                        })
+                      }
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+                <Col md={4}>
+                  <Form.Group controlId={`newVendorEmail-${index}`}>
+                    <Form.Label>
+                      <strong>New Vendor Email (Optional)</strong>
+                    </Form.Label>
+                    <Form.Control
+                      type="email"
+                      value={item.newVendorEmail || ''}
+                      onChange={(e) =>
+                        setItems((prev) => {
+                          const newItems = [...prev];
+                          newItems[index].newVendorEmail = e.target.value;
+                          return newItems;
+                        })
+                      }
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
+            )}
           </div>
         ))}
         <Row className='my-4'>
