@@ -1,12 +1,5 @@
-import { NextApiRequest, NextApiResponse } from 'next'
-import {
-  Status,
-  Request,
-  RequestItem,
-  RequestUpload,
-  Process,
-  Prisma,
-} from '@prisma/client'
+import type { NextApiRequest, NextApiResponse } from 'next'
+import { Status, Prisma } from '@prisma/client'
 import { prisma } from '@/db'
 
 // PSEUDO:
@@ -36,11 +29,11 @@ interface Item {
   newVendorEmail: string
   newVendorURL: string
   upload:
-  | {
-    attachmentPath: string | undefined
-    attachmentName: string | undefined
-  }
-  | undefined
+    | {
+        attachmentPath: string | undefined
+        attachmentName: string | undefined
+      }
+    | undefined
 }
 
 /**
@@ -93,17 +86,14 @@ export default async function handler(
       body.projectNum = parseInt(body.projectNum)
 
     // FINALLY CREATE THE REQUEST FORM AND INSERT TO DATABASE
-    const requestForm = await createRequest(body, dateSubmitted, optionalFields)
+    // TODO: should we validate items actually matches the expected schema?
+    const requestForm = await createRequest(
+      body,
+      dateSubmitted,
+      optionalFields,
+      req.body.items,
+    )
     const requestID = requestForm.requestID
-
-    // INPUT ARRAY OF ITEMS INTO DATABASE
-    const items = req.body.items
-    items.forEach(async (item: Item) => {
-      await createItem(requestID, item)
-    })
-
-    // CREATE NEW PROCESS WITH STATUS OF UNDER_REVIEW INTO DATABASE
-    await createProcess(requestID)
 
     res.status(200).json({
       message: 'POST was a success',
@@ -132,28 +122,73 @@ async function createRequest(
   body: any,
   dateSubmitted: Date,
   optionalFields: Optionals,
+  items: Item[],
 ) {
-  try {
-    const requestForm = await prisma.request.create({
+  // wrapping the whole request creation process in a transaction to ensure that if anything fails, nothing gets inserted
+  const createdRequestForm = await prisma.$transaction(async (prisma) => {
+    // using prisma's nested write functionality to create a process and request together
+    const newProcess = await prisma.process.create({
       data: {
-        dateNeeded: new Date(body.dateNeeded), // may change in the future
-        dateSubmitted: dateSubmitted,
-        project: {
-          // sample project
-          connect: { projectNum: body.projectNum },
+        status: Status.UNDER_REVIEW,
+        request: {
+          create: {
+            dateNeeded: new Date(body.dateNeeded), // may change in the future
+            dateSubmitted,
+            project: {
+              // sample project
+              connect: { projectNum: body.projectNum },
+            },
+            student: {
+              connect: { email: body.studentEmail },
+            },
+            additionalInfo: optionalFields.additionalInfo,
+            expense: body.totalExpenses,
+          },
         },
-        student: {
-          connect: { email: body.studentEmail },
-        },
-        additionalInfo: optionalFields.additionalInfo,
-        expense: body.totalExpenses,
       },
       include: {
-        RequestItem: true,
-        Process: true,
+        request: true,
       },
     })
-    console.log(requestForm)
+    const requestForm = newProcess.request
+    console.log({ requestForm })
+    if (!requestForm) {
+      throw new Error('Missing request form')
+    }
+
+    // creating new vendors one by one so we can get their IDs back to link to the request items
+    // TODO: if/when we bump to prisma version > 5.14, we can rewrite this to use prisma's createManyAndReturn fn: https://www.prisma.io/docs/orm/prisma-client/queries/crud#create-and-return-multiple-records.
+    const newVendors = await Promise.all(
+      items
+        .filter((item) => !item.vendorID && item.newVendorName)
+        .map(async (item) =>
+          prisma.vendor.create({
+            data: {
+              vendorName: item.newVendorName,
+              vendorStatus: 'PENDING',
+              vendorEmail: item.newVendorEmail,
+            },
+          }),
+        ),
+    )
+
+    await prisma.requestItem.createMany({
+      data: items.map((item) => ({
+        description: item.description,
+        url: item.url,
+        partNumber: item.partNumber,
+        quantity: item.quantity,
+        unitPrice: item.unitPrice,
+        requestID: requestForm.requestID,
+        vendorID: item.vendorID ?? newVendors.shift()!.vendorID,
+      })),
+    })
+
+    if (newVendors.length > 0) {
+      throw new Error(
+        'Not all newly created vendors were connected to a request item - something is wrong',
+      )
+    }
 
     // Update the total expenses in the project
     // Find the project to get the total expenses
@@ -161,7 +196,6 @@ async function createRequest(
       where: { projectNum: body.projectNum },
     })
     console.log(project)
-    console.log('project', project?.totalExpenses)
     // Update the totalExpenses in the project
     const updateExpense = await prisma.project.update({
       where: { projectNum: body.projectNum },
@@ -173,167 +207,7 @@ async function createRequest(
       },
     })
     return requestForm
-  } catch (error) {
-    throw error
-  }
-}
+  })
 
-// async function createItem(reqID: number, itemToPut: Item) {
-//   const {
-//     description,
-//     url,
-//     partNumber,
-//     quantity,
-//     unitPrice,
-//     upload,
-//     vendorID,
-//     newVendorName,
-//     newVendorEmail,
-//     newVendorURL,
-//   } = itemToPut
-
-//   console.log('itemToPut', itemToPut)
-
-//   // TODO :: move this where submitting the request creates a RequestUpload instead of in each RequestItem
-//   // If something was uploaded, create a new RequestUpload to database
-//   let uploadID: number | undefined = undefined
-//   if (upload) {
-//     const newUpload = await prisma.requestUpload.create({
-//       data: {
-//         attachmentPath: upload.attachmentPath,
-//         attachmentName: upload.attachmentName,
-//       },
-//     })
-//     if (newUpload) uploadID = newUpload.uploadID
-//   }
-
-//   if (newVendorName) {
-//     const vendor = await prisma.vendor.create({
-//       data: {
-//         vendorName: newVendorName,
-//         vendorStatus: 'PENDING',
-//         vendorEmail: newVendorEmail || null, // Ensure null is acceptable in the schema
-//         vendorURL: newVendorURL?.trim() || 'https://default.com',
-//       },
-//     });
-//     console.log(`Created new vendor: ${vendor.vendorName} with ID: ${vendor.vendorID}`);
-//   }
-
-//   // TODO :: do error handling
-//   // NEW ITEM IS INSERTED INTO SERVER
-//   const newItem = await prisma.requestItem
-//     .create({
-//       data: {
-//         description: description,
-//         url: url,
-//         partNumber: partNumber,
-//         quantity: quantity,
-//         unitPrice: unitPrice,
-//         request: {
-//           connect: { requestID: reqID },
-//         },
-//         vendor: {
-//           connect: { vendorID: vendorID },
-//         },
-//         // This is not working right now
-//         // upload: {
-//         //   connect: { uploadID: uploadID },
-//         // },
-//       },
-//     })
-//     .catch(async (e) => {
-//       // Deletes the request to show there was an error
-//       await prisma.request.delete({ where: { requestID: reqID } })
-//       // await prisma.requestUpload.delete({ where: { uploadID: uploadID } })
-//       throw new Error(e)
-//     })
-
-//   return newItem
-// }
-
-
-async function createItem(reqID: number, itemToPut: Item) {
-  const {
-    description,
-    url,
-    partNumber,
-    quantity,
-    unitPrice,
-    upload,
-    vendorID,
-    newVendorName,
-    newVendorEmail,
-    newVendorURL,
-  } = itemToPut;
-
-  console.log("itemToPut", itemToPut);
-
-  // Handle upload creation if provided
-  let uploadID: number | undefined = undefined;
-  if (upload) {
-    const newUpload = await prisma.requestUpload.create({
-      data: {
-        attachmentPath: upload.attachmentPath,
-        attachmentName: upload.attachmentName,
-      },
-    });
-    if (newUpload) uploadID = newUpload.uploadID;
-  }
-
-  // Handle vendor creation if "Other" is selected
-  let finalVendorID = vendorID;
-
-  if (!vendorID && newVendorName) {
-    const newVendor = await prisma.vendor.create({
-      data: {
-        vendorName: newVendorName,
-        vendorStatus: "PENDING",
-        vendorEmail: newVendorEmail || null,
-        vendorURL: newVendorURL?.trim() || "https://default.com",
-      },
-    });
-    console.log(`Created new vendor: ${newVendor.vendorName} with ID: ${newVendor.vendorID}`);
-    finalVendorID = newVendor.vendorID;
-  }
-
-  if (!finalVendorID) {
-    throw new Error("A valid vendorID is required to create a request item.");
-  }
-
-  // Create the new request item
-  const newItem = await prisma.requestItem.create({
-    data: {
-      description,
-      url,
-      partNumber,
-      quantity,
-      unitPrice,
-      request: {
-        connect: { requestID: reqID },
-      },
-      vendor: {
-        connect: { vendorID: finalVendorID },
-      },
-    },
-  });
-
-  return newItem;
-}
-
-// Creates a new Process into the database
-async function createProcess(reqID: number) {
-  const newProcess = await prisma.process
-    .create({
-      data: {
-        status: Status.UNDER_REVIEW,
-        request: {
-          connect: { requestID: reqID },
-        },
-      },
-    })
-    .catch(async (e) => {
-      await prisma.request.delete({ where: { requestID: reqID } })
-      throw new Error(e)
-    })
-  return newProcess
+  return createdRequestForm
 }
