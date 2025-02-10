@@ -193,12 +193,12 @@ async function createRequest(
     // Update the total expenses in the project
     // Find the project to get the total expenses
     const project = await prisma.project.findUnique({
-      where: { projectNum: body.projectNum },
+      where: { projectID: requestForm.projectID },
     })
     console.log(project)
     // Update the totalExpenses in the project
     const updateExpense = await prisma.project.update({
-      where: { projectNum: body.projectNum },
+      where: { projectID: requestForm.projectID },
       data: {
         totalExpenses: Prisma.Decimal.add(
           project?.totalExpenses === undefined ? 0 : project.totalExpenses,
