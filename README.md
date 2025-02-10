@@ -148,7 +148,7 @@ Download [MySQL](https://www.mysql.com/downloads/), then follow along with the i
 
 #### Setup on macOS
 
-Docker is a tool that allows you to run applications like MySQL in 'containers' on your computer. Using Docker is preferred as opposed to installing MySQL on your computer because it is easier to set up and provides isolation between any other MySQL instances you may have on your computer. On Windows, setting up Docker is more of a hassle so we only recommend it on macOS.
+Docker is a tool that allows you to run applications like MySQL in 'containers' on your computer. Running MySQL in Docker is preferred as opposed to running MySQL on your computer directly because it is easier to set up and provides isolation between any other MySQL instances you may have on your computer. On Windows, setting up Docker is more of a hassle so we only recommend it on macOS.
 
 Install [Docker Desktop](https://docs.docker.com/desktop/setup/install/mac-install/).
 
