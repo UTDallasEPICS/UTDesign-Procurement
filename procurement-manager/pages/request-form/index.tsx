@@ -99,7 +99,7 @@ const StudentRequest = ({
       sequence: 1,
       vendor: '',
       description: '',
-      link: '',
+      url: '',
       partNumber: '',
       quantity: '',
       unitCost: '',
@@ -223,7 +223,7 @@ const StudentRequest = ({
         `item${index}Description`,
         `descriptionTooltip${index}`,
       )
-      handleTooltip(index, `item${index}Link`, `linkTooltip${index}`)
+      handleTooltip(index, `item${index}URL`, `urlTooltip${index}`)
       handleTooltip(
         index,
         `item${index}PartNumber`,
@@ -302,7 +302,7 @@ const StudentRequest = ({
         sequence: items.length + 1,
         vendor: '',
         description: '',
-        link: '',
+        url: '',
         partNumber: '',
         quantity: '',
         unitCost: '',
@@ -330,7 +330,7 @@ const StudentRequest = ({
     field:
       | 'vendor'
       | 'description'
-      | 'link'
+      | 'url'
       | 'partNumber'
       | 'quantity'
       | 'unitCost',
@@ -580,20 +580,20 @@ const StudentRequest = ({
 
               {/* ITEM URL */}
               <Col md={2}>
-                <Form.Group controlId={`item${index}Link`}>
+                <Form.Group controlId={`item${index}URL`}>
                   <Form.Label>
-                    <strong>Item Link</strong>
+                    <strong>Item URL</strong>
                   </Form.Label>
                   <div className={styles.tooltip}>
                     <Form.Control
-                      type='text'
-                      value={item.link}
-                      onChange={(e) => handleItemChange(e, index, 'link')}
+                      type='url'
+                      value={item.url}
+                      onChange={(e) => handleItemChange(e, index, 'url')}
                       required
                     />
                     <span
                       className={styles.tooltiptext}
-                      id={`linkTooltip${index}`}
+                      id={`urlTooltip${index}`}
                     >
                       Tooltip text
                     </span>
