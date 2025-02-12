@@ -414,29 +414,6 @@ const StudentRequest = ({
     }
   }
 
-  //start of autocopmlete search functions
-  // const handleOnSearch = (string, results) => {
-  //   console.log(string, results)
-  // }
-
-  // const handleOnHover = (result) => {
-  //   console.log(result)
-  // }
-
-  // const handleOnSelect = (item) => {
-  //   console.log(item)
-  // }
-
-  // const handleOnFocus = () => {
-  //   console.log('Focused')
-  // }
-
-  // const handleOnClear = () => {
-  //   console.log('Cleared')
-  // }
-
-  //end of autocopmlete funcitons
-
   function findBudget(projectNum: number, proj: Project[]) {
     let budget: Prisma.Decimal = new Prisma.Decimal(0)
     proj.forEach((project) => {
