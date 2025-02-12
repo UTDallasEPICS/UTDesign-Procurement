@@ -118,26 +118,7 @@ const MentorRequestCard: React.FC<RequestCardProps> = ({
                 <p>{details.Process[0].status}</p>
               </Col>
 
-              {/* <Col xs='auto' className='d-flex align-items-center'>
-                <div className='d-flex align-items-start'>
-                  <Button
-                    variant='success'
-                    size='sm'
-                    className='mb-2'
-                    onClick={onApprove}
-                  >
-                    APPROVE
-                  </Button>{' '}
-                  <Button
-                    variant='dark'
-                    size='sm'
-                    onClick={onReject}
-                    className='ms-4'
-                  >
-                    REJECT
-                  </Button>
-                </div>
-              </Col> */}
+              
             </Row>
 
             {/* COLLAPSED ROW */}
