@@ -1,0 +1,14 @@
+{
+  "recommendations": [
+    "prisma.prisma",
+    "eamodio.gitlens",
+    "adpyke.codesnap",
+    "formulahendry.auto-close-tag",
+    "formulahendry.auto-rename-tag",
+    "rodrigovallades.es7-react-js-snippets",
+    "dbaeumer.vscode-eslint",
+    "ms-vsliveshare.vsliveshare",
+    "esbenp.prettier-vscode",
+    "rangav.vscode-thunder-client"
+  ]
+}

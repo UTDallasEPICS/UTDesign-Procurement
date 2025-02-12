@@ -49,7 +49,7 @@ export async function getServerSideProps(context: any) {
     console.log('project error: ', error)
   }
 
-  let vendors = await prisma.vendor.findMany({})
+  let vendors = await prisma.vendor.findMany()
   return {
     props: {
       session: session,
@@ -91,15 +91,13 @@ const StudentRequest = ({
       new Prisma.Decimal(listOfProjects[0].totalExpenses),
     ),
   )
-  const [totalExpenses, setTotalExpenses] = useState<Prisma.Decimal>(
-    new Prisma.Decimal(listOfProjects[0].totalExpenses),
-  )
+
   const [items, setItems] = useState([
     {
       sequence: 1,
       vendor: '',
       description: '',
-      link: '',
+      url: '',
       partNumber: '',
       quantity: '',
       unitCost: '',
@@ -113,20 +111,10 @@ const StudentRequest = ({
     },
   ])
   const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null)
-  const [projects, setProjects] = useState<Project[]>(listOfProjects)
   const [selectedProject, setSelectedProject] = useState(
     listOfProjects[0].projectNum,
   )
   const router = useRouter()
-
-  //Creates the other option
-  //This current implementation works
-  //other option-----
-  const [selectedVendor, setSelectedVendor] = useState('')
-  const [isNewVendor, setIsNewVendor] = useState(false)
-  const [newVendorName, setNewVendorName] = useState('')
-  const [newVendorURL, setNewVendorURL] = useState('')
-  const [newVendorEmail, setNewVendorEmail] = useState('')
 
   const handleVendorChange = (
     e: React.ChangeEvent<any> | { target: { value: any } },
@@ -148,15 +136,6 @@ const StudentRequest = ({
     setItems(newItems);
   };
 
-  const handleNewVendorChange = (
-    index: number,
-    field: 'newVendorName' | 'newVendorURL' | 'newVendorEmail',
-    value: string
-  ) => {
-    const newItems = [...items];
-    newItems[index][field] = value;
-    setItems(newItems);
-  };
 
   const handleDropdownToggle = (
     index: number,
@@ -172,18 +151,6 @@ const StudentRequest = ({
     newItems[index].searchTerm = value;
     setItems(newItems);
   };
-
-
-  // const VendorDropdown = ({ vendors, item, handleVendorChange, index }: any) => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-
-  // Filter vendors based on the search term
-  const filteredVendors = vendors.filter(
-    (vendor: any) =>
-      vendor.vendorStatus === 'APPROVED' &&
-      vendor.vendorName.toLowerCase().includes(searchTerm.toLowerCase())
-  );
 
   //------------
 
@@ -223,7 +190,7 @@ const StudentRequest = ({
         `item${index}Description`,
         `descriptionTooltip${index}`,
       )
-      handleTooltip(index, `item${index}Link`, `linkTooltip${index}`)
+      handleTooltip(index, `item${index}URL`, `urlTooltip${index}`)
       handleTooltip(
         index,
         `item${index}PartNumber`,
@@ -254,7 +221,7 @@ const StudentRequest = ({
 
   // Dynamically update the budget remaining
   useEffect(() => {
-    let proj = projects.filter(
+    let proj = listOfProjects.filter(
       (project) => project.projectNum === selectedProject,
     )
     setRemainingAfterItem(
@@ -302,7 +269,7 @@ const StudentRequest = ({
         sequence: items.length + 1,
         vendor: '',
         description: '',
-        link: '',
+        url: '',
         partNumber: '',
         quantity: '',
         unitCost: '',
@@ -330,7 +297,7 @@ const StudentRequest = ({
     field:
       | 'vendor'
       | 'description'
-      | 'link'
+      | 'url'
       | 'partNumber'
       | 'quantity'
       | 'unitCost',
@@ -373,9 +340,7 @@ const StudentRequest = ({
     // clean out the items to send to API
     const itemsToSend = items.map((item) => {
       return {
-        description: item.description,
-        url: item.link,
-        partNumber: item.partNumber,
+        ...item,
         quantity: parseInt(item.quantity),
         unitPrice: parseFloat(item.unitCost),
         vendorID: parseInt(item.vendor),
@@ -499,7 +464,7 @@ const StudentRequest = ({
                   console.log('selectedProject = ', selectedProject)
                 }}
               >
-                {projects.map((project, projIndex) => {
+                {listOfProjects.map((project, projIndex) => {
                   return (
                     <option key={projIndex} value={project.projectNum}>
                       {project.projectTitle}
@@ -559,20 +524,20 @@ const StudentRequest = ({
 
               {/* ITEM URL */}
               <Col md={2}>
-                <Form.Group controlId={`item${index}Link`}>
+                <Form.Group controlId={`item${index}URL`}>
                   <Form.Label>
-                    <strong>Item Link</strong>
+                    <strong>Item URL</strong>
                   </Form.Label>
                   <div className={styles.tooltip}>
                     <Form.Control
-                      type='text'
-                      value={item.link}
-                      onChange={(e) => handleItemChange(e, index, 'link')}
+                      type='url'
+                      value={item.url}
+                      onChange={(e) => handleItemChange(e, index, 'url')}
                       required
                     />
                     <span
                       className={styles.tooltiptext}
-                      id={`linkTooltip${index}`}
+                      id={`urlTooltip${index}`}
                     >
                       Tooltip text
                     </span>
