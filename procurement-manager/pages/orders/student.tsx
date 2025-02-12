@@ -62,8 +62,6 @@ export default function Student({ session, user }: StudentProps) {
     setProjects(projects)
     setProjectRequests(requestsOfMultipleProjects)
     setIsOpen(projects.map(() => true))
-    //console.log('request (Student)', requestsOfMultipleProjects)
-    //console.log('setRequest (Student)', projectRequests)
   }
 
   async function getStudentReimbursements() {
@@ -74,8 +72,6 @@ export default function Student({ session, user }: StudentProps) {
       nextResponse.data.reimbursements
     ])
     setProjectReimbursements(reimbursementsOfMultipleProjects)
-    //console.log('reimbursement (Student)', reimbursementsOfMultipleProjects)
-    //console.log('setReimbursement (Student)', projectReimbursements)
   }
 
   /**
@@ -129,7 +125,6 @@ export default function Student({ session, user }: StudentProps) {
             projectRequests[projIndex]?.length > 0 ? (
               projectRequests[projIndex].map((request, reqIndex) => {
                 return (
-                  //console.log('projectRequests:: ', projectRequests),
                   <RequestCard
                     key={reqIndex}
                     details={request}
@@ -145,7 +140,6 @@ export default function Student({ session, user }: StudentProps) {
             projectReimbursements[projIndex]?.length > 0 ? (
               projectReimbursements[projIndex].map((reimbursement, reimIndex) => {
                 return (
-                  //console.log('projectReimbursements:: ', projectReimbursements),
                   <ReimburseCard
                     key={reimIndex}
                     details={reimbursement}
