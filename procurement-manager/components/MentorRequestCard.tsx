@@ -15,7 +15,7 @@ interface RequestCardProps {
   onApprove: () => void
   collapsed: boolean
 }
-
+ 
 const MentorRequestCard: React.FC<RequestCardProps> = ({
   details,
   onReject,
