@@ -42,15 +42,13 @@ export default async function handler(
         const reimbursements: ReimbursementDetails[] = await prisma.reimbursement.findMany({
           where: {
             projectID: project.projectID,
-            Process: {
-              some: {
-                status: Status.APPROVED,
-              },
+            process: {
+              status: Status.APPROVED
             },
           },
           include: {
             ReimbursementItem: true,
-            Process: true,
+            process: true,
             project: true,
           },
         })
@@ -75,7 +73,7 @@ export default async function handler(
             where: { projectID: project.projectID },
             include: {
               ReimbursementItem: true,
-              Process: true,
+              process: true,
               project: true,
             },
           }),
@@ -92,13 +90,13 @@ export default async function handler(
         // admin can see all requests that are APPROVED
         if (user.roleID === 1) {
           filteredRequests = reimbursements.filter(
-            (reimbursement) => reimbursement.Process[0].status === Status.APPROVED
+            (reimbursement) => reimbursement.process.status === Status.APPROVED
           )
         }
         // mentor can see all requests that are UNDER_REVIEW
         else if (user.roleID === 2) {
           filteredRequests = reimbursements.filter(
-            (reimbursement) => reimbursement.Process[0].status === Status.UNDER_REVIEW
+            (reimbursement) => reimbursement.process.status === Status.UNDER_REVIEW
           )
         }
         // Students can see all requests ???

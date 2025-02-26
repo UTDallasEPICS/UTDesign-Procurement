@@ -39,15 +39,13 @@ export async function getServerSideProps(context: any) {
     const requests = await prisma.request.findMany({
       where: {
         projectID: project.projectID,
-        Process: {
-          some: {
-            status: Status.APPROVED,
-          },
+        process: {
+          status: Status.APPROVED,
         },
       },
       include: {
         RequestItem: true,
-        Process: true,
+        process: true,
         OtherExpense: true,
         project: true,
       },
@@ -55,15 +53,13 @@ export async function getServerSideProps(context: any) {
     const reimbursements = await prisma.reimbursement.findMany({
       where: {
         projectID: project.projectID,
-        Process: {
-          some: {
-            status: Status.APPROVED
-          }
-        }
+        process: {
+          status: Status.APPROVED
+        },
       },
       include: {
         ReimbursementItem: true,
-        Process: true,
+        process: true,
         project: true,
       },
     })
@@ -199,6 +195,27 @@ export default function Admin({
       else console.log(error)
     }
   }
+
+  const updateStatus = async (status: string, pID: number) => {
+    try {
+      const response = await axios.post('/api/process/update', {
+        email: user.email,
+        processID: pID,
+        status: status,
+      })
+
+      if (response.status === 200) {
+        getAdminReimbursements()
+        getAdminRequests()
+      }
+    } catch (error) {
+      if (error instanceof Error) console.log(error.message)
+      else if (axios.isAxiosError(error))
+        console.log(error.message, error.status)
+      else console.log(error)
+    }
+  }
+  
   // /**
   //  * This function is called after the mentor submits the acceptance
   //  * BUGGY
@@ -272,6 +289,7 @@ export default function Admin({
     }
     return false
   }
+
   const [userData, setUserData] = useState<
     {
       projName: string
@@ -279,6 +297,7 @@ export default function Admin({
       vendorName: RequestItem[]
     }[]
   >([])
+
   const [userSearchData, setUserSearchData] = useState<
     {
       projName: string
@@ -286,6 +305,7 @@ export default function Admin({
       vendorName: RequestItem[]
     }[]
   >([])
+
   //Nihita - ***THIS PART OF THE CODE HAS BUGS***
   //Set all the states for the variables
   //Use these states to store the json data from the database api calls
@@ -423,7 +443,9 @@ export default function Admin({
                     user={user}
                     project={project}
                     details={request}
-                    onReject={() => handleReject(request.Process[0].processID)}
+                    onReject={() => handleReject(request.process.processID)}
+                    setStatusOrdered={() => updateStatus(Status.ORDERED, request.process.processID)}
+                    setStatusReceived={() => updateStatus(Status.RECEIVED, request.process.processID)}
                     onSave={() => getAdminRequests()}
                     collapsed={isOpen[projIndex]}
                   />
@@ -441,7 +463,7 @@ export default function Admin({
                     user={user}
                     project={project}
                     details={reimbursement}
-                    onReject={() => handleReject(reimbursement.Process[0].processID)}
+                    onReject={() => handleReject(reimbursement.process.processID)}
                     onSave={() => getAdminReimbursements()} 
                     collapsed={isOpen[projIndex]}
                   />

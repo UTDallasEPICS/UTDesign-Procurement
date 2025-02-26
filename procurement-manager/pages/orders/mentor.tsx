@@ -201,8 +201,8 @@ export default function Mentor({ session, user }: MentorProps) {
                   details={request}
                   key={reqIndex}
                   {...request}
-                  onReject={() => handleReject(request.Process[0].processID)}
-                  onApprove={() => handleApprove(request.Process[0].processID)}
+                  onReject={() => handleReject(request.process.processID)}
+                  onApprove={() => handleApprove(request.process.processID)}
                   collapsed={isOpen[projIndex]}
                 />
               ))
@@ -218,8 +218,8 @@ export default function Mentor({ session, user }: MentorProps) {
                     details={reimbursement}
                     key={reimIndex}
                     {...reimbursement}
-                    onReject={() => handleReject(reimbursement.Process[0].processID)}
-                    onApprove={() => handleApprove(reimbursement.Process[0].processID)}
+                    onReject={() => handleReject(reimbursement.process.processID)}
+                    onApprove={() => handleApprove(reimbursement.process.processID)}
                     collapsed={isOpen[projIndex]}
                   />
                 )

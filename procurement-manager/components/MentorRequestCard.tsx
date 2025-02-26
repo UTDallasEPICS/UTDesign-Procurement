@@ -44,7 +44,7 @@ const MentorRequestCard: React.FC<RequestCardProps> = ({
    */
   async function getStudentThatRequested() {
     try {
-      if (!details.Process[0].mentorID) return null
+      if (!details.process.mentorID) return null
       const user = await axios.get(`/api/user/${details.studentID}`)
       if (user.status === 200) setStudentThatRequested(user.data)
       return user
@@ -115,7 +115,7 @@ const MentorRequestCard: React.FC<RequestCardProps> = ({
               {/* STATUS */}
               <Col xs={6} lg={3}>
                 <h6 className={styles.headingLabel}>Status</h6>
-                <p>{details.Process[0].status}</p>
+                <p>{details.process.status}</p>
               </Col>
 
               

@@ -85,6 +85,8 @@ export default async function handler(
     if (typeof body.projectNum === 'string')
       body.projectNum = parseInt(body.projectNum)
 
+    // CREATE NEW PROCESS WITH STATUS OF UNDER_REVIEW INTO DATABASE
+
     // FINALLY CREATE THE REQUEST FORM AND INSERT TO DATABASE
     // TODO: should we validate items actually matches the expected schema?
     const requestForm = await createRequest(
