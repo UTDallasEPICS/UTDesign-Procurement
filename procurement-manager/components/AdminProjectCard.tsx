@@ -718,8 +718,8 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
                 {
                   items.map((reqItems, reqIndex) => {
                     // only shows processed requests for order history - i.e. were approved and ordered, or were rejected
-                    if ((requests[projectIndex][reqIndex].Process[0].status === Status.APPROVED && processed(requests[projectIndex][reqIndex].requestID) === true) || 
-                    requests[projectIndex][reqIndex].Process[0].status === Status.REJECTED) 
+                    if ((requests[projectIndex][reqIndex]?.process.status === Status.RECEIVED && processed(requests[projectIndex][reqIndex].requestID) === true) || 
+                    requests[projectIndex][reqIndex]?.process.status === Status.REJECTED)
                   {
                     return (
                       <div key={reqIndex}>
@@ -734,7 +734,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
                        <Col xs={12} md={3}>
                         <h6 className={styles.headingLabel}>Status </h6>
                         <p>
-                        {requests[projectIndex][reqIndex].Process[0].status}
+                        {requests[projectIndex][reqIndex].process.status}
                         </p>
                       </Col>
                       {/* Order Cost for Request */}

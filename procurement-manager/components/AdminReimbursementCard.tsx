@@ -65,7 +65,7 @@ const AdminReimbursementCard: React.FC<AdminRequestCardProps> = ({
    */
   async function getStudentThatRequested() {
     try {
-      if (!details.Process[0].mentorID) return null
+      if (!details.process.mentorID) return null
       const user = await axios.get(`/api/user/${details.studentID}`)
       if (user.status === 200) setStudentThatRequested(user.data)
       return user
@@ -82,8 +82,8 @@ const AdminReimbursementCard: React.FC<AdminRequestCardProps> = ({
    */
   async function getMentorThatApproved() {
     try {
-      if (!details.Process[0].mentorID) return null
-      const user = await axios.get(`/api/user/${details.Process[0].mentorID}`)
+      if (!details.process.mentorID) return null
+      const user = await axios.get(`/api/user/${details.process.mentorID}`)
       if (user.status === 200) setMentorThatApproved(user.data)
       return user
     } catch (error) {
@@ -141,7 +141,7 @@ const AdminReimbursementCard: React.FC<AdminRequestCardProps> = ({
               {/* STATUS */}
               <Col xs={6} lg={3}>
                 <h6 className={styles.headingLabel}>Status</h6>
-                <p>{details.Process[0].status}</p>
+                <p>{details.process.status}</p>
               </Col>
             </Row>
 

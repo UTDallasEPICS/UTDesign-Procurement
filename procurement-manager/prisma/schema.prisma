@@ -103,7 +103,8 @@ model Request {
   RequestItem    RequestItem[]
   Order          Order[]
   OtherExpense   OtherExpense[]
-  Process        Process[]
+  process        Process        @relation(fields: [processID], references: [processID])
+  processID      Int            @unique
   upload         RequestUpload? @relation(fields: [uploadID], references: [uploadID]) // a request can have an upload for more justification - can be null
   uploadID       Int?
 }
@@ -170,7 +171,6 @@ model RequestUpload {
 model Reimbursement {
   reimbursementID   Int                 @id @default(autoincrement())
   dateSubmitted     DateTime // date the reimbursement form was submitted
-  status            String // status of the reimbursement form
   additionalInfo    String? // any additional information and why the reimbursement is being requested 
   expense           Decimal             @default(0)
   // RELATIONSHIPS HERE ::
@@ -178,7 +178,8 @@ model Reimbursement {
   projectID         Int
   student           User                @relation(fields: [studentID], references: [userID]) // changed to NOT NULL since this should show which student submitted the reimbursement form
   studentID         Int
-  Process           Process[]
+  process           Process             @relation(fields: [processID], references: [processID])
+  processID         Int                 @unique
   ReimbursementItem ReimbursementItem[]
 }
 
@@ -210,12 +211,13 @@ model ReimbursementUpload {
 // The different status that a process can have
 enum Status {
   UNDER_REVIEW // default status after a request/reimbursement is submitted
+  DRAFT // status after a request/reimbursement is recalled by student and wants to edit before resubmitting
+  CANCELLED // status after a request is cancelled by student and does not need to be requested/reimbursed anymore
   APPROVED // status after a request/reimbursement is approved by mentor
   REJECTED // status after a request/reimbursement is rejected by mentor
   ORDERED // status after a request is ordered by admin
-  DELIVERED // status after a request is delivered to student
-  CANCELLED // status after a request is cancelled by student and does not need to be requested/reimbursed anymore
-  RECALLED // status after a request/reimbursement is recalled by student and wants to edit before resubmitting
+  RECEIVED // status after a request is received by admin
+  PROCESSED // status after a reimbursement is processed by admin
 }
 
 enum VendorStatus {
@@ -236,9 +238,9 @@ model Process {
   mentorID                Int?
   admin                   User?          @relation("Admin", fields: [adminID], references: [userID]) // changed to NOT NULL since a process should show which admin ordered/rejected the request/reimbursement
   adminID                 Int?
-  request                 Request?       @relation(fields: [requestID], references: [requestID]) // the request that the process is in - can be null because a process can be in a reimbursement
+  request                 Request? // the request that the process is in - can be null because a process can be in a reimbursement
   requestID               Int?
-  reimbursement           Reimbursement? @relation(fields: [reimbursementID], references: [reimbursementID]) // the reimbursement that the process is in - can be null because a process can be in a request
+  reimbursement           Reimbursement? // the reimbursement that the process is in - can be null because a process can be in a request
   reimbursementID         Int?
 }
 
@@ -254,9 +256,9 @@ model Department {
 model Vendor {
   vendorID          Int                 @id @default(autoincrement()) // unique identifier for each vendor
   vendorName        String // name of the vendor
-  vendorStatus      VendorStatus @default(PENDING)// Vendor Status (Approved, Pending, and Denied) 
+  vendorStatus      VendorStatus        @default(PENDING) // Vendor Status (Approved, Pending, and Denied) 
   vendorEmail       String? // Optional field
-  vendorURL         String @default("https://default.com")// vendor URL
+  vendorURL         String              @default("https://default.com") // vendor URL
   RequestItem       RequestItem[]
   ReimbursementItem ReimbursementItem[]
 }

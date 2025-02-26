@@ -33,7 +33,7 @@ export async function getServerSideProps(context: any) {
       },
       include: {
         RequestItem: true,
-        Process: true,
+        process: true,
         OtherExpense: true,
         project: true,
       },
