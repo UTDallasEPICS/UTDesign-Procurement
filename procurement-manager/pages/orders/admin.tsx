@@ -196,6 +196,7 @@ export default function Admin({
     }
   }
 
+
   const updateStatus = async (status: string, pID: number) => {
     try {
       const response = await axios.post('/api/process/update', {
@@ -216,25 +217,8 @@ export default function Admin({
     }
   }
   
-  // /**
-  //  * This function is called after the mentor submits the acceptance
-  //  * BUGGY
-  //  * @param requestID
-  //  */
-  // const handleAccept = async (requestID: number, processID: number) => {
-  //   try {
-  //     const response = await axios.post('/api/request/accept', {
-  //       requestID,
-  //       processID,
-  //     })
-  //     if (response.status === 200) {
-  //       alert('Request Accepted')
-  //       getAdmin()
-  //     }
-  //   } catch (error) {
-  //     console.error('Error accepting request:', error)
-  //   }
-  // }
+ 
+
 
   /**
    * this function is used to retrieve the orders associated with each request in the project, and if a request has an order then the request is processed
