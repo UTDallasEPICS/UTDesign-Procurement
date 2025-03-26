@@ -18,7 +18,6 @@ import {
 } from 'react-bootstrap'
 import styles from '@/styles/RequestCard.module.scss'
 import { Status } from '@prisma/client'
-import { Decimal } from '@prisma/client/runtime'
 
 interface ReimbursementCardProps {
   details: ReimbursementDetails
