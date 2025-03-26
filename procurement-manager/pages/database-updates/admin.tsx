@@ -372,7 +372,7 @@ export default function Admin({
                 <Dropdown.Item
                   onClick={() => setShowSortByProjectModal(true)}
                 >
-                  Search by Project
+                  Get Project Users
                 </Dropdown.Item>
                 <Dropdown.Item
                   onClick={() => setShowAssignProjectModal(true)}
