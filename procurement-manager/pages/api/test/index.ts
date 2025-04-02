@@ -1,7 +1,6 @@
 // THIS FILE IS TO CREATE THE SAMPLE DATA FOR THE DATABASE WHEN IT IS RESET
 // BECAUSE THERE ARE NO ERROR HANDLING, ONLY CALL THIS ENDPOINT ONCE AFTER RESET
 
-import { PrismaClient } from '@prisma/client'
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/binary'
 import { NextApiRequest, NextApiResponse } from 'next'
 import { prisma } from '@/db'
@@ -129,9 +128,9 @@ export default async function handler(
     // Create a sample vendor
     await prisma.vendor.createMany({
       data: [
-        { vendorName: 'Sample Vendor 1' },
-        { vendorName: 'Sample Vendor 2' },
-        { vendorName: 'Sample Vendor 3' },
+        { vendorName: 'Sample Vendor 1', vendorStatus: 'APPROVED'  },
+        { vendorName: 'Sample Vendor 2', vendorStatus: 'PENDING' },
+        { vendorName: 'Sample Vendor 3', vendorStatus: 'DENIED' },
       ],
       skipDuplicates: true,
     })

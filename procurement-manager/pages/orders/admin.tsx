@@ -1,26 +1,34 @@
 /**
  * This is the Admin View for the Orders Page
- * This current implementation does not work
- * Unknown reason but possible API error
  */
 
-import React, { useEffect, useState } from 'react'
-import { Row, Button, Modal, Form } from 'react-bootstrap'
+import { Fragment, useState } from 'react'
+import { Badge, Button, Col, ListGroup, Row, Stack } from 'react-bootstrap'
 import AdminRequestCard from '@/components/AdminRequestCard'
 import ProjectHeader from '@/components/ProjectHeader'
 import AdminReimbursementCard from '@/components/AdminReimbursementCard'
 import { prisma } from '@/db'
 import { RequestDetails } from '@/lib/types'
 import { ReimbursementDetails } from '@/lib/types'
-import { Prisma, Project, Status, User, Order, RequestItem } from '@prisma/client'
+import {
+  Prisma,
+  Project,
+  Status,
+  User,
+  Order,
+  RequestItem,
+} from '@prisma/client'
 import RejectionModal from '@/components/RejectionModal'
 import axios from 'axios'
 import { Session, getServerSession } from 'next-auth'
 import { authOptions } from '../api/auth/[...nextauth]'
-import getVendors from '@/components/AdminRequestCard'
+import { GetServerSidePropsContext, InferGetStaticPropsType } from 'next'
+import { parseAsInteger, parseAsStringLiteral, useQueryStates } from 'nuqs'
+import Link from 'next/link'
+import TimeAgo from 'react-timeago'
+import Accordion from 'react-bootstrap/Accordion'
 
-
-export async function getServerSideProps(context: any) {
+export async function getServerSideProps(context: GetServerSidePropsContext) {
   const session = await getServerSession(context.req, context.res, authOptions)
   const user = session?.user as User
 
@@ -32,7 +40,6 @@ export async function getServerSideProps(context: any) {
   const requestOfMultipleProjects: RequestDetails[][] = []
   const reimbursementsOfMultipleProjects: ReimbursementDetails[][] = []
 
-  
   // Next.js recommends that instead of calling from '/api/request-form/get', just perform the query here
   // to reduce the number of API calls and improve performance because getServerSideProps can do server-side code
   for (const project of projects) {
@@ -54,7 +61,7 @@ export async function getServerSideProps(context: any) {
       where: {
         projectID: project.projectID,
         process: {
-          status: Status.APPROVED
+          status: Status.APPROVED,
         },
       },
       include: {
@@ -79,22 +86,13 @@ export async function getServerSideProps(context: any) {
   }
 }
 
-interface AdminProps {
-  session: Session | null
-  user: User
-  reqs: RequestDetails[][]
-  reims: ReimbursementDetails[][]
-  projs: Project[]
-}
-
 export default function Admin({
   session,
   user,
   reqs,
   reims,
   projs,
-}: AdminProps): JSX.Element {
-
+}: InferGetStaticPropsType<typeof getServerSideProps>): JSX.Element {
   // state for opening the collapsed cards - an array due to multiple projects
   const [isOpen, setIsOpen] = useState<boolean[]>([])
 
@@ -102,23 +100,21 @@ export default function Admin({
   const [showRejectModal, setShowRejectModal] = useState(false)
 
   // state to set the request number for the reject modal to show
-  const [selectedProcessID, setSelectedProcessID] = useState<number | null>(null)
+  const [selectedProcessID, setSelectedProcessID] = useState<number | null>(
+    null,
+  )
 
   // state for the requests inside the different projects associated to the user
-  const [projectRequests, setProjectRequests] = useState<RequestDetails[][]>(reqs)
-  const [projectReimbursements, setProjectReimbursements] = useState<ReimbursementDetails[][]>([])
+  const [projectRequests, setProjectRequests] =
+    useState<RequestDetails[][]>(reqs)
+  const [projectReimbursements, setProjectReimbursements] =
+    useState<ReimbursementDetails[][]>(reims)
 
   // state for the projects associated to the user
   const [projects, setProjects] = useState<Project[]>(projs)
+
   const [projectReqsWithOrders, setProjectReqsWithOrders] =
     useState<RequestDetails[][]>()
-
-  // Opens all the cards by default
-  useEffect(() => {
-    getAdminReimbursements()
-    getAdminRequests()
-    setIsOpen(projects.map(() => true))
-  }, [])
 
   // Client-side data fetching whenever we need to refetch the data and rerender the page
   /**
@@ -143,7 +139,7 @@ export default function Admin({
       email: user.email,
     })
     const [reimbursementsOfMultipleProjects] = await Promise.all([
-      nextResponse.data.reimbursements
+      nextResponse.data.reimbursements,
     ])
     setProjectReimbursements(reimbursementsOfMultipleProjects)
   }
@@ -185,8 +181,8 @@ export default function Admin({
       })
 
       if (response.status === 200) {
-        getAdminReimbursements()
-        getAdminRequests()
+        await getAdminReimbursements()
+        await getAdminRequests()
       }
     } catch (error) {
       if (error instanceof Error) console.log(error.message)
@@ -195,7 +191,6 @@ export default function Admin({
       else console.log(error)
     }
   }
-
 
   const updateStatus = async (status: string, pID: number) => {
     try {
@@ -216,9 +211,6 @@ export default function Admin({
       else console.log(error)
     }
   }
-  
- 
-
 
   /**
    * this function is used to retrieve the orders associated with each request in the project, and if a request has an order then the request is processed
@@ -302,6 +294,13 @@ export default function Admin({
   const [id, setId] = useState('')
   const [vendorName, setVendorName] = useState('')
 
+  // TODO: use json type for this instead?
+  const [open, setOpen] = useQueryStates({
+    type: parseAsStringLiteral(['request', 'reimbursement'] as const),
+    itemId: parseAsInteger,
+    projectId: parseAsInteger,
+  })
+
   //Using axios to recieve the data from the database api call
   //This function particulary calls the project model to get the list of the projects
   const fetchProjects = async () => {
@@ -325,146 +324,189 @@ export default function Admin({
     }
   }
 
-  //This function searches for the projects and vendor names
-  function CustomSearch() {
-    //Call the functions that fetch the data
-    fetchProjects()
-    fetchVendors()
-
-    React.useEffect(() => {
-      const fetchData = async () => {
-        // setProjectSearch(data1);
-        // UT setVendors(data2);
-        // const vendors = await prisma.requestItem.findMany()
-      }
-
-      fetchData()
-
-      //Get the particular values from the models
-      const data = projects.map((project) => ({
-        projName: project.projectTitle,
-        id: project.projectID,
-        vendorName: vendors.filter((requestItem) => requestItem.vendorID),
-        //statusAns: statusVals.filter(process => process.status)
-      }))
-
-      //sets the data from databse to the state
-      setUserData(data)
-      setUserSearchData(data)
-    }, [])
-    //filters the data for each category
-    const handleSearch = () => {
-      const newData = userData
-        .filter((x) => x.projName == (projName == '' ? x.projName : projName))
-        .filter((y) => y.id == (id == '' ? y.id : id))
-      //.filter(z => z.number == (number == '' ? z.number : number))
-      setUserSearchData(newData)
-    }
-
-    //Front end for the search boxes
-    return (
-      <div>
-        <table>
-          <tbody>
-            <tr>
-              <td>
-                <input
-                  className='filter'
-                  type='text'
-                  placeholder='Enter Vendor..'
-                  value={vendorName}
-                  onChange={(e) => setVendorName(e.target.value)}
-                />
-              </td>
-              <td>
-                <input
-                  className='filter'
-                  type='text'
-                  placeholder='Enter Project Number..'
-                  value={id}
-                  onChange={(e) => setId(e.target.value)}
-                />
-              </td>
-
-              <td>
-                <button className='btn-primary' onClick={handleSearch}>
-                  Search
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    )
-  }
   //This is the end of the bug
   return (
     <>
       <Row className='my-4'>
         <h1>Welcome back {user && user.firstName}</h1>
       </Row>
-      <Row className='searchBar'>{/* <CustomSearch /> */}</Row>
-      {/* Creates the ProjectHeader  */}
-      {projects.map((project, projIndex) => {
-        return (
-          <Row key={projIndex}>
-            <ProjectHeader
-              projectName={project.projectTitle}
-              expenses={project.totalExpenses}
-              available={Prisma.Decimal.sub(
-                project.startingBudget,
-                project.totalExpenses,
-              )}
-              budgetTotal={project.startingBudget}
-              onToggleCollapse={() => toggleCards(projIndex)}
-              isOpen={isOpen[projIndex]}
-            />
-            {projectRequests[projIndex]?.length > 0 ? (
-              projectRequests[projIndex].map((request, reqIndex) => {
-                return (
+      <Row>
+        <Col>
+          <Accordion>
+            {projects.map((project, projIndex) => (
+                <Fragment key={projIndex}>
+                  <Accordion.Item eventKey={projIndex.toString()}>
+                    <Accordion.Header>
+                      <ProjectHeader
+                        projectName={project.projectTitle}
+                        expenses={project.totalExpenses}
+                        available={Prisma.Decimal.sub(
+                          project.startingBudget,
+                          project.totalExpenses,
+                        )}
+                        budgetTotal={project.startingBudget}
+                        onToggleCollapse={() => toggleCards(projIndex)}
+                        isOpen={isOpen[projIndex]}
+                      />
+                    </Accordion.Header>
+                    <Accordion.Body>
+                      <ListGroup>
+                        {projectRequests[projIndex].map((request, reqIndex) => {
+                          return (
+                            <Link
+                              href={{
+                                query: {
+                                  itemId: request.requestID,
+                                  projectId: project.projectID,
+                                  type: 'request',
+                                },
+                              }}
+                              key={reqIndex}
+                            >
+                              <ListGroup.Item>
+                                <Stack direction='horizontal' gap={2}>
+                                  <span>Req#{request.requestID}</span>
+                                  <span bg='secondary'>${request.expense}</span>
+
+                                  <span>
+                                    Requested {request.dateSubmitted}, needed{' '}
+                                    <TimeAgo date={request.dateNeeded} />{' '}
+                                  </span>
+                                </Stack>
+                              </ListGroup.Item>
+                            </Link>
+                          )
+                        })}
+                        {projectReimbursements[projIndex]?.map(
+                          (reimbursement, reimIndex) => {
+                            return (
+                              <Link
+                                href={{
+                                  query: {
+                                    itemId: reimbursement.reimbursementID,
+                                    projectId: project.projectID,
+                                    type: 'reimbursement',
+                                  },
+                                }}
+                                key={reimIndex}
+                              >
+                                <ListGroup.Item>
+                                  <Stack direction='horizontal' gap={2}>
+                                    <span>
+                                      Reim#{reimbursement.reimbursementID}
+                                    </span>
+                                    <span bg='secondary'>
+                                      ${reimbursement.expense}
+                                    </span>
+                                    <span>
+                                      Submitted {reimbursement.dateSubmitted}
+                                    </span>
+                                  </Stack>
+                                </ListGroup.Item>
+                              </Link>
+                            )
+                          },
+                        )}
+                      </ListGroup>
+                    </Accordion.Body>
+                  </Accordion.Item>
+                </Fragment>
+              )
+            )}
+          </Accordion>
+        </Col>
+        <Col>
+          {open.type === 'request' &&
+            open.itemId !== null &&
+            (() => {
+              const projectIndex = projects.findIndex(
+                (p) => p.projectID === open.projectId,
+              )
+              if (projectIndex === -1) return null
+              const project = projects[projectIndex]
+              const request = projectRequests[projectIndex].find(
+                (r) => r.requestID === open.itemId,
+              )
+              if (!request) return null
+              return (
+                <>
+                  <Button
+                    variant='primary'
+                    onClick={() =>
+                      setOpen({
+                        type: null,
+                        itemId: null,
+                        projectId: null,
+                      })
+                    }
+                  >
+                    Close
+                  </Button>
+
                   <AdminRequestCard
-                    key={reqIndex}
                     user={user}
                     project={project}
                     details={request}
                     onReject={() => handleReject(request.process.processID)}
-                    setStatusOrdered={() => updateStatus(Status.ORDERED, request.process.processID)}
-                    setStatusReceived={() => updateStatus(Status.RECEIVED, request.process.processID)}
+                    setStatusOrdered={() =>
+                      updateStatus(Status.ORDERED, request.process.processID)
+                    }
+                    setStatusReceived={() =>
+                      updateStatus(Status.RECEIVED, request.process.processID)
+                    }
                     onSave={() => getAdminRequests()}
-                    collapsed={isOpen[projIndex]}
+                    collapsed={true}
                   />
-                )
-              })
-            ) : (
-              <p className='my-4'>There are no procurement requests in this project.</p>
-            )}
-            
-            {projectReimbursements[projIndex]?.length > 0 ? (
-              projectReimbursements[projIndex].map((reimbursement, reimIndex) => {
-                return (
+                </>
+              )
+            })()}
+          {open.type === 'reimbursement' &&
+            open.itemId !== null &&
+            (() => {
+              const projectIndex = projects.findIndex(
+                (p) => p.projectID === open.projectId,
+              )
+              if (projectIndex === -1) return null
+              const project = projects[projectIndex]
+              const reimbursement = projectReimbursements[projectIndex].find(
+                (r) => r.reimbursementID === open.itemId,
+              )
+              if (!reimbursement) return null
+              return (
+                <>
+                  <Button
+                    variant='primary'
+                    onClick={() =>
+                      setOpen({
+                        type: null,
+                        itemId: null,
+                        projectId: null,
+                      })
+                    }
+                  >
+                    Close
+                  </Button>
+
                   <AdminReimbursementCard
-                    key={reimIndex}
                     user={user}
                     project={project}
                     details={reimbursement}
-                    onReject={() => handleReject(reimbursement.process.processID)}
-                    onSave={() => getAdminReimbursements()} 
-                    collapsed={isOpen[projIndex]}
+                    onReject={() =>
+                      handleReject(reimbursement.process.processID)
+                    }
+                    onSave={() => getAdminReimbursements()}
+                    collapsed={true}
                   />
-                )
-              })
-            ) : (
-              <p className='my-4'>There are no reimbursement requests in this project.</p>
-            )}
-          </Row>
-        )
-      })}
-      <RejectionModal
-        show={showRejectModal}
-        onHide={() => setShowRejectModal(false)}
-        onSubmit={handleSubmitRejection}
-      />
+                </>
+              )
+            })()}
+        </Col>
+        <RejectionModal
+          show={showRejectModal}
+          onHide={() => setShowRejectModal(false)}
+          onSubmit={handleSubmitRejection}
+        />
+      </Row>
     </>
   )
 }
-

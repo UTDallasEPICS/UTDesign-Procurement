@@ -18,7 +18,7 @@ import styles from '@/styles/RequestCard.module.scss'
 import { Prisma, User, Project, Vendor, Order, ReimbursementItem } from '@prisma/client'
 import axios from 'axios'
 
-interface AdminRequestCardProps {
+interface AdminReimbursementCardProps {
   user: User
   project: Project
   details: ReimbursementDetails
@@ -27,7 +27,7 @@ interface AdminRequestCardProps {
   collapsed: boolean
 }
 
-const AdminReimbursementCard: React.FC<AdminRequestCardProps> = ({
+const AdminReimbursementCard: React.FC<AdminReimbursementCardProps> = ({
   user,
   project,
   details,
