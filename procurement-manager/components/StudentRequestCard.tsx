@@ -183,6 +183,13 @@ const StudentRequestCard: React.FC<RequestCardProps> = ({
           <Col xs={6} lg={3}>
             <h6 className={styles.headingLabel}>Status</h6>
             <p>{details.process.status}</p>
+            {(() => {
+              const { status, adminProcessedComments, mentorProcessedComments } = details.process
+              if (status === Status.APPROVED && (!adminProcessedComments || adminProcessedComments.trim() === '')) {
+                return <p>Pending Admin Approval</p>
+              }
+              return <p>{status}</p>
+            })()}
           </Col>
         </Row>
 
