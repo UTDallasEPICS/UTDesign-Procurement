@@ -1,7 +1,3 @@
-/**
- * This component is a card that displays the details of a request made by a student
- */
-
 import { RequestDetails } from '@/lib/types'
 import axios from 'axios'
 import { User } from 'next-auth'
@@ -24,27 +20,14 @@ interface RequestCardProps {
   collapsed: boolean
 }
 
-const StudentRequestCard: React.FC<RequestCardProps> = ({
-  details,
-  collapsed,
-}) => {
-  // state for the student that requested the order
-  const [studentThatRequested, setStudentThatRequested] = useState<User>()
-  // state for the mentor that approved the order
-  const [mentorThatApproved, setMentorThatApproved] = useState<User>()
-  // state for the collapse for request details
-  const [collapse, setCollapse] = useState<boolean | undefined>(false)
-  // state for editing the request details
-  // TODO:: integrate editing with request-form/update API similar to AdminRequestCard and reset status to under review for resubmit
+const StudentRequestCard: React.FC<RequestCardProps> = ({ details, collapsed }) => {
+  const [studentThatRequested, setStudentThatRequested] = useState<User | null>(null)
+  const [mentorThatApproved, setMentorThatApproved] = useState<User | null>(null)
+  const [collapse, setCollapse] = useState<boolean>(collapsed)
   const [editable, setEditable] = useState<boolean>(false)
   const [resubmit, setResubmit] = useState<boolean>(false)
-  // state that contains the values of the input fields in the request card
-  const [inputValues, setInputValues] = useState(
-    // initialized by the details prop
-    details.RequestItem.map((item) => {
-      return { ...item }
-    })
-  )
+  const [vendorNames, setVendorNames] = useState<{ [key: string]: string }>({})
+  const [inputValues, setInputValues] = useState(details.RequestItem.map(item => ({ ...item })))
 
   useEffect(() => {
     setCollapse(collapsed)
@@ -53,140 +36,80 @@ const StudentRequestCard: React.FC<RequestCardProps> = ({
   useEffect(() => {
     getStudentThatRequested()
     getMentorThatApproved()
+    fetchVendorNames()
   }, [])
 
-  /**
-   * This function provides the data received from our API of the student that requested the order
-   * @returns User object of the student that requested the order
-   */
   async function getStudentThatRequested() {
     try {
-      if (!details.process.mentorID) return null
       const user = await axios.get(`/api/user/${details.studentID}`)
       if (user.status === 200) setStudentThatRequested(user.data)
-      return user
     } catch (error) {
-      if (axios.isAxiosError(error)) console.log(error.status, error.message)
-      else if (error instanceof Error) console.log(error.message)
-      else console.log(error)
+      console.error('Error fetching student:', error)
     }
   }
 
-  /**
-   * This function provides the data received from our API of the mentor that approved the order
-   * @returns User object of the mentor that approved the order
-   */
   async function getMentorThatApproved() {
     try {
-      if (!details.process.mentorID) return null
+      if (!details.process.mentorID) return
       const user = await axios.get(`/api/user/${details.process.mentorID}`)
       if (user.status === 200) setMentorThatApproved(user.data)
-      return user
     } catch (error) {
-      if (axios.isAxiosError(error) || error instanceof Error)
-        console.log(error.message)
-      else console.log(error)
+      console.error('Error fetching mentor:', error)
     }
   }
 
-  /**
-   * This function handles changes to inputs whenever user is editing the input fields in the request card
-   * @param e - the onChange event passed by the input field
-   * @param index - the index of the request item the input field is in within the request items array
-   */
-  function handleInputChange(
-    e: React.ChangeEvent<HTMLInputElement>,
-    index: number
-  ) {
-    const { name, value } = e.target
-
-    setInputValues((prev) => {
-      return prev.map((item, i) => {
-        if (i !== index) return item
-        return {
-          ...item,
-          [name]: value,
-        }
-      })
-    })
+  async function fetchVendorNames() {
+    try {
+      const vendorIds = [...new Set(details.RequestItem.map(item => item.vendorID))]
+      const vendorData = await axios.get(`/api/vendor/get`)
+      console.log(vendorData, "wertyujhtgfb")
+      const vendorMap = Object.fromEntries(vendorData.data.map(v => [v.vendorID, v.vendorName]))
+      setVendorNames(vendorMap)
+    } catch (error) {
+      console.error('Error fetching vendor names:', error)
+    }
   }
 
-  // TODO :: If the card has a status of REJECTED, then the user can edit the request details and call this function
+  function handleInputChange(e: React.ChangeEvent<HTMLInputElement>, index: number) {
+    const { name, value } = e.target
+    setInputValues(prev => prev.map((item, i) => (i !== index ? item : { ...item, [name]: value })))
+  }
+
   function handleSave() {
     setEditable(false)
   }
 
-  // TODO :: After saving??? The student can click on Resubmit and call this function with onSubmit
-  function handleResubmit(e: React.ChangeEvent<HTMLInputElement>) {
+  function handleResubmit(e: React.FormEvent) {
+    e.preventDefault()
     setResubmit(false)
   }
 
   return (
-    <Card
-      className='request-card mb-3'
-      style={{ backgroundColor: 'rgb(240, 240, 240)' }}
-    >
-      <Row className='mb-4'></Row>
+    <Card className='request-card mb-3' style={{ backgroundColor: 'rgb(240, 240, 240)' }}>
       <Card.Body>
-
-        {/* UNCOLLAPSED ROW */}
         <Row className='smaller-row'>
-          {/* REQUEST NUMBER */}
           <Col xs={12} lg={3}>
             <Card.Title>
-              <h4 className={styles.headingLabel}>
-                Request #{details.requestID}
-              </h4>
+              <h4 className={styles.headingLabel}>Request #{details.requestID}</h4>
             </Card.Title>
           </Col>
-
-          {/* DATE REQUESTED */}
           <Col xs={6} lg={2}>
             <h6 className={styles.headingLabel}>Date Requested</h6>
-            <p>
-              {new Date(details.dateSubmitted).toLocaleDateString(undefined, {
-                weekday: 'short',
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric',
-              })}
-            </p>
+            <p>{new Date(details.dateSubmitted).toLocaleDateString()}</p>
           </Col>
-
-          {/* DATE NEEDED */}
           <Col xs={6} lg={2}>
             <h6 className={styles.headingLabel}>Date Needed</h6>
-            <p>
-              {new Date(details.dateNeeded).toLocaleDateString(undefined, {
-                weekday: 'short',
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric',
-              })}
-            </p>
+            <p>{new Date(details.dateNeeded).toLocaleDateString()}</p>
           </Col>
-
-          {/* ORDER SUBTOTAL */}
           <Col xs={6} lg={2}>
             <h6 className={styles.headingLabel}>Order Subtotal</h6>
-            <p>
-              $
-              {details.RequestItem.reduce(
-                (total, item) =>
-                  total + item.quantity * (item.unitPrice as any),
-                0
-              ).toFixed(2)}
-            </p>
+            <p>${details.RequestItem.reduce((total, item) => total + item.quantity * Number(item.unitPrice), 0).toFixed(2)}</p>
           </Col>
-
-          {/* STATUS */}
           <Col xs={6} lg={3}>
             <h6 className={styles.headingLabel}>Status</h6>
             <p>{details.process.status}</p>
           </Col>
         </Row>
-
-        {/* COLLAPSED ROW */}
         <Collapse in={collapse}>
           <div>
             <Row className='my-4 smaller-row'>
