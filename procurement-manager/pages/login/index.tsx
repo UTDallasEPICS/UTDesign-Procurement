@@ -28,26 +28,11 @@ export default function Login() {
         const response = await validateUser(loginInput.toLowerCase() + '@utdallas.edu') // first make sure response is successful then get role ID
         const roleID: number = response.data.userRole
         
-        // Determine the correct route based on role
-        let callbackUrl = '/orders/'
-        switch (roleID) {
-          case 1: // Assuming 1 is student
-            callbackUrl += 'student'
-            break
-          case 2: // Assuming 2 is mentor
-            callbackUrl += 'mentor'
-            break
-          case 3: // Assuming 3 is admin
-            callbackUrl += 'admin'
-            break
-          default:
-            throw new Error('Invalid role ID')
-        }
-
+        
         const result = await signIn('credentials', {
           roleID: roleID,
           redirect: true,
-          callbackUrl: callbackUrl,
+          callbackUrl: '/orders',
         })
       } catch (error) {
         console.warn('Login error:', error)
