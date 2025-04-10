@@ -255,6 +255,7 @@ const StudentRequestCard: React.FC<RequestCardProps> = ({
                         <th>Total</th>
                         <th>Order #</th>
                         <th>Tracking Info</th>
+                        <th>Item Status</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -339,6 +340,14 @@ const StudentRequestCard: React.FC<RequestCardProps> = ({
                             </td>
                             <td>
                               <Form.Control />
+                            </td>
+                            <td>
+                              <Form.Control 
+                                value={(
+                                  //details.process.status
+                                  item.status
+                                )}
+                              />
                             </td>
                           </tr>
                         )
