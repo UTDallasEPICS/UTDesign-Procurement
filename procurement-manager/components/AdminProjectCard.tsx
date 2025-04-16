@@ -215,7 +215,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
    * @param ID the request ID of the request
    * @returns boolean value depending on the request associated with that ID is processed or not
    */
-  function processed (ID: number) 
+  function processed(ID: number) 
   {
     for (const req of processedReqs) {
       if (req.requestID === ID) {
