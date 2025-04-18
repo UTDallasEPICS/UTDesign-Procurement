@@ -31,6 +31,17 @@ import Accordion from 'react-bootstrap/Accordion'
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const session = await getServerSession(context.req, context.res, authOptions)
   const user = session?.user as User
+ // Only allow access if the user is a student
+ 
+ if (user.roleID !== 1) {
+  return {
+    redirect: {
+      destination: '/unauthorized',
+      permanent: false,
+    },
+  }
+}
+
 
   // projects and requests are loaded from the server-side first (I wanted it try it out)
   // These will be passed to a state so if we need to fetch again, we can just update the state

@@ -17,6 +17,16 @@ import { authOptions } from '../api/auth/[...nextauth]'
 export async function getServerSideProps(context: any) {
   const session = await getServerSession(context.req, context.res, authOptions)
   const user = session?.user as User
+
+  if (user.roleID !== 2) {
+    return {
+      redirect: {
+        destination: '/unauthorized',
+        permanent: false,
+      },
+    }
+  }
+
   return {
     props: {
       session: session,

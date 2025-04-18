@@ -12,17 +12,42 @@ import { ReimbursementDetails, RequestDetails } from '@/lib/types'
 import axios from 'axios'
 import { Session, getServerSession } from 'next-auth'
 import { authOptions } from '../api/auth/[...nextauth]'
+import { GetServerSideProps } from 'next'
 
-export async function getServerSideProps(context: any) {
+export const getServerSideProps: GetServerSideProps = async (context) => {
   const session = await getServerSession(context.req, context.res, authOptions)
-  const user = session?.user as User
+
+  if (!session || !session.user) {
+    return {
+      redirect: {
+        destination: '/login',
+        permanent: false,
+      },
+    }
+  }
+
+  const user = session.user as User
+
+  // Only allow access if the user is a student
+  if (user.roleID !== 3) {
+    return {
+      redirect: {
+        destination: '/unauthorized',
+        permanent: false,
+      },
+    }
+  }
+
   return {
     props: {
-      session: session,
-      user: user,
+      session,
+      user,
     },
   }
 }
+
+
+
 
 interface StudentProps {
   session: Session | null
