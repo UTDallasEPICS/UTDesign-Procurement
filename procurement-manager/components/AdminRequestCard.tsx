@@ -15,23 +15,33 @@ import {
   Collapse,
 } from 'react-bootstrap'
 import styles from '@/styles/RequestCard.module.scss'
-import { Prisma, User, Project, Vendor, Order, RequestItem } from '@prisma/client'
+import {
+  Prisma,
+  User,
+  Project,
+  Vendor,
+  Order,
+  RequestItem,
+  Status,
+} from '@prisma/client'
 import axios from 'axios'
-
 interface AdminRequestCardProps {
   user: User
   project: Project
   details: RequestDetails
   onReject: () => void
+  setStatusOrdered: () => void
+  setStatusReceived: () => void
   onSave: () => void
   collapsed: boolean
 }
-
 const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
   user,
   project,
   details,
   onReject,
+  setStatusOrdered,
+  setStatusReceived,
   onSave,
   collapsed,
 }) => {
@@ -45,31 +55,59 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
   const [editable, setEditable] = useState<boolean>(false)
   const [vendors, setVendors] = useState<Vendor[]>([])
   // using for now since haven't removed processed (ordered) requests from orders page yet so once fixed no need to use orders in a request
-  const [reqOrders, setReqOrders] = useState<Order[]>([]) 
- 
+  const [reqOrders, setReqOrders] = useState<Order[]>([])
+
+  // state for tracking the unique order #s for orders that have been deleted
+  const [deletedOrderNumbers, setDeletedOrderNumbers] = useState<number[]>([])
+
   // state that contains the values of the fields for each order
   // TODO:: implement add/delete orders feature similar to add/delete items feature for request-form/index.ts
-  const [orders, setOrders] = useState([
+  const [orders, setOrders] = useState<
     {
-      orderNumber: '',
-      trackingInfo: '',
-      orderDetails: '',
-      shippingCost: new Prisma.Decimal(0),
-    }
-  ])
-  
+      // orderID: number // TODO, as orderID is not created yet
+      orderNumber: string
+      trackingInfo: string
+      orderDetails: string
+      shippingCost: Prisma.Decimal
+      dateOrdered: string
+    }[]
+  >([])
+  // state to track the new orders for the add/delete button
+  const [newOrders, setNewOrders] = useState<
+    {
+      orderNumber: string
+      trackingInfo: string
+      orderDetails: string
+      shippingCost: Prisma.Decimal
+      dateOrdered: string
+    }[]
+  >([])
+  // state to track the new items for the add/delete button
+  const [newItems, setNewItems] = useState<
+    {
+      itemID: number
+      description: string
+      vendorName: string
+      url: string
+      partNumber: string
+      quantity: number
+      unitPrice: Prisma.Decimal
+    }[]
+  >([])
   // state that contains the values of the input fields for request items in the request card
   // TODO:: implement add/delete items feature similar to add/delete items feature for request-form/index.ts
   const [items, setItems] = useState(
     // initialized by the details prop
     details.RequestItem.map((item, itemIndex) => {
-      return { 
-        vendorName: "", 
-        ...item, 
+      return {
+        vendorName: '',
+        ...item,
       }
-    })
+    }),
   )
-  const [itemIDs, setItemIDs] = useState<number[]>([]) // track which of the items were updated
+
+  // state for tracking the unique item IDs for items that were updated
+  const [itemIDs, setItemIDs] = useState<number[]>([])
 
   /**
    * this function calculates the total cost for all items in a request
@@ -78,13 +116,14 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
   const calculateTotalCost = (): Prisma.Decimal => {
     let totalCost = 0
     items.forEach((item) => {
-      totalCost += (Number(item.unitPrice) * item.quantity)
+      totalCost += Number(item.unitPrice) * item.quantity
     })
     orders.forEach((order) => {
-      totalCost += Number(order.shippingCost)
+      totalCost += Number(order.shippingCost) // added cost of orders as well
     })
-    return new Prisma.Decimal(totalCost);
+    return new Prisma.Decimal(totalCost)
   }
+
   const [orderTotal, setOrderTotal] = useState<Prisma.Decimal>(calculateTotalCost())
 
   // Show cards by default and rerenders everytime collapsed changes
@@ -104,34 +143,32 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
   useEffect(() => {
     setItems(
       details.RequestItem.map((item, itemIndex) => {
-        return { 
-          vendorName: (vendors.length > itemIndex ? vendors[itemIndex].vendorName : ""), 
-          ...item, 
+        return {
+          vendorName:
+            vendors.length > itemIndex ? vendors[itemIndex].vendorName : '',
+          ...item,
         }
-      })
+      }),
     )
   }, [vendors])
 
   useEffect(() => {
-    setOrders(reqOrders.length !== 0 ? (
-        reqOrders.map((reqOrder, reqOrderIndex) => {
-          return {
-            orderNumber: reqOrder.orderNumber,
-            trackingInfo: reqOrder.trackingInfo,
-            orderDetails: reqOrder.orderDetails,
-            shippingCost: reqOrder.shippingCost,
-          }
-        })
-      ) : (
-        [
-          {
-            orderNumber: '',
-            trackingInfo: '',
-            orderDetails: '',
-            shippingCost: new Prisma.Decimal(0),
-          }
-        ]
-      )
+    setOrders(
+      reqOrders.length !== 0
+        ? reqOrders.map((reqOrder, reqOrderIndex) => {
+            return {
+              // orderID: reqOrder.orderID,
+              orderNumber: reqOrder.orderNumber,
+              trackingInfo: reqOrder.trackingInfo,
+              orderDetails: reqOrder.orderDetails,
+              shippingCost: reqOrder.shippingCost,
+              dateOrdered:
+                reqOrder.dateOrdered instanceof Date
+                  ? reqOrder.dateOrdered.toISOString()
+                  : reqOrder.dateOrdered,
+            }
+          })
+        : [],
     )
     setOrderTotal(calculateTotalCost())
   }, [reqOrders])
@@ -142,7 +179,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
    */
   async function getStudentThatRequested() {
     try {
-      if (!details.Process[0].mentorID) return null
+      if (!details.process.mentorID) return null
       const user = await axios.get(`/api/user/${details.studentID}`)
       if (user.status === 200) setStudentThatRequested(user.data)
       return user
@@ -159,8 +196,8 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
    */
   async function getMentorThatApproved() {
     try {
-      if (!details.Process[0].mentorID) return null
-      const user = await axios.get(`/api/user/${details.Process[0].mentorID}`)
+      if (!details.process.mentorID) return null
+      const user = await axios.get(`/api/user/${details.process.mentorID}`)
       if (user.status === 200) setMentorThatApproved(user.data)
       return user
     } catch (error) {
@@ -171,54 +208,41 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
   }
 
   /**
-   * this function is used to retrieve the vendors needed for request 
+   * this function is used to retrieve the vendors needed for request
    */
   async function getVendors() {
-    try 
-    {
+    try {
       const response = await axios.get('/api/vendor/get/requestVendors/', {
         params: {
-          requestID: details.requestID
-        }
+          requestID: details.requestID,
+        },
       })
-      if (response.status === 200)
-      {
+      if (response.status === 200) {
         const vendorArr: Vendor[] = response.data.vendors
         setVendors(vendorArr)
       }
-    } 
-    catch (error) {
+    } catch (error) {
       if (axios.isAxiosError(error) || error instanceof Error)
         console.log(error.message)
       else console.log(error)
-    } 
+    }
   }
 
   /**
    * this function is used to retrieve the orders associated with request
    */
   async function getOrders() {
-    try 
-    {
+    try {
       const response = await axios.get('/api/orders/get/requestOrders/', {
-        params: {
-          requestID: details.requestID
-        }
+        params: { requestID: details.requestID },
       })
-      if (response.status === 200)
-      {
-        const orderArr: Order[] = response.data.orders
-        
-        if (orderArr.length !== 0) {
-          setReqOrders(orderArr)
-        }
+      if (response.status === 200) {
+        console.log('Orders fetched:', response.data.orders)
+        setReqOrders(response.data.orders) // Directly setting without adding to previous state
       }
-    } 
-    catch (error) {
-      if (axios.isAxiosError(error) || error instanceof Error)
-        console.log(error.message)
-      else console.log(error)
-    } 
+    } catch (error) {
+      console.error('Failed to fetch orders:', error)
+    }
   }
 
   /**
@@ -228,31 +252,59 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
    */
   function handleItemChange(
     e: React.ChangeEvent<HTMLInputElement>,
-    index: number
+    index: number,
   ) {
     const { name, value } = e.target
-
-    setItems((prev) => {
-      return prev.map((item, i) => {
-        if (i !== index) return item
-        updateItemIDs(item.itemID) // update if item is at updated index
-        return {
-          ...item,
-          [name]: value,
-        }
+    if (index < items.length) {
+      setItems((prev) => {
+        return prev.map((item, i) => {
+          if (i !== index) return item
+          updateItemIDs(item.itemID)
+          return {
+            ...item,
+            [name]: value,
+          }
+        })
       })
-    })
+    } else {
+      setNewItems((prev) => {
+        return prev.map((item, i) => {
+          if (i !== index - items.length) return item
+          return {
+            ...item,
+            [name]: value,
+          }
+        })
+      })
+    }
   }
 
-   /**
-   * this function adds a item ID for any updated item data to the list of updated item IDs
-   * @param value item ID for item data that admin edited
-   */
-   const updateItemIDs = (value: number) => {
-    const storeItemIDs = [...itemIDs]
-    storeItemIDs.push(value) // add new value to array
-    setItemIDs(storeItemIDs) // Set the state with the updated array
-  };
+  //Handles adding new items to the newItems state
+  const handleAddItem = () => {
+    setNewItems([
+      ...newItems,
+      {
+        itemID: -1,
+        description: '',
+        vendorName: '',
+        url: '',
+        partNumber: '',
+        quantity: 0,
+        unitPrice: new Prisma.Decimal(0),
+      },
+    ])
+  }
+
+  //Handles deleting items
+  const handleDeleteItem = (index: number) => {
+    if (index < items.length) {
+      setItems((prevItems) => prevItems.filter((_, i) => i !== index))
+    } else {
+      setNewItems((prevNewItems) =>
+        prevNewItems.filter((_, i) => i !== index - items.length),
+      )
+    }
+  }
 
   /**
    * This function handles changes to inputs whenever user is editing the input fields in the request card for orders
@@ -261,25 +313,72 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
    */
   function handleOrderChange(
     e: React.ChangeEvent<HTMLInputElement>,
-    index: number
+    index: number,
   ) {
     const { name, value } = e.target
-
-    setOrders((prev) => {
-      return prev.map((order, i) => {
-        if (i !== index) return order
-        return {
-          ...order,
-          [name]: value,
-        }
-      })
-    })
+    const updatedValue =
+      name === 'dateOrdered' ? new Date(value).toISOString() : value
+    // Update the local state with the new order details
+    setOrders((prevOrders) =>
+      prevOrders.map((order, i) =>
+        i === index ? { ...order, [name]: updatedValue } : order,
+      ),
+    )
   }
 
+  //Handles deleting orders
+  const handleDeleteOrder = async (index: number, deletedItem: number) => {
+    if (index < orders.length) {
+      setOrders((prevOrders) => prevOrders.filter((_, i) => i !== index))
+    } else {
+      setNewOrders((prevNewOrders) =>
+        prevNewOrders.filter((_, i) => i !== index - orders.length),
+      )
+    }
+    try {
+      const response = await axios.delete(`/api/orders/delete`, {
+        data: { orderNumber: deletedItem },
+      })
+      if (response.status === 200) {
+        console.log('Order deleted:', response.data)
+        // Update state or perform any necessary actions after successful deletion
+      }
+    } catch (error) {
+      console.error('Failed to delete order:', error)
+    }
+    setDeletedOrderNumbers((prevDeletedOrderNumbers) => [
+      ...prevDeletedOrderNumbers,
+      deletedItem,
+    ])
+  }
+
+  //Handles adding new items to the newItems state
+  const handleAddOrders = () => {
+    setOrders([
+      ...orders,
+      {
+        orderNumber: '',
+        trackingInfo: '',
+        orderDetails: '',
+        shippingCost: new Prisma.Decimal(0),
+        dateOrdered: '',
+      },
+    ])
+  }
+
+  /**
+   * this function adds a item ID for any updated item data to the list of updated item IDs
+   * @param value item ID for item data that admin edited
+   */
+  const updateItemIDs = (value: number) => {
+    const storeItemIDs = [...itemIDs]
+    storeItemIDs.push(value) // add new value to array
+    setItemIDs(storeItemIDs) // Set the state with the updated array
+  }
+  
   // TODO:: add form validation to make sure input values follow requirements (no characters for numeric values, etc.)
   // use this as reference: https://react-bootstrap.netlify.app/docs/forms/validation/
   // TODO:: add editable field for otherExpenses for a request
-
   /**
    * This function handles saving the changes made to the request card
    */
@@ -288,38 +387,81 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
     try {
       const newDetails = {
         ...details, // copy the details object
-        RequestItem: items, // replace the RequestItem array with the new inputs in each request item
+        RequestItem: newItems, // replace the RequestItem array with the new inputs in each request item
       }
       const newOrders = orders
+      const oldOrderDetails = await axios.get(
+        '/api/orders/get/requestOrders/',
+        {
+          params: { requestID: details.requestID },
+        },
+      )
+      if (oldOrderDetails.status === 200) {
+        const oldOrders = oldOrderDetails.data.orders
+        // Get the orderNumbers of old orders
+        const oldOrderNumbers = new Set(
+          oldOrders.map((order: any) => order.orderNumber),
+        )
+        //check the order is exist to update
+        const orderChanged =
+          oldOrders.length === newOrders.length &&
+          JSON.stringify(newOrders) !== JSON.stringify(oldOrders)
 
-      for (let i = 0; i < newOrders.length; i++) 
-      {
-        const response = await axios.post('/api/orders', {
-          // for now, using as if admin updates info on the website after ordering that day
-          // TODO:: allow admin to set date ordered similar to request-form/index
-          dateOrdered: new Date(), 
-          orderNumber: newOrders[i].orderNumber,
-          orderDetails: newOrders[i].orderDetails,
-          trackingInfo: newOrders[i].trackingInfo,
-          shippingCost: newOrders[i].shippingCost,
-          requestID: details.requestID,
-          netID: user.netID,
-        })
-        if (response.status === 201) {
-          console.log(response.data) 
+        if (orderChanged) {
+          for (let i = 0; i < newOrders.length; i++) {
+            try {
+              const response = await axios.put('/api/orders/update', {
+                dateOrdered: new Date(newOrders[i].dateOrdered),
+                orderNumber: newOrders[i].orderNumber,
+                orderDetails: newOrders[i].orderDetails,
+                trackingInfo: newOrders[i].trackingInfo,
+                shippingCost: newOrders[i].shippingCost,
+                requestID: details.requestID,
+              })
+              if (response.status === 201) {
+                console.log('Order updated:', response.data)
+              }
+            } catch (error) {
+              console.error('Failed to update order:', error)
+            }
+          }
         }
-      }
-      let updatedItemArr = []
-
-      for (let i = 0; i < newDetails.RequestItem.length; i++) {
-        for (const id of itemIDs) {
-          if (newDetails.RequestItem[i].itemID === id) {
-            updatedItemArr.push(newDetails.RequestItem[i])
-            console.log("updated item id: ", newDetails.RequestItem[i].itemID)
+        let newOrdersToInsert: any[] = []
+        // Filter newOrders to get only the orders that are not present in oldOrders
+        for (const order of newOrders) {
+          // Check if the order number is not included in oldOrderNumbers
+          if (!oldOrderNumbers.has(order.orderNumber)) {
+            newOrdersToInsert.push(order)
+          }
+        }
+        // Insert new orders to the API
+        for (let i = 0; i < newOrdersToInsert.length; i++) {
+          try {
+            const response = await axios.post('/api/orders', {
+              dateOrdered: new Date(newOrdersToInsert[i].dateOrdered),
+              orderNumber: newOrdersToInsert[i].orderNumber,
+              orderDetails: newOrdersToInsert[i].orderDetails,
+              trackingInfo: newOrdersToInsert[i].trackingInfo,
+              shippingCost: newOrdersToInsert[i].shippingCost,
+              requestID: details.requestID,
+              email: user.email,
+            })
+            if (response.status === 201) {
+              console.log('New order inserted:', response.data)
+            }
+          } catch (error) {
+            console.error('Failed to insert order:', error)
           }
         }
       }
-
+      let updatedItemArr = []
+      for (let i = 0; i < newDetails.RequestItem.length; i++) {
+        // for (const id of itemIDs) {
+        // if (newDetails.RequestItem[i].itemID === id) {
+        updatedItemArr.push(newDetails.RequestItem[i])
+        // }
+        // }
+      }
       // only sending updated items and the edited data types to API
       const itemsToSend = updatedItemArr.map((item) => {
         return {
@@ -329,7 +471,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
           partNumber: item.partNumber,
           quantity: item.quantity,
           unitPrice: item.unitPrice,
-          vendorName: item.vendorName
+          vendorName: item.vendorName,
         }
       })
       const response = await axios.post('/api/request-form/update', {
@@ -338,19 +480,23 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
         items: itemsToSend,
         totalExpenses: calculateTotalCost(),
       })
+      const response2 = await axios.get('/api/items')
+      if (response2) {
+        console.log('Hello Data', response2.data)
+      }
       if (response.status === 200) {
-        console.log(response.data)
+        console.log('Hello Data', response.data)
       }
       setOrderTotal(calculateTotalCost())
       onSave() // used to update project data after edits
       setItemIDs([]) // reset list to none edited once done
     } catch (error) {
       if (axios.isAxiosError(error) || error instanceof Error)
-        console.error(error.message)
+        console.error('Hello', error.message)
       else console.log(error)
     }
   }
-
+  
   return (
     <Row className='mb-4'>
       <Col>
@@ -366,7 +512,6 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
                   </h4>
                 </Card.Title>
               </Col>
-
               {/* DATE REQUESTED */}
               <Col xs={6} lg={2}>
                 <h6 className={styles.headingLabel}>Date Requested</h6>
@@ -378,11 +523,10 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
                       year: 'numeric',
                       month: 'short',
                       day: 'numeric',
-                    }
+                    },
                   )}
                 </p>
               </Col>
-
               {/* DATE NEEDED */}
               <Col xs={6} lg={2}>
                 <h6 className={styles.headingLabel}>Date Needed</h6>
@@ -395,23 +539,17 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
                   })}
                 </p>
               </Col>
-
               {/* ORDER SUBTOTAL */}
               <Col xs={6} lg={2}>
                 <h6 className={styles.headingLabel}>Order Subtotal</h6>
-                <p>
-                  $
-                  {orderTotal.toFixed(4)}
-                </p>
+                <p>${orderTotal.toFixed(2)}</p>
               </Col>
-
               {/* STATUS */}
               <Col xs={6} lg={3}>
                 <h6 className={styles.headingLabel}>Status</h6>
-                <p>{details.Process[0].status}</p>
+                <p>{details.process.status}</p>
               </Col>
             </Row>
-
             {/* COLLAPSED ROW */}
             <Collapse in={collapse}>
               <div>
@@ -427,27 +565,36 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
                     <h6 className={styles.headingLabel}>Sponsor:</h6>
                     <p>{details.project.sponsorCompany}</p>
                   </Col>
-
                   {/* REQUESTED BY/APPROVED BY */}
                   <Col xs={12} lg={4}>
                     <h6 className={styles.headingLabel}>Requested by:</h6>
                     <p>{studentThatRequested?.email}</p>
-
                     <h6 className={styles.headingLabel}>Approved by:</h6>
                     <p>{mentorThatApproved?.email}</p>
                   </Col>
-
                   {/* REJECT/EDIT BUTTONS */}
                   <Col xs={12} lg={5}>
-                    <Button
+                    {/* TODO Admins can delete instead of rejecting, shouldn't need to approve */}
+                    {/* {details.process.status == Status.UNDER_REVIEW && (<Button
                       className={`${styles.cardBtn} ${styles.rejectBtn}`}
-                      variant='danger'
+                      variant='success'
                       style={{ minWidth: '150px', marginRight: '20px' }}
-                      onClick={onReject}
+                      onClick={onAccept}
                     >
-                      Reject
-                    </Button>{' '}
-                    {!editable && (
+                      Accept
+                    </Button>)} */}
+
+                    {details.process.status == Status.APPROVED && (
+                      <Button
+                        className={`${styles.cardBtn} ${styles.rejectBtn}`}
+                        variant='danger'
+                        onClick={onReject}
+                      >
+                        Reject
+                      </Button>
+                    )}
+
+                    {!editable && details.process.status == Status.APPROVED && (
                       <Button
                         className={`${styles.editBtn} ${styles.cardBtn}`}
                         variant='warning'
@@ -456,9 +603,30 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
                         Edit
                       </Button>
                     )}
+
+                    {details.process.status == Status.APPROVED && (
+                      <Button
+                      className={`${styles.cardBtn} ${styles.rejectBtn}`}
+                      variant='success'
+                      onClick={setStatusOrdered}
+                      >
+                        Ordered
+                      </Button>
+                    )}
+
+                    {details.process.status == Status.ORDERED && (
+                      <Button
+                      className={`${styles.cardBtn} ${styles.rejectBtn}`}
+                      variant='success'
+                      onClick={setStatusReceived}
+                      >
+                        Received
+                      </Button>
+                    )}
+                    
+
                   </Col>
                 </Row>
-
                 {/* REQUEST ITEMS */}
                 <Row className='my-2'>
                   <Form className={styles.requestDetails}>
@@ -475,6 +643,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
                             <th>Unit Price</th>
                             <th>Total</th>
                             <th>Order #</th>
+                            <th> </th>
                           </tr>
                         </thead>
                         <tbody>
@@ -489,7 +658,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
                                     onChange={(e) =>
                                       handleItemChange(
                                         e as React.ChangeEvent<HTMLInputElement>,
-                                        itemIndex
+                                        itemIndex,
                                       )
                                     }
                                   />
@@ -501,26 +670,44 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
                                     onChange={(e) =>
                                       handleItemChange(
                                         e as React.ChangeEvent<HTMLInputElement>,
-                                        itemIndex
+                                        itemIndex,
                                       )
                                     }
                                   />
                                 </td>
-                                <td style={{ position: 'relative', paddingRight: '40px' }}>
+                                <td
+                                  style={{
+                                    position: 'relative',
+                                    paddingRight: '40px',
+                                  }}
+                                >
                                   {editable ? (
                                     <Form.Control
-                                      name='itemURL'
+                                      name='url'
                                       value={item.url}
                                       onChange={(e) =>
                                         handleItemChange(
                                           e as React.ChangeEvent<HTMLInputElement>,
-                                          itemIndex
+                                          itemIndex,
                                         )
                                       }
                                       style={{ paddingLeft: '20px' }}
                                     />
                                   ) : (
-                                    <a href={item.url} target="_blank" rel="noopener noreferrer" style={{ position: 'absolute', top: '50%', right: '5px', transform: 'translateY(-50%)', textDecoration: 'none' }}>Open</a>
+                                    <a
+                                      href={item.url}
+                                      target='_blank'
+                                      rel='noopener noreferrer'
+                                      style={{
+                                        position: 'absolute',
+                                        top: '50%',
+                                        right: '5px',
+                                        transform: 'translateY(-50%)',
+                                        textDecoration: 'none',
+                                      }}
+                                    >
+                                      Open
+                                    </a>
                                   )}
                                 </td>
                                 <td>
@@ -530,7 +717,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
                                     onChange={(e) =>
                                       handleItemChange(
                                         e as React.ChangeEvent<HTMLInputElement>,
-                                        itemIndex
+                                        itemIndex,
                                       )
                                     }
                                   />
@@ -542,7 +729,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
                                     onChange={(e) =>
                                       handleItemChange(
                                         e as React.ChangeEvent<HTMLInputElement>,
-                                        itemIndex
+                                        itemIndex,
                                       )
                                     }
                                   />
@@ -554,7 +741,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
                                     onChange={(e) =>
                                       handleItemChange(
                                         e as React.ChangeEvent<HTMLInputElement>,
-                                        itemIndex
+                                        itemIndex,
                                       )
                                     }
                                   />
@@ -571,14 +758,164 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
                                   </InputGroup>
                                 </td>
                                 <td>
-                                  <Form.Control />
+                                  <Form.Control disabled />
+                                </td>
+                                <td>
+                                  <Button
+                                    className={styles.cardBtn}
+                                    variant='danger'
+                                    onClick={() => handleDeleteItem(itemIndex)}
+                                  >
+                                    Delete
+                                  </Button>
+                                </td>
+                              </tr>
+                            )
+                          })}
+                          {newItems.map((item, itemIndex) => {
+                            return (
+                              <tr key={itemIndex + items.length}>
+                                <td width={20}>
+                                  {itemIndex + items.length + 1}
+                                </td>
+                                <td>
+                                  <Form.Control
+                                    name='description'
+                                    value={item.description}
+                                    onChange={(e) =>
+                                      handleItemChange(
+                                        e as React.ChangeEvent<HTMLInputElement>,
+                                        itemIndex + items.length,
+                                      )
+                                    }
+                                  />
+                                </td>
+                                <td>
+                                  <Form.Control
+                                    name='vendorName'
+                                    value={item.vendorName}
+                                    onChange={(e) =>
+                                      handleItemChange(
+                                        e as React.ChangeEvent<HTMLInputElement>,
+                                        itemIndex + items.length,
+                                      )
+                                    }
+                                  />
+                                </td>
+                                <td
+                                  style={{
+                                    position: 'relative',
+                                    paddingRight: '40px',
+                                  }}
+                                >
+                                  {editable ? (
+                                    <Form.Control
+                                      name='url'
+                                      value={item.url}
+                                      onChange={(e) =>
+                                        handleItemChange(
+                                          e as React.ChangeEvent<HTMLInputElement>,
+                                          itemIndex + items.length,
+                                        )
+                                      }
+                                      style={{ paddingLeft: '20px' }}
+                                    />
+                                  ) : (
+                                    <a
+                                      href={item.url}
+                                      target='_blank'
+                                      rel='noopener noreferrer'
+                                      style={{
+                                        position: 'absolute',
+                                        top: '50%',
+                                        right: '5px',
+                                        transform: 'translateY(-50%)',
+                                        textDecoration: 'none',
+                                      }}
+                                    >
+                                      Open
+                                    </a>
+                                  )}
+                                </td>
+                                <td>
+                                  <Form.Control
+                                    name='partNumber'
+                                    value={item.partNumber}
+                                    onChange={(e) =>
+                                      handleItemChange(
+                                        e as React.ChangeEvent<HTMLInputElement>,
+                                        itemIndex + items.length,
+                                      )
+                                    }
+                                  />
+                                </td>
+                                <td width={70}>
+                                  <Form.Control
+                                    name='quantity'
+                                    value={item.quantity}
+                                    onChange={(e) =>
+                                      handleItemChange(
+                                        e as React.ChangeEvent<HTMLInputElement>,
+                                        itemIndex + items.length,
+                                      )
+                                    }
+                                  />
+                                </td>
+                                <td width={90}>
+                                  <Form.Control
+                                    name='unitPrice'
+                                    value={item.unitPrice.toString()}
+                                    onChange={(e) =>
+                                      handleItemChange(
+                                        e as React.ChangeEvent<HTMLInputElement>,
+                                        itemIndex + items.length,
+                                      )
+                                    }
+                                  />
+                                </td>
+                                <td>
+                                  <InputGroup>
+                                    <InputGroup.Text>$</InputGroup.Text>
+                                    <Form.Control
+                                      value={(
+                                        item.quantity * Number(item.unitPrice)
+                                      ).toFixed(2)}
+                                      disabled
+                                    />
+                                  </InputGroup>
+                                </td>
+                                <td>
+                                  <Form.Control disabled />
+                                </td>
+                                <td>
+                                  <Button
+                                    className={styles.cardBtn}
+                                    variant='danger'
+                                    onClick={() =>
+                                      handleDeleteItem(itemIndex + items.length)
+                                    }
+                                  >
+                                    Delete
+                                  </Button>
                                 </td>
                               </tr>
                             )
                           })}
                         </tbody>
                       </Table>
-                      
+                      <Row>
+                        <Col xs={12} className='d-flex justify-content-end'>
+                          {editable && (
+                            <Button
+                              className={`${styles.cardBtn} mb-3`}
+                              variant='success'
+                              onClick={handleAddItem}
+                            >
+                              Add Item
+                            </Button>
+                          )}
+                        </Col>
+                      </Row>
                       {/* ORDERS (based on number of vendors) */}
                       <Table responsive striped>
                         <thead>
@@ -634,21 +971,121 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
                                 />
                               </td>
                             </tr>
-                            )
-                          })}
-                        </tbody>
-                      </Table>
+                          </thead>
+                          <tbody>
+                            {orders.map((order, orderIndex) => {
+                              return (
+                                <tr key={orderIndex}>
+                                  <td>
+                                    <Form.Control
+                                      name='orderNumber'
+                                      value={order.orderNumber}
+                                      onChange={(e) =>
+                                        handleOrderChange(
+                                          e as React.ChangeEvent<HTMLInputElement>,
+                                          orderIndex,
+                                        )
+                                      }
+                                    />
+                                  </td>
+                                  <td>
+                                    <Form.Control
+                                      name='trackingInfo'
+                                      value={order.trackingInfo}
+                                      onChange={(e) =>
+                                        handleOrderChange(
+                                          e as React.ChangeEvent<HTMLInputElement>,
+                                          orderIndex,
+                                        )
+                                      }
+                                    />
+                                  </td>
+                                  <td>
+                                    <Form.Control
+                                      name='orderDetails'
+                                      value={order.orderDetails}
+                                      onChange={(e) =>
+                                        handleOrderChange(
+                                          e as React.ChangeEvent<HTMLInputElement>,
+                                          orderIndex,
+                                        )
+                                      }
+                                    />
+                                  </td>
+                                  <td>
+                                    <Form.Control
+                                      name='shippingCost'
+                                      value={Number(order.shippingCost)}
+                                      onChange={(e) =>
+                                        handleOrderChange(
+                                          e as React.ChangeEvent<HTMLInputElement>,
+                                          orderIndex,
+                                        )
+                                      }
+                                    />
+                                  </td>
+                                  <td>
+                                    <Form.Control
+                                      name='dateOrdered'
+                                      type='date'
+                                      value={
+                                        order.dateOrdered
+                                          ? new Date(order.dateOrdered)
+                                              .toISOString()
+                                              .split('T')[0]
+                                          : ''
+                                      }
+                                      onChange={(e) =>
+                                        handleOrderChange(
+                                          e as React.ChangeEvent<HTMLInputElement>,
+                                          orderIndex,
+                                        )
+                                      }
+                                    />
+                                  </td>
+                                  <td>
+                                    <Button
+                                      className={styles.cardBtn}
+                                      variant='danger'
+                                      onClick={() =>
+                                        handleDeleteOrder(
+                                          orderIndex,
+                                          parseInt(order.orderDetails),
+                                        )
+                                      }
+                                    >
+                                      Delete
+                                    </Button>
+                                  </td>
+                                </tr>
+                              )
+                            })}
+                          </tbody>
+                        </Table>
+                      )}
                     </fieldset>
                     <Row>
                       <Col xs={12} className='d-flex justify-content-end'>
                         {editable && (
-                          <Button
-                            className={styles.cardBtn}
-                            variant='success'
-                            onClick={(e) => handleSave()}
-                          >
-                            Save
-                          </Button>
+                          <Row>
+                            <Col>
+                              <Button
+                                className={styles.cardBtn}
+                                variant='success'
+                                onClick={handleAddOrders}
+                              >
+                                Add Order
+                              </Button>
+                              &nbsp;
+                              <Button
+                                className={styles.cardBtn}
+                                variant='success'
+                                onClick={(e) => handleSave()}
+                              >
+                                Save
+                              </Button>
+                            </Col>
+                          </Row>
                         )}
                       </Col>
                     </Row>
@@ -664,3 +1101,6 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
 }
 
 export default AdminRequestCard
+function newDetails(arg0: string, newDetails: any) {
+  throw new Error('Function not implemented.')
+}

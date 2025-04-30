@@ -20,6 +20,7 @@ export async function getServerSideProps(context: any) {
   const user = session?.user as User
   let projects = null
   let listOfProjects = null
+
   try {
     projects = await prisma.project.findMany({
       where: {
@@ -47,7 +48,8 @@ export async function getServerSideProps(context: any) {
   } catch (error) {
     console.log('project error: ', error)
   }
-  let vendors = await prisma.vendor.findMany({})
+
+  let vendors = await prisma.vendor.findMany()
   return {
     props: {
       session: session,
@@ -65,33 +67,94 @@ interface StudentRequestProps {
   vendors: Vendor[]
 }
 
-const StudentRequest = ({ session, user, listOfProjects, vendors }: StudentRequestProps) => {
+const StudentRequest = ({
+  session,
+  user,
+  listOfProjects,
+  vendors,
+}: StudentRequestProps) => {
   // State and handlers
   const [date, setDate] = useState('')
   const [additionalInfo, setAdditionalInfo] = useState('')
   // remaining budget before adding any items
-  const [remainingBeforeItem, setRemainingBeforeItem] = useState<Prisma.Decimal>(Prisma.Decimal.sub(new Prisma.Decimal(listOfProjects[0].startingBudget), new Prisma.Decimal(listOfProjects[0].totalExpenses)))
+  const [remainingBeforeItem, setRemainingBeforeItem] =
+    useState<Prisma.Decimal>(
+      Prisma.Decimal.sub(
+        new Prisma.Decimal(listOfProjects[0].startingBudget),
+        new Prisma.Decimal(listOfProjects[0].totalExpenses),
+      ),
+    )
   // remaining budget that updates every time item is added/deleted
-  const [remainingAfterItem, setRemainingAfterItem] = useState<Prisma.Decimal>(Prisma.Decimal.sub(new Prisma.Decimal(listOfProjects[0].startingBudget), new Prisma.Decimal(listOfProjects[0].totalExpenses)))
-  const [totalExpenses, setTotalExpenses] = useState<Prisma.Decimal>(new Prisma.Decimal(listOfProjects[0].totalExpenses))
+  const [remainingAfterItem, setRemainingAfterItem] = useState<Prisma.Decimal>(
+    Prisma.Decimal.sub(
+      new Prisma.Decimal(listOfProjects[0].startingBudget),
+      new Prisma.Decimal(listOfProjects[0].totalExpenses),
+    ),
+  )
+
   const [items, setItems] = useState([
     {
       sequence: 1,
       vendor: '',
       description: '',
-      link: '',
+      url: '',
       partNumber: '',
       quantity: '',
       unitCost: '',
       totalCost: '',
+      isDropdownOpen: false,
+      isNewVendor: false,
+      searchTerm: '',
+      newVendorName: '',
+      newVendorEmail: '',
+      newVendorURL: '',
     },
   ])
   const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null)
-  const [projects, setProjects] = useState<Project[]>(listOfProjects)
-  const [selectedProject, setSelectedProject] = useState(listOfProjects[0].projectNum)
+  const [selectedProject, setSelectedProject] = useState(
+    listOfProjects[0].projectNum,
+  )
   const router = useRouter()
-  
-// TODO:: update tooltip whenever item is added or deleted
+
+  const handleVendorChange = (
+    e: React.ChangeEvent<any> | { target: { value: any } },
+    index: number
+  ) => {
+    const value = e.target.value;
+
+    const newItems = [...items];
+    newItems[index].vendor = value;
+    newItems[index].isNewVendor = value === 'other';
+
+    // Reset new vendor details if selecting a predefined vendor
+    if (value !== 'other') {
+      newItems[index].newVendorName = '';
+      newItems[index].newVendorURL = '';
+      newItems[index].newVendorEmail = '';
+    }
+
+    setItems(newItems);
+  };
+
+
+  const handleDropdownToggle = (
+    index: number,
+    isOpen: boolean
+  ) => {
+    const newItems = [...items];
+    newItems[index].isDropdownOpen = isOpen;
+    setItems(newItems);
+  };
+
+  const handleSearchTermChange = (index: number, value: string) => {
+    const newItems = [...items];
+    newItems[index].searchTerm = value;
+    setItems(newItems);
+  };
+
+  //------------
+
+  // TODO:: update tooltip whenever item is added or deleted
 
   /**
    * This function handles updating the tooltips whenever the input fields are changed
@@ -125,20 +188,20 @@ const StudentRequest = ({ session, user, listOfProjects, vendors }: StudentReque
       handleTooltip(
         index,
         `item${index}Description`,
-        `descriptionTooltip${index}`
+        `descriptionTooltip${index}`,
       )
-      handleTooltip(index, `item${index}Link`, `linkTooltip${index}`)
+      handleTooltip(index, `item${index}URL`, `urlTooltip${index}`)
       handleTooltip(
         index,
         `item${index}PartNumber`,
-        `partNumberTooltip${index}`
+        `partNumberTooltip${index}`,
       )
     })
   }, [items])
 
   const handleUnitCostBlur = (
     e: React.FocusEvent<HTMLInputElement>,
-    index: number
+    index: number,
   ) => {
     const newItems = [...items]
     newItems[index].unitCost = e.target.value
@@ -158,12 +221,17 @@ const StudentRequest = ({ session, user, listOfProjects, vendors }: StudentReque
 
   // Dynamically update the budget remaining
   useEffect(() => {
-    let proj = projects.filter((project) => (project.projectNum === selectedProject))
+    let proj = listOfProjects.filter(
+      (project) => project.projectNum === selectedProject,
+    )
     setRemainingAfterItem(
       Prisma.Decimal.sub(
-        (Prisma.Decimal.sub(new Prisma.Decimal(proj[0].startingBudget), new Prisma.Decimal(proj[0].totalExpenses))),
-        calculateTotalCost()
-      )
+        Prisma.Decimal.sub(
+          new Prisma.Decimal(proj[0].startingBudget),
+          new Prisma.Decimal(proj[0].totalExpenses),
+        ),
+        calculateTotalCost(),
+      ),
     )
   }, [items])
 
@@ -176,7 +244,7 @@ const StudentRequest = ({ session, user, listOfProjects, vendors }: StudentReque
     setDate(e.target.value)
   }
   const handleAdditionalInfoChange = (
-    e: React.ChangeEvent<HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLTextAreaElement>,
   ) => {
     setAdditionalInfo(e.target.value)
   }
@@ -187,12 +255,13 @@ const StudentRequest = ({ session, user, listOfProjects, vendors }: StudentReque
       totalCost +=
         (parseFloat(item.unitCost) || 0) * (parseInt(item.quantity) || 0)
     })
-    return new Prisma.Decimal(totalCost);
+    return new Prisma.Decimal(totalCost)
   }
 
   /**
    * Updates the state of the items array to add a new item
    */
+
   const handleAddItem = () => {
     setItems([
       ...items,
@@ -200,11 +269,17 @@ const StudentRequest = ({ session, user, listOfProjects, vendors }: StudentReque
         sequence: items.length + 1,
         vendor: '',
         description: '',
-        link: '',
+        url: '',
         partNumber: '',
         quantity: '',
         unitCost: '',
         totalCost: '',
+        isDropdownOpen: false,
+        isNewVendor: false,
+        searchTerm: '',
+        newVendorName: '',
+        newVendorEmail: '',
+        newVendorURL: '',
       },
     ])
   }
@@ -215,16 +290,17 @@ const StudentRequest = ({ session, user, listOfProjects, vendors }: StudentReque
    * @param index
    * @param field
    */
+
   const handleItemChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
     index: number,
     field:
       | 'vendor'
       | 'description'
-      | 'link'
+      | 'url'
       | 'partNumber'
       | 'quantity'
-      | 'unitCost'
+      | 'unitCost',
   ) => {
     const newItems = [...items]
     newItems[index][field] = e.target.value
@@ -256,7 +332,7 @@ const StudentRequest = ({ session, user, listOfProjects, vendors }: StudentReque
     // Check if the remaining budget is negative
     if (remainingAfterItem < new Prisma.Decimal(0)) {
       alert(
-        'Your remaining budget cannot be negative. Please review your items.'
+        'Your remaining budget cannot be negative. Please review your items.',
       )
       return
     }
@@ -264,9 +340,7 @@ const StudentRequest = ({ session, user, listOfProjects, vendors }: StudentReque
     // clean out the items to send to API
     const itemsToSend = items.map((item) => {
       return {
-        description: item.description,
-        url: item.link,
-        partNumber: item.partNumber,
+        ...item,
         quantity: parseInt(item.quantity),
         unitPrice: parseFloat(item.unitCost),
         vendorID: parseInt(item.vendor),
@@ -305,34 +379,13 @@ const StudentRequest = ({ session, user, listOfProjects, vendors }: StudentReque
     }
   }
 
-  //start of autocopmlete search functions
-  // const handleOnSearch = (string, results) => {
-  //   console.log(string, results)
-  // }
-
-  // const handleOnHover = (result) => {
-  //   console.log(result)
-  // }
-
-  // const handleOnSelect = (item) => {
-  //   console.log(item)
-  // }
-
-  // const handleOnFocus = () => {
-  //   console.log('Focused')
-  // }
-
-  // const handleOnClear = () => {
-  //   console.log('Cleared')
-  // }
-
-  //end of autocopmlete funcitons
-
   function findBudget(projectNum: number, proj: Project[]) {
     let budget: Prisma.Decimal = new Prisma.Decimal(0)
     proj.forEach((project) => {
       if (project.projectNum === projectNum) {
-        budget = new Prisma.Decimal(Prisma.Decimal.sub(project.startingBudget, project.totalExpenses))
+        budget = new Prisma.Decimal(
+          Prisma.Decimal.sub(project.startingBudget, project.totalExpenses),
+        )
       }
     })
     setRemainingBeforeItem(budget)
@@ -352,7 +405,7 @@ const StudentRequest = ({ session, user, listOfProjects, vendors }: StudentReque
           </p>
           <p>
             <span>
-              ${new Prisma.Decimal(remainingBeforeItem).toFixed(4).toString()}
+              ${new Prisma.Decimal(remainingBeforeItem).toFixed(2).toString()}
             </span>
           </p>
         </Col>
@@ -361,7 +414,7 @@ const StudentRequest = ({ session, user, listOfProjects, vendors }: StudentReque
             <strong>Remaining: </strong>
           </p>
           <p>
-            <span>${remainingAfterItem.toFixed(4).toString()}</span>
+            <span>${remainingAfterItem.toFixed(2).toString()}</span>
           </p>
         </Col>
       </Row>
@@ -411,7 +464,7 @@ const StudentRequest = ({ session, user, listOfProjects, vendors }: StudentReque
                   console.log('selectedProject = ', selectedProject)
                 }}
               >
-                {projects.map((project, projIndex) => {
+                {listOfProjects.map((project, projIndex) => {
                   return (
                     <option key={projIndex} value={project.projectNum}>
                       {project.projectTitle}
@@ -422,7 +475,6 @@ const StudentRequest = ({ session, user, listOfProjects, vendors }: StudentReque
             </Form.Group>
           </Col>
         </Row>
-
         <h5>
           <strong>Items:</strong>
         </h5>
@@ -442,53 +494,6 @@ const StudentRequest = ({ session, user, listOfProjects, vendors }: StudentReque
                     className={styles.sequenceNumberInput}
                     disabled
                   />
-                </Form.Group>
-              </Col>
-
-              {/* VENDOR */}
-              <Col md={1}>
-                <Form.Group controlId={`item${index}Vendor`}>
-                  <Form.Label>
-                    <strong>Vendor</strong>
-                  </Form.Label>
-                  {/* <ReactSearchAutocomplete
-                    items={vendors}
-                    maxResults={15}
-                    // onSearch={handleOnSearch}
-                    // onHover={handleOnHover}
-                    // onSelect={handleOnSelect}
-                    // onFocus={handleOnFocus}
-                    // onClear={handleOnClear}
-                    fuseOptions={{ keys: ['name', 'description'] }} // Search in the description text as well
-                    styling={{ zIndex: 3 }} // To display it on top of the search box below
-                  /> */}
-                  <div className={styles.tooltip}>
-                    <Form.Control
-                      type='text'
-                      value={item.vendor}
-                      onChange={(e) => handleItemChange(e, index, 'vendor')}
-                      required
-                    />
-                    <span
-                      className={styles.tooltiptext}
-                      id={`vendorTooltip${index}`}
-                    >
-                      Tooltip text
-                    </span>
-                  </div>
-
-                  {/* <Form.Select
-                    value={item.vendor}
-                    onChange={(e) => handleItemChange(e, index, 'vendor')}
-                  >
-                    {vendors.map((vendor, vendorIndex) => {
-                      return (
-                        <option key={vendorIndex} value={vendor.vendorID}>
-                          {vendor.vendorName}
-                        </option>
-                      )
-                    })}
-                  </Form.Select> */}
                 </Form.Group>
               </Col>
 
@@ -519,20 +524,20 @@ const StudentRequest = ({ session, user, listOfProjects, vendors }: StudentReque
 
               {/* ITEM URL */}
               <Col md={2}>
-                <Form.Group controlId={`item${index}Link`}>
+                <Form.Group controlId={`item${index}URL`}>
                   <Form.Label>
-                    <strong>Item Link</strong>
+                    <strong>Item URL</strong>
                   </Form.Label>
                   <div className={styles.tooltip}>
                     <Form.Control
-                      type='text'
-                      value={item.link}
-                      onChange={(e) => handleItemChange(e, index, 'link')}
+                      type='url'
+                      value={item.url}
+                      onChange={(e) => handleItemChange(e, index, 'url')}
                       required
                     />
                     <span
                       className={styles.tooltiptext}
-                      id={`linkTooltip${index}`}
+                      id={`urlTooltip${index}`}
                     >
                       Tooltip text
                     </span>
@@ -607,7 +612,7 @@ const StudentRequest = ({ session, user, listOfProjects, vendors }: StudentReque
                       onBlur={(e) =>
                         handleUnitCostBlur(
                           e as React.FocusEvent<HTMLInputElement>,
-                          index
+                          index,
                         )
                       }
                       className={`${styles.costInputField} ${styles.unitCostInput} ${styles.hideArrows}`}
@@ -658,9 +663,150 @@ const StudentRequest = ({ session, user, listOfProjects, vendors }: StudentReque
                 </Col>
               </Col>
             </Row>
+            <Row className="my-4">
+              <Col md={4}>
+                <Form.Group controlId={`vendorSelect-${index}`}>
+                  <Form.Label>
+                    <strong>Vendor</strong>
+                  </Form.Label>
+                  {/* Searchable dropdown */}
+                  <div style={{ position: 'relative' }}>
+                    <Form.Control
+                      type="text"
+                      placeholder="Search or select a vendor..."
+                      value={item.searchTerm} // Use the item's specific search term
+                      onChange={(e) => handleSearchTermChange(index, e.target.value)}
+                      onFocus={() => handleDropdownToggle(index, true)}
+                      onBlur={() =>
+                        setTimeout(() => handleDropdownToggle(index, false), 200)
+                      }
+                    />
+                    {item.isDropdownOpen && (
+                      <ul
+                        style={{
+                          position: 'absolute',
+                          width: '100%',
+                          maxHeight: '200px',
+                          overflowY: 'auto',
+                          backgroundColor: 'white',
+                          border: '1px solid #ccc',
+                          borderRadius: '4px',
+                          zIndex: 1000,
+                          listStyle: 'none',
+                          padding: 0,
+                          margin: 0,
+                        }}
+                      >
+                        {vendors
+                          .filter(
+                            (vendor: any) =>
+                              vendor.vendorStatus === 'APPROVED' &&
+                              vendor.vendorName
+                                .toLowerCase()
+                                .includes(item.searchTerm.toLowerCase())
+                          )
+                          .map((vendor: any) => (
+                            <li
+                              key={vendor.vendorID}
+                              style={{
+                                padding: '10px',
+                                cursor: 'pointer',
+                                borderBottom: '1px solid #ddd',
+                              }}
+                              onClick={() => {
+                                handleVendorChange(
+                                  { target: { value: vendor.vendorID } },
+                                  index
+                                );
+                                handleSearchTermChange(index, vendor.vendorName);
+                                handleDropdownToggle(index, false);
+                              }}
+                            >
+                              {vendor.vendorName}
+                            </li>
+                          ))}
+                        <li
+                          style={{
+                            padding: '10px',
+                            cursor: 'pointer',
+                            backgroundColor: '#f9f9f9',
+                          }}
+                          onClick={() => {
+                            handleVendorChange({ target: { value: 'other' } }, index);
+                            handleSearchTermChange(index, 'Other');
+                            handleDropdownToggle(index, false);
+                          }}
+                        >
+                          Other
+                        </li>
+                      </ul>
+                    )}
+                  </div>
+                </Form.Group>
+              </Col>
+            </Row>
+            {item.isNewVendor && (
+              <Row className="my-4">
+                <Col md={4}>
+                  <Form.Group controlId={`newVendorName-${index}`}>
+                    <Form.Label>
+                      <strong>New Vendor Name</strong>
+                    </Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={item.newVendorName || ''}
+                      onChange={(e) =>
+                        setItems((prev) => {
+                          const newItems = [...prev];
+                          newItems[index].newVendorName = e.target.value;
+                          return newItems;
+                        })
+                      }
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+                <Col md={4}>
+                  <Form.Group controlId={`newVendorURL-${index}`}>
+                    <Form.Label>
+                      <strong>New Vendor URL</strong>
+                    </Form.Label>
+                    <Form.Control
+                      type="url"
+                      value={item.newVendorURL || ''}
+                      onChange={(e) =>
+                        setItems((prev) => {
+                          const newItems = [...prev];
+                          newItems[index].newVendorURL = e.target.value;
+                          return newItems;
+                        })
+                      }
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+                <Col md={4}>
+                  <Form.Group controlId={`newVendorEmail-${index}`}>
+                    <Form.Label>
+                      <strong>New Vendor Email (Optional)</strong>
+                    </Form.Label>
+                    <Form.Control
+                      type="email"
+                      value={item.newVendorEmail || ''}
+                      onChange={(e) =>
+                        setItems((prev) => {
+                          const newItems = [...prev];
+                          newItems[index].newVendorEmail = e.target.value;
+                          return newItems;
+                        })
+                      }
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
+            )}
           </div>
         ))}
-
         <Row className='my-4'>
           <Col xs={12} md={4}>
             <Button variant='primary' type='button' onClick={handleAddItem}>
@@ -668,7 +814,6 @@ const StudentRequest = ({ session, user, listOfProjects, vendors }: StudentReque
             </Button>
           </Col>
         </Row>
-
         {/* TODO:: store uploaded files in the cloud and update DB */}
         <Row className='my-4'>
           <Form.Group controlId='fileUpload'>
@@ -684,7 +829,6 @@ const StudentRequest = ({ session, user, listOfProjects, vendors }: StudentReque
             />
           </Form.Group>
         </Row>
-
         <Row className='my-4'>
           <Button variant='success' type='submit'>
             Submit

@@ -22,11 +22,11 @@ export default async function handler(
         }
     }
     else if (req.method === 'POST') { //This code block is handling a POST request to create a worksOn entry
-        const {netID, projectNum} = req.body // to create new worksOn entry you require a specific user and project
+        const {email, projectNum} = req.body // to create new worksOn entry you require a specific user and project
         try {
             const worksOn = await prisma.worksOn.create({
                 data: {
-                  user: { connect: { netID: netID } },
+                  user: { connect: { email: email } },
                   project: { connect: { projectNum: projectNum } },
                   startDate: new Date(), // since starting at the time admin creates user, user is a current project user
                 },

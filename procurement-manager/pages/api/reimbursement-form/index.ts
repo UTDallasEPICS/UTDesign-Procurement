@@ -51,18 +51,20 @@ export default async function handler(
     if (typeof body.projectNum === 'string')
       body.projectNum = parseInt(body.projectNum)
 
+    // CREATE NEW PROCESS WITH STATUS OF UNDER_REVIEW INTO DATABASE
+    const process = await createProcess()
+    const processID = process.processID
+
     // FINALLY CREATE THE FORM AND INSERT TO DATABASE
-    const reimbursementForm = await createReimbursement(body, dateSubmitted, optionalFields)
+    const reimbursementForm = await createReimbursement(body, dateSubmitted, processID, optionalFields)
     const reimbursementID = reimbursementForm.reimbursementID
 
     // INPUT ARRAY OF ITEMS INTO DATABASE
     const items = req.body.items
     items.forEach(async (item: Item) => {
+      console.log('CONSOLE: Item', item)
       await createItem(reimbursementID, item)
     })
-
-    // CREATE NEW PROCESS WITH STATUS OF UNDER_REVIEW INTO DATABASE
-    await createProcess(reimbursementID)
 
     res.status(200).json({
       message: 'POST was a success',
@@ -90,25 +92,27 @@ export default async function handler(
 async function createReimbursement(
   body: any,
   dateSubmitted: Date,
+  processID: number,
   optionalFields: Optionals
 ) {
-    // include expense field in reimbursement schema and remove status from schema (since already in process)
-    const reimbursementForm = await prisma.reimbursement
-        .create({
+    const reimbursementForm = await prisma.reimbursement.create({
         data: {
             dateSubmitted: dateSubmitted,
             project: {
-            connect: { projectNum: body.projectNum },
+              connect: { projectNum: body.projectNum },
             },
             student: {
-            connect: { email: body.studentEmail },
+              connect: { email: body.studentEmail },
             },
-            status: body.status,
+            process: {
+              connect: { processID: processID },
+            },
             additionalInfo: optionalFields.additionalInfo,
+            expense: body.totalExpenses
         },
         include: {
             ReimbursementItem: true,
-            Process: true,
+            process: true,
         },
         })
         .catch((e) => {
@@ -121,6 +125,7 @@ async function createReimbursement(
         where: { projectNum: body.projectNum },
     })
     console.log('project', project?.totalExpenses)
+    
     // Update the totalExpenses in the project
     const updateExpense = await prisma.project.update({
         where: { projectNum: body.projectNum },
@@ -142,7 +147,7 @@ async function createItem(reimbursementID: number, itemToPut: Item) {
     vendorID,
   } = itemToPut
 
-  console.log('itemToPut', itemToPut)
+  console.log('CONSOLE: itemToPut', itemToPut)
 
   // TODO :: do error handling
   // NEW ITEM IS INSERTED INTO SERVER
@@ -150,7 +155,7 @@ async function createItem(reimbursementID: number, itemToPut: Item) {
   const newItem = await prisma.reimbursementItem
     .create({
       data: {
-        receiptDate: receiptDate,
+        receiptDate: new Date(receiptDate),
         description: description,
         receiptTotal: receiptTotal,
         reimbursement: {
@@ -171,18 +176,14 @@ async function createItem(reimbursementID: number, itemToPut: Item) {
 }
 
 // Creates a new Process into the database
-async function createProcess(reimbursementID: number) {
+async function createProcess() {
   const newProcess = await prisma.process
     .create({
       data: {
         status: Status.UNDER_REVIEW,
-        reimbursement: {
-          connect: { reimbursementID: reimbursementID },
-        },
       },
     })
     .catch(async (e) => {
-      await prisma.reimbursement.delete({ where: { reimbursementID: reimbursementID } })
       throw new Error(e)
     })
   return newProcess

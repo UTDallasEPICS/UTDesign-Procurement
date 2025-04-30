@@ -1,10 +1,9 @@
 // THIS FILE IS TO CREATE THE SAMPLE DATA FOR THE DATABASE WHEN IT IS RESET
 // BECAUSE THERE ARE NO ERROR HANDLING, ONLY CALL THIS ENDPOINT ONCE AFTER RESET
 
-import { PrismaClient } from '@prisma/client'
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime'
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/binary'
 import { NextApiRequest, NextApiResponse } from 'next'
-const prisma = new PrismaClient()
+import { prisma } from '@/db'
 
 export default async function handler(
   req: NextApiRequest,
@@ -102,7 +101,7 @@ export default async function handler(
     // Connect student to project 1
     await prisma.worksOn.create({
       data: {
-        user: { connect: { netID: 'abc000000' } },
+        user: { connect: { email: 'abc000000@utdallas.edu' } },
         project: { connect: { projectNum: 10000 } },
         startDate: new Date(),
       },
@@ -111,7 +110,7 @@ export default async function handler(
     // Connect mentor to project 1
     await prisma.worksOn.create({
       data: {
-        user: { connect: { netID: 'def000000' } },
+        user: { connect: { email: 'def000000@utdallas.edu' } },
         project: { connect: { projectNum: 10000 } },
         startDate: new Date(),
       },
@@ -120,7 +119,7 @@ export default async function handler(
     // Connect mentor to project 2
     await prisma.worksOn.create({
       data: {
-        user: { connect: { netID: 'def000000' } },
+        user: { connect: { email: 'def000000@utdallas.edu' } },
         project: { connect: { projectNum: 20000 } },
         startDate: new Date(),
       },
@@ -129,9 +128,9 @@ export default async function handler(
     // Create a sample vendor
     await prisma.vendor.createMany({
       data: [
-        { vendorName: 'Sample Vendor 1' },
-        { vendorName: 'Sample Vendor 2' },
-        { vendorName: 'Sample Vendor 3' },
+        { vendorName: 'Sample Vendor 1', vendorStatus: 'APPROVED'  },
+        { vendorName: 'Sample Vendor 2', vendorStatus: 'PENDING' },
+        { vendorName: 'Sample Vendor 3', vendorStatus: 'DENIED' },
       ],
       skipDuplicates: true,
     })

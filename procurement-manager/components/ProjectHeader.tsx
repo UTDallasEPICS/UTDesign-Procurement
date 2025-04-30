@@ -4,15 +4,15 @@
 
 import { Prisma } from '@prisma/client'
 import React from 'react'
-import { Col, Button, Row } from 'react-bootstrap'
+import { Col, Button, Row, Stack } from 'react-bootstrap'
 
 interface ProjectHeaderProps {
   projectName: string
   expenses: Prisma.Decimal
   available: Prisma.Decimal
   budgetTotal: Prisma.Decimal
-  onToggleCollapse: () => void
-  isOpen: boolean
+  onToggleCollapse?: () => void
+  isOpen?: boolean
 }
 
 const ProjectHeader: React.FC<ProjectHeaderProps> = ({
@@ -21,7 +21,7 @@ const ProjectHeader: React.FC<ProjectHeaderProps> = ({
   available,
   budgetTotal,
   onToggleCollapse,
-  isOpen,
+  isOpen
 }) => {
   return (
     <Row className='align-items-center'>
@@ -29,20 +29,21 @@ const ProjectHeader: React.FC<ProjectHeaderProps> = ({
         <h3>{projectName}</h3>
       </Col>
       <Col md={2}>
-        <p style={{ fontSize: '1.5rem' }}>
+        <p style={{ fontSize: '1.15rem' }}>
           <strong>Expenses:</strong> $<>{expenses/100}</>
         </p>
       </Col>
       <Col md={2}>
-        <p style={{ fontSize: '1.5rem' }}>
+        <p style={{ fontSize: '1.15rem' }}>
           <strong>Available:</strong> $<>{available.toString()}</>
         </p>
       </Col>
       <Col md={2}>
-        <p style={{ fontSize: '1.5rem' }}>
-          <strong>Budget:</strong> $<>{budgetTotal}</>
+        <p style={{ fontSize: '1.15rem' }}>
+          <strong>Budget:</strong> $<>{budgetTotal.toString()}</>
         </p>
       </Col>
+      {isOpen !== undefined && onToggleCollapse !== undefined &&
       <Col md={1}>
         <Button
           variant='outline-secondary'
@@ -53,7 +54,7 @@ const ProjectHeader: React.FC<ProjectHeaderProps> = ({
         >
           {isOpen ? 'Hide' : 'Show'}
         </Button>
-      </Col>
+      </Col>}
     </Row>
   )
 }

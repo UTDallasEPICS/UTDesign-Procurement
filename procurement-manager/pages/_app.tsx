@@ -3,6 +3,7 @@ import { SSRProvider } from 'react-bootstrap'
 import Layout from '@/components/Layout'
 import { SessionProvider } from 'next-auth/react'
 import '@/styles/globals.scss'
+import { NuqsAdapter } from 'nuqs/adapters/next/pages'
 
 export default function App({
   Component,
@@ -12,7 +13,9 @@ export default function App({
     <SSRProvider>
       <SessionProvider session={session}>
         <Layout>
-          <Component {...pageProps} />
+          <NuqsAdapter>
+            <Component {...pageProps} />
+          </NuqsAdapter>
         </Layout>
       </SessionProvider>
     </SSRProvider>

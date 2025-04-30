@@ -18,6 +18,8 @@ import styles from '@/styles/RequestCard.module.scss'
 import { Prisma, User, Project, WorksOn, Status, Order } from '@prisma/client'
 import axios from 'axios'
 
+const MAX_STUDENTS = 6;
+
 interface AdminProjectCardProps {
   projectIndex: number
   project: Project
@@ -122,7 +124,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
     })
 
     // add empty values if less students added to project (like if max students is 3)
-    while (newStudents.length < 6) {
+    while (newStudents.length < MAX_STUDENTS) {
       newStudents.push("")
     }
     setStudents(newStudents)
@@ -213,7 +215,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
    * @param ID the request ID of the request
    * @returns boolean value depending on the request associated with that ID is processed or not
    */
-  function processed (ID: number) 
+  function processed(ID: number) 
   {
     for (const req of processedReqs) {
       if (req.requestID === ID) {
@@ -363,51 +365,67 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
         console.log("update status of mentor " + (i + 1) + " : " + mentors[i])
       }
       for (let i = 0; i < students.length; i++) {
-        console.log("update status of student " + (i + 1) + " : " + students[i])
+        console.log("update status of student " + (i + 1) + " : \"" + students[i] + "\"")
       }
       
       for (let mentorIndex = 0; mentorIndex < mentors.length; mentorIndex++) 
       {
         if (updatedMentors[mentorIndex] === true)
         {
-          if (mentorArr.length >= 1) { // if existing mentor array had an initial value for mentor but now admin removed initial mentor since that mentor field was edited
-            worksOnRes = await axios.get('/api/worksOn/currentProjects/', {
-              params: {
-                userID: mentorArr[mentorIndex].userID,
-            }})
-            if (worksOnRes.status === 200) { // first get worksOn entry to access start date, then deactivate initial user
-              console.log("found current projects of mentor")
-              console.log(worksOnRes.data)
+          const oldMentorName = mentorIndex < mentorArr.length ? mentorArr[mentorIndex].firstName + " " + mentorArr[mentorIndex].lastName : "";
+          const newMentorName = mentors[mentorIndex];
+
+          if (oldMentorName != newMentorName) {
+            // mentor names don't match, so remove old mentor (if present) and add new mentor (if present)
+            if (oldMentorName) {
+              worksOnRes = await axios.get('/api/worksOn/currentProjects/', {
+                params: {
+                  userID: mentorArr[mentorIndex].userID,
+                },
+              })
+              if (worksOnRes.status === 200) {
+                // first get worksOn entry to access start date, then deactivate initial user
+                console.log('found current projects of mentor')
+                console.log(worksOnRes.data)
+              }
+              worksOns = worksOnRes.data.worksOn
+              projectWorksOn = worksOns.filter(
+                (worksOn) => worksOn.projectID === project.projectID,
+              )
+
+              deactivateRes = await axios.post('/api/worksOn/deactivate/', {
+                email: mentorArr[mentorIndex].email,
+                projectNum: newProject.projectNum,
+                startDate: projectWorksOn[0].startDate,
+              })
+              if (deactivateRes.status === 200) {
+                console.log('deactivated mentor')
+                console.log(deactivateRes.data)
+              }
             }
-            worksOns = worksOnRes.data.worksOn
-            projectWorksOn = worksOns.filter((worksOn) => (worksOn.projectID === project.projectID))
-  
-            deactivateRes = await axios.post('/api/worksOn/deactivate/', {
-            netID: mentorArr[mentorIndex].netID,
-            projectNum: newProject.projectNum,
-            startDate: projectWorksOn[0].startDate,
-            })
-            if (deactivateRes.status === 200) {
-              console.log("deactivated mentor")
-              console.log(deactivateRes.data)
-            } 
-          }
-          if (mentors[mentorIndex].length > 1) { // if admin added new mentor
-            userRes = await axios.post('/api/user/get/fullName', {
-              firstName: mentors[mentorIndex].substring(0, mentors[mentorIndex].search(" ")), // extract 2 values since first name and last name are separated by a space
-              lastName: mentors[mentorIndex].substring(mentors[mentorIndex].search(" ") + 1)
-            })
-            if (userRes.status === 200) { // first validate the entered user then add to project
-              console.log("found new user entered as mentor")
-              console.log(userRes.data)
-            }
-            worksOnRes = await axios.post('/api/worksOn/', {
-              netID: userRes.data.user.netID,
-              projectNum: newProject.projectNum,
-            })
-            if (worksOnRes.status === 201) {
-              console.log("added new user as mentor")
-              console.log(worksOnRes.data)
+            if (newMentorName.length > 1) {
+              const [firstName, lastName] = mentors[mentorIndex].split(' ', 1) // extract 2 values since first name and last name are separated by a space
+              userRes = await axios.post('/api/user/get/fullName', {
+                firstName,
+                lastName,
+              })
+              if (userRes.status === 200) {
+                // first validate the entered user then add to project
+                console.log('found new user entered as mentor')
+                console.log(userRes.data)
+              } else {
+                throw new Error('Could not find mentor')
+              }
+              worksOnRes = await axios.post('/api/worksOn/', {
+                email: userRes.data.user.email,
+                projectNum: newProject.projectNum,
+              })
+              if (worksOnRes.status === 201) {
+                console.log('added new user as mentor')
+                console.log(worksOnRes.data)
+              } else {
+                throw new Error('Could not add worksOn relation')
+              }
             }
           }
         }
@@ -417,44 +435,60 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
       {
         if (updatedStudents[studentIndex] === true)
         {
-          if (studentArr.length >= 1) { // if existing student array had an initial value for student but now admin removed initial student since student field was edited
-            worksOnRes = await axios.get('/api/worksOn/currentProjects/', {
-              params: {
-                userID: studentArr[studentIndex].userID,
-            }})
-            if (worksOnRes.status === 200) { // first get worksOn entry to access start date, then deactivate initial user
-              console.log("found current projects of student")
-              console.log(worksOnRes.data)
+          const oldStudentName = studentIndex < studentArr.length ? studentArr[studentIndex].firstName + " " + studentArr[studentIndex].lastName : "";
+          const newStudentName = students[studentIndex];
+
+          if (oldStudentName != newStudentName) {
+            // student names don't match, so remove old student (if present) and add new student (if present)
+            if (oldStudentName) {
+              worksOnRes = await axios.get('/api/worksOn/currentProjects/', {
+                params: {
+                  userID: studentArr[studentIndex].userID,
+                },
+              })
+              if (worksOnRes.status === 200) {
+                // first get worksOn entry to access start date, then deactivate initial user
+                console.log('found current projects of student')
+                console.log(worksOnRes.data)
+              }
+              worksOns = worksOnRes.data.worksOn
+              projectWorksOn = worksOns.filter(
+                (worksOn) => worksOn.projectID === project.projectID,
+              )
+
+              deactivateRes = await axios.post('/api/worksOn/deactivate/', {
+                email: studentArr[studentIndex].email,
+                projectNum: newProject.projectNum,
+                startDate: projectWorksOn[0].startDate,
+              })
+              if (deactivateRes.status === 200) {
+                console.log('deactivated student')
+                console.log(deactivateRes.data)
+              }
             }
-            worksOns = worksOnRes.data.worksOn
-            projectWorksOn = worksOns.filter((worksOn) => (worksOn.projectID === project.projectID))
-  
-            deactivateRes = await axios.post('/api/worksOn/deactivate/', {
-            netID: studentArr[studentIndex].netID,
-            projectNum: newProject.projectNum,
-            startDate: projectWorksOn[0].startDate,
-            })
-            if (deactivateRes.status === 200) {
-              console.log("deactivated student")
-              console.log(deactivateRes.data)
-            } 
-          }
-          if (students[studentIndex].length > 1) { // if admin added new student
-            userRes = await axios.post('/api/user/get/fullName', {
-              firstName: students[studentIndex].substring(0, students[studentIndex].search(" ")), // extract 2 values since first name and last name are separated by a space
-              lastName: students[studentIndex].substring(students[studentIndex].search(" ") + 1)
-            })
-            if (userRes.status === 200) { // first validate the entered user then add to project
-              console.log("found new user entered as student")
-              console.log(userRes.data)
-            }
-            worksOnRes = await axios.post('/api/worksOn/', {
-              netID: userRes.data.user.netID,
-              projectNum: newProject.projectNum,
-            })
-            if (worksOnRes.status === 201) {
-              console.log("added new user as student")
-              console.log(worksOnRes.data)
+            if (newStudentName.length > 1) {
+              const [firstName, lastName] = students[studentIndex].split(' ', 1) // extract 2 values since first name and last name are separated by a space
+              userRes = await axios.post('/api/user/get/fullName', {
+                firstName,
+                lastName,
+              })
+              if (userRes.status === 200) {
+                // first validate the entered user then add to project
+                console.log('found new user entered as student')
+                console.log(userRes.data)
+              } else {
+                throw new Error('Could not find student')
+              }
+              worksOnRes = await axios.post('/api/worksOn/', {
+                email: userRes.data.user.email,
+                projectNum: newProject.projectNum,
+              })
+              if (worksOnRes.status === 201) {
+                console.log('added new user as student')
+                console.log(worksOnRes.data)
+              } else {
+                throw new Error('Could not add worksOn relation')
+              }
             }
           }
         }
@@ -581,6 +615,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
                 name='remainingBudget'
                 value={Number(remainingBudget)}
                 onChange={(e) => {setRemainingBudget(new Prisma.Decimal(e.target.value))}}
+                readOnly={true}
             />
       </Col>
       </Row>
@@ -683,8 +718,8 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
                 {
                   items.map((reqItems, reqIndex) => {
                     // only shows processed requests for order history - i.e. were approved and ordered, or were rejected
-                    if ((requests[projectIndex][reqIndex].Process[0].status === Status.APPROVED && processed(requests[projectIndex][reqIndex].requestID) === true) || 
-                    requests[projectIndex][reqIndex].Process[0].status === Status.REJECTED) 
+                    if ((requests[projectIndex][reqIndex]?.process.status === Status.RECEIVED && processed(requests[projectIndex][reqIndex].requestID) === true) || 
+                    requests[projectIndex][reqIndex]?.process.status === Status.REJECTED)
                   {
                     return (
                       <div key={reqIndex}>
@@ -699,14 +734,14 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
                        <Col xs={12} md={3}>
                         <h6 className={styles.headingLabel}>Status </h6>
                         <p>
-                        {requests[projectIndex][reqIndex].Process[0].status}
+                        {requests[projectIndex][reqIndex].process.status}
                         </p>
                       </Col>
                       {/* Order Cost for Request */}
                       <Col xs={12} md={2}>
                         <h6 className={styles.headingLabel}> Order Subtotal</h6>
                         <p>
-                        ${calculateTotalCost(reqIndex).toFixed(4)}
+                        ${calculateTotalCost(reqIndex).toFixed(2)}
                         </p>
                         </Col>
                       </Row>

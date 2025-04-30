@@ -38,13 +38,14 @@ const RejectionModal: React.FC<RejectionModalProps> = ({
               rows={3}
               value={reason}
               onChange={(e) => setReason(e.target.value)}
+              placeholder='Enter the reason for rejection'
             />
           </Form.Group>
         </Form>
       </Modal.Body>
       <Modal.Footer>
         <Button variant='secondary' onClick={onHide}>
-          Close
+          Cancel
         </Button>
         <Button variant='danger' onClick={handleSubmit}>
           Submit Rejection

@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE `vendor` MODIFY `vendorStatus` ENUM('APPROVED', 'DENIED', 'PENDING') NOT NULL DEFAULT 'PENDING';

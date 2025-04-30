@@ -15,7 +15,7 @@ interface RequestCardProps {
   onApprove: () => void
   collapsed: boolean
 }
-
+ 
 const MentorRequestCard: React.FC<RequestCardProps> = ({
   details,
   onReject,
@@ -44,7 +44,7 @@ const MentorRequestCard: React.FC<RequestCardProps> = ({
    */
   async function getStudentThatRequested() {
     try {
-      if (!details.Process[0].mentorID) return null
+      if (!details.process.mentorID) return null
       const user = await axios.get(`/api/user/${details.studentID}`)
       if (user.status === 200) setStudentThatRequested(user.data)
       return user
@@ -108,36 +108,17 @@ const MentorRequestCard: React.FC<RequestCardProps> = ({
                     (total, item) =>
                       total + item.quantity * (item.unitPrice/100 as any),
                     0
-                  ).toFixed(4)}
+                  ).toFixed(2)}
                 </p>
               </Col>
 
               {/* STATUS */}
               <Col xs={6} lg={3}>
                 <h6 className={styles.headingLabel}>Status</h6>
-                <p>{details.Process[0].status}</p>
+                <p>{details.process.status}</p>
               </Col>
 
-              {/* <Col xs='auto' className='d-flex align-items-center'>
-                <div className='d-flex align-items-start'>
-                  <Button
-                    variant='success'
-                    size='sm'
-                    className='mb-2'
-                    onClick={onApprove}
-                  >
-                    APPROVE
-                  </Button>{' '}
-                  <Button
-                    variant='dark'
-                    size='sm'
-                    onClick={onReject}
-                    className='ms-4'
-                  >
-                    REJECT
-                  </Button>
-                </div>
-              </Col> */}
+              
             </Row>
 
             {/* COLLAPSED ROW */}
