@@ -198,7 +198,7 @@ const StudentRequestCard: React.FC<RequestCardProps> = ({ details, collapsed }) 
                                 }
                               />
                             </td>
-                            <td>{item.vendorID}</td>
+                            <td>{vendorNames[item.vendorID] || 'Loading...'}</td>
                             <td>
                               <Form.Control
                                 name='url'
