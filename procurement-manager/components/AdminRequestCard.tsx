@@ -550,7 +550,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
                                 <td width={90}>
                                   <Form.Control
                                     name='unitPrice'
-                                    value={item.unitPrice.toString()}
+                                    value={item.unitPrice/100}
                                     onChange={(e) =>
                                       handleItemChange(
                                         e as React.ChangeEvent<HTMLInputElement>,
@@ -564,7 +564,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
                                     <InputGroup.Text>$</InputGroup.Text>
                                     <Form.Control
                                       value={(
-                                        item.quantity * (item.unitPrice as any)
+                                        item.quantity * (item.unitPrice/100 as any)
                                       ).toFixed(4)}
                                       disabled
                                     />
@@ -626,7 +626,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
                               <td>
                                 <Form.Control
                                   name='shippingCost'
-                                  value={Number(order.shippingCost)}
+                                  value={Number(order.shippingCost/100)}
                                   onChange={(e) => handleOrderChange(
                                     e as React.ChangeEvent<HTMLInputElement>,
                                     orderIndex

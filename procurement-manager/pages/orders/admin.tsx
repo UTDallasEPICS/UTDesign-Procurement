@@ -237,12 +237,12 @@ export default function Admin({
           <Row key={projIndex}>
             <ProjectHeader
               projectName={project.projectTitle}
-              expenses={project.totalExpenses}
+              expenses={project.totalExpenses/100}
               available={Prisma.Decimal.sub(
-                project.startingBudget,
-                project.totalExpenses
+                project.startingBudget/100,
+                project.totalExpenses/100
               )}
-              budgetTotal={project.startingBudget}
+              budgetTotal={project.startingBudget/100}
               onToggleCollapse={() => {
                 // toggleProjectCollapse(projIndex)
                 toggleCards(projIndex)

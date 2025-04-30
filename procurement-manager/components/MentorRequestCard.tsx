@@ -106,7 +106,7 @@ const MentorRequestCard: React.FC<RequestCardProps> = ({
                   $
                   {details.RequestItem.reduce(
                     (total, item) =>
-                      total + item.quantity * (item.unitPrice as any),
+                      total + item.quantity * (item.unitPrice/100 as any),
                     0
                   ).toFixed(4)}
                 </p>
@@ -210,10 +210,10 @@ const MentorRequestCard: React.FC<RequestCardProps> = ({
                             <td>{item.url}</td>
                             <td>{item.partNumber}</td>
                             <td>{item.quantity}</td>
-                            <td>{item.unitPrice.toString()}</td>
+                            <td>{item.unitPrice/100}</td>
                             <td>
                               {(
-                                item.quantity * (item.unitPrice as any)
+                                item.quantity * (item.unitPrice/100 as any)
                               ).toFixed(4)}
                             </td>
                             <td></td>

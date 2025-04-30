@@ -163,12 +163,12 @@ export default function Mentor({ session, user }: MentorProps) {
           <Row className='big-row my-4' key={projIndex}>
             <ProjectHeader
               projectName={project.projectTitle}
-              expenses={project.totalExpenses}
+              expenses={project.totalExpenses/100}
               available={Prisma.Decimal.sub(
-                project.startingBudget,
-                project.totalExpenses
+                project.startingBudget/100,
+                project.totalExpenses/100
               )}
-              budgetTotal={project.startingBudget}
+              budgetTotal={project.startingBudget/100}
               onToggleCollapse={
                 () => toggleCards(projIndex)
                 // toggleProjectCollapse(projIndex)

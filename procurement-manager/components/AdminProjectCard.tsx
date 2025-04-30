@@ -809,7 +809,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
                                     <td>
                                       <Form.Control
                                         name='unitPrice'
-                                        value={item.unitPrice.toString()}
+                                        value={item.unitPrice/100}
                                         onChange={(e) =>
                                           handleItemChange(
                                             e as React.ChangeEvent<HTMLInputElement>,
@@ -825,7 +825,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
                                         <InputGroup.Text>$</InputGroup.Text>
                                         <Form.Control
                                           value={(
-                                            item.quantity * (item.unitPrice as any)
+                                            item.quantity * (item.unitPrice/100 as any)
                                           ).toFixed(4)}
                                           disabled
                                         />

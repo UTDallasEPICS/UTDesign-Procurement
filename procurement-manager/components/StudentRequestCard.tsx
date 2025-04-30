@@ -171,7 +171,7 @@ const StudentRequestCard: React.FC<RequestCardProps> = ({
               $
               {details.RequestItem.reduce(
                 (total, item) =>
-                  total + item.quantity * (item.unitPrice as any),
+                  total + item.quantity * (item.unitPrice/100 as any),
                 0
               ).toFixed(4)}
             </p>
@@ -310,7 +310,7 @@ const StudentRequestCard: React.FC<RequestCardProps> = ({
                             <td>
                               <Form.Control
                                 name='unitPrice'
-                                value={item.unitPrice.toString()}
+                                value={item.unitPrice/100}
                                 onChange={(e) =>
                                   handleInputChange(
                                     e as React.ChangeEvent<HTMLInputElement>,
@@ -324,7 +324,7 @@ const StudentRequestCard: React.FC<RequestCardProps> = ({
                                 <InputGroup.Text>$</InputGroup.Text>
                                 <Form.Control
                                   value={(
-                                    item.quantity * (item.unitPrice as any)
+                                    item.quantity * (item.unitPrice/100 as any)
                                   ).toFixed(4)}
                                   disabled
                                 />

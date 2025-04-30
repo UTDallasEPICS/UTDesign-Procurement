@@ -63,7 +63,7 @@ export default async function handler(
         projectType: 'EPICS',
         projectNum: 10000, // Changed because Sample Files to be uploaded have projects greater than 1000
         projectTitle: 'Sample Project 1',
-        startingBudget: 1000.0,
+        startingBudget: 100000.0,
         sponsorCompany: 'Sample Company 1',
         activationDate: new Date(),
       },
@@ -75,7 +75,7 @@ export default async function handler(
         projectType: 'EPICS',
         projectNum: 20000, // Changed because Sample Files to be uploaded have projects greater than 1000
         projectTitle: 'Sample Project 2',
-        startingBudget: 1000.0,
+        startingBudget: 100000.0,
         sponsorCompany: 'Sample Company 1',
         activationDate: new Date(),
       },

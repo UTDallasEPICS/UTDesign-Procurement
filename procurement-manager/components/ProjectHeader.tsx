@@ -30,7 +30,7 @@ const ProjectHeader: React.FC<ProjectHeaderProps> = ({
       </Col>
       <Col md={2}>
         <p style={{ fontSize: '1.5rem' }}>
-          <strong>Expenses:</strong> $<>{expenses}</>
+          <strong>Expenses:</strong> $<>{expenses/100}</>
         </p>
       </Col>
       <Col md={2}>
