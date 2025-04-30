@@ -61,18 +61,32 @@ export default async function handler(
 
     // INPUT ARRAY OF ITEMS INTO DATABASE
     const items = req.body.items
-    items.forEach(async (item: Item) => {
-      console.log('CONSOLE: Item', item)
-      await createItem(reimbursementID, item)
-    })
 
-    res.status(200).json({
-      message: 'POST was a success',
-      data: {
-        id: reimbursementID,
-        dateSubmitted: dateSubmitted,
-      },
-    })
+    try {
+      await Promise.all(
+        items.map((item: Item) => createItem(reimbursementID, item))
+      )
+    
+      res.status(200).json({
+        message: 'POST was a success',
+        data: {
+          id: reimbursementID,
+          dateSubmitted: dateSubmitted,
+        },
+      })
+    } catch (itemError) {
+      // Clean up by deleting the reimbursement and process
+      await prisma.reimbursement.delete({ where: { reimbursementID } })
+      await prisma.process.delete({ where: { processID } })
+    
+      console.error('Item creation failed:', itemError)
+      res.status(400).json({
+        message: 'Failed to add items to reimbursement',
+        error: itemError instanceof Error ? itemError.message : itemError,
+      })
+    }
+    
+
   } catch (error) {
     console.log(error)
     if (error instanceof Error)
