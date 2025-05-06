@@ -112,46 +112,184 @@ const StudentRequestCard: React.FC<RequestCardProps> = ({ details, collapsed }) 
         </Row>
         <Collapse in={collapse}>
           <div>
-            <Table responsive striped>
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>Description</th>
-                  <th>Vendor</th>
-                  <th>URL</th>
-                  <th>Part #</th>
-                  <th>Qty</th>
-                  <th>Unit Price</th>
-                  <th>Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                {inputValues.map((item, index) => (
-                  <tr key={index}>
-                    <td>{index + 1}</td>
-                    <td>
-                      <Form.Control name='description' value={item.description} onChange={e => handleInputChange(e, index)} />
-                    </td>
-                    <td>{vendorNames[item.vendorID] || 'Loading...'}</td>
-                    <td>
-                      <Form.Control name='url' value={item.url} onChange={e => handleInputChange(e, index)} />
-                    </td>
-                    <td>
-                      <Form.Control name='partNumber' value={item.partNumber} onChange={e => handleInputChange(e, index)} />
-                    </td>
-                    <td>
-                      <Form.Control name='quantity' value={item.quantity} onChange={e => handleInputChange(e, index)} />
-                    </td>
-                    <td>
-                      <Form.Control name='unitPrice' value={item.unitPrice.toString()} onChange={e => handleInputChange(e, index)} />
-                    </td>
-                    <td>
-                      ${(item.quantity * Number(item.unitPrice)).toFixed(2)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
+            <Row className='my-4 smaller-row'>
+              
+              {/* JUSTIFICATION ADDITIONAL INFO */}
+              <Col xs={12} lg={3}>
+                <h6 className={styles.headingLabel}>Additional info:</h6>
+                <p>
+                  {!details.additionalInfo ? 'none' : details.additionalInfo}
+                </p>
+                <h6 className={styles.headingLabel}>Sponsor:</h6>
+                <p>{details.project.sponsorCompany}</p>
+              </Col>
+
+              {/* REQUESTED BY/APPROVED BY */}
+              <Col xs={12} lg={4}>
+                <h6 className={styles.headingLabel}>Requested by:</h6>
+                <p>{studentThatRequested?.email}</p>
+
+                <h6 className={styles.headingLabel}>Approved by:</h6>
+                <p>{mentorThatApproved?.email}</p>
+              </Col>
+
+              {details.process.status === Status.REJECTED && (
+                <Col xs={12} lg={5}>
+                  {!editable && (
+                    <Button
+                      className={`${styles.cardBtn} ${styles.editBtn} mb-3`}
+                      variant='warning'
+                      onClick={() => setEditable(true)}
+                    >
+                      Edit
+                    </Button>
+                  )}
+                  <h6 className={styles.headingLabel}>Comments: </h6>
+                  <p>
+                    {!details.process.adminProcessedComments
+                      ? 'No Comments from Admin'
+                      : 'Admin: ' + details.process.adminProcessedComments}
+                  </p>
+                  <p>
+                    {!details.process.mentorProcessedComments
+                      ? 'No Comments from Mentor'
+                      : 'Mentor: ' + details.process.mentorProcessedComments}
+                  </p>
+                </Col>
+              )}
+            </Row>
+
+            <Row className='my-2'>
+              <Form
+                className={styles.requestDetails}
+                onSubmit={() => handleResubmit}
+              >
+                <fieldset disabled={!editable}>
+                  <Table responsive striped>
+                    <thead>
+                      <tr>
+                        <th>#</th>
+                        <th>Description</th>
+                        <th>Vendor</th>
+                        <th>URL</th>
+                        <th>Part #</th>
+                        <th>Qty</th>
+                        <th>Unit Price</th>
+                        <th>Total</th>
+                        <th>Order #</th>
+                        <th>Tracking Info</th>
+                        <th>Item Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {inputValues.map((item, itemIndex) => {
+                        return (
+                          <tr key={itemIndex}>
+                            <td>{itemIndex + 1}</td>
+                            <td>
+                              <Form.Control
+                                name='description'
+                                value={item.description}
+                                onChange={(e) =>
+                                  handleInputChange(
+                                    e as React.ChangeEvent<HTMLInputElement>,
+                                    itemIndex
+                                  )
+                                }
+                              />
+                            </td>
+                            <td>{vendorNames[item.vendorID] || 'Loading...'}</td>
+                            <td>
+                              <Form.Control
+                                name='url'
+                                value={item.url}
+                                onChange={(e) =>
+                                  handleInputChange(
+                                    e as React.ChangeEvent<HTMLInputElement>,
+                                    itemIndex
+                                  )
+                                }
+                              />
+                            </td>
+                            <td>
+                              <Form.Control
+                                name='partNumber'
+                                value={item.partNumber}
+                                onChange={(e) =>
+                                  handleInputChange(
+                                    e as React.ChangeEvent<HTMLInputElement>,
+                                    itemIndex
+                                  )
+                                }
+                              />
+                            </td>
+                            <td>
+                              <Form.Control
+                                name='quantity'
+                                value={item.quantity}
+                                onChange={(e) =>
+                                  handleInputChange(
+                                    e as React.ChangeEvent<HTMLInputElement>,
+                                    itemIndex
+                                  )
+                                }
+                              />
+                            </td>
+                            <td>
+                              <Form.Control
+                                name='unitPrice'
+                                value={item.unitPrice.toString()}
+                                onChange={(e) =>
+                                  handleInputChange(
+                                    e as React.ChangeEvent<HTMLInputElement>,
+                                    itemIndex
+                                  )
+                                }
+                              />
+                            </td>
+                            <td>
+                              <InputGroup>
+                                <InputGroup.Text>$</InputGroup.Text>
+                                <Form.Control
+                                  value={(
+                                    item.quantity * (item.unitPrice as any)
+                                  ).toFixed(2)}
+                                  disabled
+                                />
+                              </InputGroup>
+                            </td>
+                            <td>
+                              <Form.Control />
+                            </td>
+                            <td>
+                              <Form.Control />
+                            </td>
+                            <td>
+                              <Form.Control 
+                                value={(
+                                  //details.process.status
+                                  item.status
+                                )}
+                              />
+                            </td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </Table>
+                </fieldset>
+                {editable && (
+                  <Button variant='success' onClick={(e) => handleSave()}>
+                    Save
+                  </Button>
+                )}
+                {resubmit && (
+                  <Button variant='success' type='submit'>
+                    Re-submit
+                  </Button>
+                )}
+              </Form>
+            </Row>
           </div>
         </Collapse>
       </Card.Body>
