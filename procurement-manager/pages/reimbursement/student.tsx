@@ -39,8 +39,8 @@ export async function getServerSideProps(context: any) {
       return {
         projectNum: project.projectNum,
         projectTitle: project.projectTitle,
-        startingBudget: project.startingBudget.toNumber(),
-        totalExpenses: project.totalExpenses.toNumber(),
+        startingBudget: project.startingBudget,
+        totalExpenses: project.totalExpenses
       }
     })
   } catch (error) {

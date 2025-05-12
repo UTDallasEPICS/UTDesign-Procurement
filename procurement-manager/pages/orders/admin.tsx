@@ -341,15 +341,15 @@ export default function Admin({
       <Row className='my-4'>
         <h1>Welcome back {user && user.firstName}</h1>
       </Row>
-      {/* Creates the ProjectHeader  */}
+  
       {projects.map((project, projIndex) => {
         return (
           <Row key={projIndex}>
             <ProjectHeader
               projectName={project.projectTitle}
               expenses={project.totalExpenses/100}
-              available={Prisma.Decimal.sub(
-                project.startingBudget/100,
+              available={(
+                project.startingBudget/100-
                 project.totalExpenses/100
               )}
               budgetTotal={project.startingBudget/100}
@@ -364,8 +364,7 @@ export default function Admin({
             {/* The Collapse below was an old feature that might be used again */}
             {/* <Collapse in={isOpen[projIndex]}> */}
             {/* <div> */}
-            {projectRequests[projIndex].length > 0 ? (
-              projectRequests[projIndex].map((request, reqIndex) => {
+            {projectRequests[projIndex]?.map((request, reqIndex) => {
                 // TODO:: only show request cards if approved and not processed, works using an if and 'processed' function but resolve rendering issue:
                 // i.e. when you open or refresh orders page, it still tries to display the request cards of processed requests, then the cards disappear
                 // maybe try getting processed requests and update the request array in getServerSideProps() instead of in the component
@@ -383,10 +382,9 @@ export default function Admin({
                     }
                     onSave={() => getAdminRequests()}
                     collapsed={true}
-                  />
-                </>
-              )
-            })()}
+                    />)})}
+                
+                
           {open.type === 'reimbursement' &&
             open.itemId !== null &&
             (() => {
@@ -427,13 +425,13 @@ export default function Admin({
                 </>
               )
             })()}
-        </Col>
+        
         <RejectionModal
           show={showRejectModal}
           onHide={() => setShowRejectModal(false)}
           onSubmit={handleSubmitRejection}
         />
-      </Row>
+      </Row>)})}
     </>
   )
 }

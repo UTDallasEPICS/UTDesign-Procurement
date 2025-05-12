@@ -139,7 +139,7 @@ const StudentRequestCard: React.FC<RequestCardProps> = ({ details, collapsed }) 
                 <p>{mentorThatApproved?.email}</p>
               </Col>
 
-              {details.Process[0].status === Status.REJECTED && (
+              {details.process.status === Status.REJECTED && (
                 <Col xs={12} lg={5}>
                   {!editable && (
                     <Button
@@ -152,14 +152,14 @@ const StudentRequestCard: React.FC<RequestCardProps> = ({ details, collapsed }) 
                   )}
                   <h6 className={styles.headingLabel}>Comments: </h6>
                   <p>
-                    {!details.Process[0].adminProcessedComments
+                    {!details.process.adminProcessedComments
                       ? 'No Comments from Admin'
-                      : 'Admin: ' + details.Process[0].adminProcessedComments}
+                      : 'Admin: ' + details.process.adminProcessedComments}
                   </p>
                   <p>
-                    {!details.Process[0].mentorProcessedComments
+                    {!details.process.mentorProcessedComments
                       ? 'No Comments from Mentor'
-                      : 'Mentor: ' + details.Process[0].mentorProcessedComments}
+                      : 'Mentor: ' + details.process.mentorProcessedComments}
                   </p>
                 </Col>
               )}

@@ -144,7 +144,7 @@ async function createRequest(
               connect: { email: body.studentEmail },
             },
             additionalInfo: optionalFields.additionalInfo,
-            expense: body.totalExpenses,
+            expense: parseInt(body.totalExpenses),
           },
         },
       },

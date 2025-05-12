@@ -136,12 +136,12 @@ export default function Student({ session, user }: StudentProps) {
           <Row className='big-row my-4' key={projIndex}>
             <ProjectHeader
               projectName={project.projectTitle}
-              expenses={project.totalExpenses/100}
-              available={Prisma.Decimal.sub(
-                project.startingBudget/100,
-                project.totalExpenses/100
+              expenses={project.totalExpenses}
+              available={(
+                project.startingBudget -
+                project.totalExpenses
               )}
-              budgetTotal={project.startingBudget/100}
+              budgetTotal={project.startingBudget}
               onToggleCollapse={() => toggleCards(projIndex)}
               isOpen={isOpen[projIndex]}
             />

@@ -927,52 +927,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
                           </tr>
                         </thead>
                         <tbody>
-                          {orders.map((order, orderIndex) => {
-                            return (
-                              <tr key={orderIndex}>
-                              <td>
-                                <Form.Control
-                                  name='orderNumber'
-                                  value={order.orderNumber}
-                                  onChange={(e) => handleOrderChange(
-                                    e as React.ChangeEvent<HTMLInputElement>,
-                                    orderIndex
-                                  )}
-                                />
-                              </td>
-                              <td>
-                                <Form.Control
-                                  name='trackingInfo'
-                                  value={order.trackingInfo}
-                                  onChange={(e) => handleOrderChange(
-                                    e as React.ChangeEvent<HTMLInputElement>,
-                                    orderIndex
-                                  )}
-                                />
-                              </td>
-                              <td>
-                                <Form.Control
-                                  name='orderDetails'
-                                  value={order.orderDetails}
-                                  onChange={(e) => handleOrderChange(
-                                    e as React.ChangeEvent<HTMLInputElement>,
-                                    orderIndex
-                                  )}
-                                />
-                              </td>
-                              <td>
-                                <Form.Control
-                                  name='shippingCost'
-                                  value={Number(order.shippingCost/100)}
-                                  onChange={(e) => handleOrderChange(
-                                    e as React.ChangeEvent<HTMLInputElement>,
-                                    orderIndex
-                                  )}
-                                />
-                              </td>
-                            </tr>
-                          </thead>
-                          <tbody>
+    
                             {orders.map((order, orderIndex) => {
                               return (
                                 <tr key={orderIndex}>

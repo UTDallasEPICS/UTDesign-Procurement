@@ -8,9 +8,9 @@ import { Col, Button, Row, Stack } from 'react-bootstrap'
 
 interface ProjectHeaderProps {
   projectName: string
-  expenses: Prisma.Decimal
-  available: Prisma.Decimal
-  budgetTotal: Prisma.Decimal
+  expenses: number
+  available: number
+  budgetTotal: number
   onToggleCollapse?: () => void
   isOpen?: boolean
 }
@@ -35,12 +35,12 @@ const ProjectHeader: React.FC<ProjectHeaderProps> = ({
       </Col>
       <Col md={2}>
         <p style={{ fontSize: '1.15rem' }}>
-          <strong>Available:</strong> $<>{available.toString()}</>
+          <strong>Available:</strong> $<>{available/100}</>
         </p>
       </Col>
       <Col md={2}>
         <p style={{ fontSize: '1.15rem' }}>
-          <strong>Budget:</strong> $<>{budgetTotal.toString()}</>
+          <strong>Budget:</strong> $<>{budgetTotal/100}</>
         </p>
       </Col>
       {isOpen !== undefined && onToggleCollapse !== undefined &&
