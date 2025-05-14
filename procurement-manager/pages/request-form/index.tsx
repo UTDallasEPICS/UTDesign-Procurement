@@ -241,6 +241,7 @@ const StudentRequest = ({
   const calculateTotalCost = (): number => {
     let totalCost = 0
     items.forEach((item) => {
+      console.log('[calculateTotalCost] item', item)
       totalCost +=
         (item.unitCost || 0) * (item.quantity || 0)
     })
@@ -296,13 +297,14 @@ const StudentRequest = ({
   }
   
   const handleNumericValueChangeOnItem = (value: number | null, index: number, field: 'unitCost' | 'quantity') => {
+    console.log('[Parent] handleNumericValueChangeOnItem called with', { value, index, field });
     const newItems = [...items]
     newItems[index][field] = value ?? 0
 
     if (field === 'quantity' || field === 'unitCost') {
       const quantity = newItems[index].quantity
       const unitCost = newItems[index].unitCost
-
+      console.log('[Parent] Calculating totalCost with', { quantity, unitCost });
       if (!Number.isNaN(quantity) && !Number.isNaN(unitCost)) {
         newItems[index].totalCost = (quantity * unitCost)
       } else {
@@ -310,6 +312,7 @@ const StudentRequest = ({
       }
     }
     setItems(newItems)
+    console.log('[Parent] setItems called with', newItems);
   }
 
   // TODO:: change vendorID to vendorName similar to AdminRequestCard
@@ -567,7 +570,7 @@ const StudentRequest = ({
                   </Form.Label>
                   <NumberFormControl
                     min='0'
-                    value={item.quantity}
+                    defaultValue={item.quantity}
                     onValueChange={(e) => handleNumericValueChangeOnItem(e, index, 'quantity')}
                     className={`${styles.quantityNumberInput} ${styles.hideArrows}`}
                     required
@@ -590,16 +593,17 @@ const StudentRequest = ({
                     <NumberFormControl
                       step='0.0001'
                       min='0'
-                      value={item.unitCost}
+                      defaultValue={item.unitCost/100}
                       onValueChange={(e) => {
+                        console.log('[NumberFormControl] onValueChange: e', e)  
                         if (e === null) {
                           handleNumericValueChangeOnItem(null, index, 'unitCost')
                         } else {
-                          handleNumericValueChangeOnItem(e, index, 'unitCost')
+                          handleNumericValueChangeOnItem(e * 100, index, 'unitCost')
                         }
                       }}
-                      renderNumber={(value) => dollarsAsString(value)}
                       className={`${styles.costInputField} ${styles.unitCostInput} ${styles.hideArrows}`}
+                      renderNumber={(value) => dollarsAsString(value, false)}
                       required
                     />
                   </InputGroup>
@@ -608,32 +612,14 @@ const StudentRequest = ({
 
               {/* TOTAL COST */}
               <Col md={2}>
-                <Form.Group controlId={`item${index}TotalCost`}>
-                  <Form.Label>
-                    <strong>Total</strong>
-                  </Form.Label>
-                  <InputGroup
-                    className={`${styles.unitcostField} ${styles.customInputGroup}`}
-                  >
-                    <InputGroup.Text className={styles.inputGroupText}>
-                      $
-                    </InputGroup.Text>
-                    <NumberFormControl
-                      value={
-                        item.totalCost
-                      }
-                      renderNumber={(value) => {
-                        const v = (value).toFixed(2)
-                        console.log('v', v)
-                        return v
-                      }}
-                      
-                      className={`${styles.costInputField} ${styles.totalCostInput}`}
-                      disabled
-                    />
-                  </InputGroup>
-                </Form.Group>
-                <Col className='d-flex justify-content-end mt-2 w-100'>
+                <p>
+                  <strong>Total</strong>
+                </p>
+                <p>
+                  {dollarsAsString(item.totalCost/100)}
+                </p>
+              </Col>
+              <Col className='justify-content-end w-100'>
                   {items.length > 1 && (
                     <Button
                       variant='danger'
@@ -646,7 +632,6 @@ const StudentRequest = ({
                       Delete
                     </Button>
                   )}
-                </Col>
               </Col>
             </Row>
             <Row className="my-4">
@@ -832,14 +817,14 @@ type NumberFormControlProps = Omit<
   ComponentProps<typeof Form.Control>,
   'value' | 'onChange' | 'type' | 'onBlur'> & 
   {
-    value: number, 
+    defaultValue: number, 
     onValueChange?: (value: number | null) => void
     renderNumber?: (value: number) => string
   }
 
 function NumberFormControl(props: NumberFormControlProps) {
-  const { value, onValueChange, renderNumber = dollarsAsString, ...rest } = props
-  const [stringValue, setStringValue] = useState(renderNumber(value))
+  const { defaultValue, onValueChange, renderNumber = (value) => value.toString(), ...rest } = props
+  const [stringValue, setStringValue] = useState(renderNumber(defaultValue))
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setStringValue(e.target.value)
@@ -873,7 +858,10 @@ function NumberFormControl(props: NumberFormControlProps) {
   )
 }
 
-const dollarsAsString = (value: number, includeCurrencySign = true) => {
+const dollarsAsString = (value: number | undefined, includeCurrencySign = true) => {
+  if (value === undefined) {
+    return ''
+  }
   const formattedValue = value.toLocaleString('en-US', {
     style: 'currency',
     currency: 'USD',
