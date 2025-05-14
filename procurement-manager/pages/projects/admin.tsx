@@ -132,7 +132,7 @@ export default function Admin({
       {/* Creates the ProjectHeader  */}
       {projects.map((project, projIndex) => {
         return (
-          <Row key={projIndex}>
+          <Row key={project.projectID}>
             <ProjectPageHeader
               projectID={project.projectID}
               onToggleCollapse={() => {

@@ -347,12 +347,12 @@ export default function Admin({
           <Row key={projIndex}>
             <ProjectHeader
               projectName={project.projectTitle}
-              expenses={project.totalExpenses/100}
+              expenses={project.totalExpenses}
               available={(
-                project.startingBudget/100-
-                project.totalExpenses/100
+                project.startingBudget-
+                project.totalExpenses
               )}
-              budgetTotal={project.startingBudget/100}
+              budgetTotal={project.startingBudget}
               onToggleCollapse={() => {
                 // toggleProjectCollapse(projIndex)
                 toggleCards(projIndex)

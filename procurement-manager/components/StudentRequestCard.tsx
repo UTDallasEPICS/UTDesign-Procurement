@@ -272,12 +272,12 @@ const StudentRequestCard: React.FC<RequestCardProps> = ({ details, collapsed }) 
                               <Form.Control />
                             </td>
                             <td>
-                              <Form.Control 
+                              <p 
                                 value={(
                                   //details.process.status
                                   item.status
                                 )}
-                              />
+                              ></p>
                             </td>
                           </tr>
                         )

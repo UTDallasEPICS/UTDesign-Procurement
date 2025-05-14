@@ -17,6 +17,7 @@ import {
 import styles from '@/styles/RequestCard.module.scss'
 import { Prisma, User, Project, WorksOn, Status, Order } from '@prisma/client'
 import axios from 'axios'
+import { dollarsAsString, NumberFormControl } from './NumberFormControl'
 
 const MAX_STUDENTS = 6;
 
@@ -598,25 +599,38 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
             />
       </Col>
 
-              {/* Total Budget */}
-                <Col xs={12} md={3}>
-                  <h6 className={styles.headingLabel}>Total Budget</h6>
-              <Form.Control
-                name='totalBudget'
-                value={Number(totalBudget)}
-                onChange={(e) => {setTotalBudget(Number(e.target.value))}}
-            />
+      {/* Total Budget */}
+      <Col xs={12} md={3}>
+        <h6 className={styles.headingLabel}>Total Budget</h6>
+        <NumberFormControl
+          name='totalBudget'
+          defaultValue={totalBudget/100}
+          onValueChange={(e) => {
+            if (e === null) {
+              return
+            }
+            setTotalBudget(e*100)}
+          }
+          renderNumber={(value) => dollarsAsString(value, false)}
+        />
       </Col>
 
               {/* Remaining Budget */}
                 <Col xs={12} md={2}>
                   <h6 className={styles.headingLabel}>Remaining Budget</h6>
-              <Form.Control
-                name='remainingBudget'
-                value={Number(remainingBudget)}
-                onChange={(e) => {setRemainingBudget(Number(e.target.value))}}
-                readOnly={true}
-            />
+
+<NumberFormControl
+          name='remainingBudget'
+          defaultValue={remainingBudget/100}
+          readOnly={true}
+          onValueChange={(e) => {
+            if (e === null) {
+              return
+            }
+            setRemainingBudget(e*100)}
+          }
+          renderNumber={(value) => dollarsAsString(value, false)}
+        />
       </Col>
       </Row>
               </fieldset>

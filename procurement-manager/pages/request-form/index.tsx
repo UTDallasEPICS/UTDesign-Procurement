@@ -14,6 +14,7 @@ import { Session, getServerSession } from 'next-auth'
 import { authOptions } from '@/pages/api/auth/[...nextauth]'
 import { useRouter } from 'next/router'
 import { prisma } from '@/db'
+import { dollarsAsString, NumberFormControl } from '@/components/NumberFormControl'
 
 export async function getServerSideProps(context: any) {
   const session = await getServerSession(context.req, context.res, authOptions)
@@ -813,59 +814,4 @@ const StudentRequest = ({
 export default StudentRequest
 
 
-type NumberFormControlProps = Omit<
-  ComponentProps<typeof Form.Control>,
-  'value' | 'onChange' | 'type' | 'onBlur'> & 
-  {
-    defaultValue: number, 
-    onValueChange?: (value: number | null) => void
-    renderNumber?: (value: number) => string
-  }
 
-function NumberFormControl(props: NumberFormControlProps) {
-  const { defaultValue, onValueChange, renderNumber = (value) => value.toString(), ...rest } = props
-  const [stringValue, setStringValue] = useState(renderNumber(defaultValue))
-
-  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setStringValue(e.target.value)
-  }, [])
-
-  const handleBlur = useCallback((e: React.FocusEvent<HTMLInputElement>) => {
-    if (!onValueChange) {
-      return
-    }
-    const trimmed = e.target.value.trim()
-    if (trimmed.length === 0) {
-      onValueChange(null)
-    } else {
-      const parsed = Number.parseFloat(trimmed)
-      if (!Number.isNaN(parsed)) {
-        setStringValue(renderNumber(parsed))
-        onValueChange(parsed)
-      }
-    }
-  }, [onValueChange, renderNumber])
-
-
-  return (
-    <Form.Control
-      type='number'
-      value={stringValue}
-      onChange={handleChange}
-      onBlur={handleBlur}
-      {...rest}
-    />
-  )
-}
-
-const dollarsAsString = (value: number | undefined, includeCurrencySign = true) => {
-  if (value === undefined) {
-    return ''
-  }
-  const formattedValue = value.toLocaleString('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    useGrouping: false,
-  });
-  return includeCurrencySign ? formattedValue : formattedValue.slice(1);
-}

@@ -13,6 +13,7 @@ import { Session, getServerSession } from 'next-auth'
 import { authOptions } from '@/pages/api/auth/[...nextauth]'
 import { useRouter } from 'next/router'
 import { prisma } from '@/db'
+import { dollarsAsString, NumberFormControl } from '@/components/NumberFormControl'
 
 export async function getServerSideProps(context: any) {
   const session = await getServerSession(context.req, context.res, authOptions)
@@ -80,7 +81,7 @@ const StudentReimbursement = ({ user, listOfProjects }: StudentRequestProps) => 
       receiptDate: '',
       vendor: '',
       description: '',
-      unitCost: ''
+      unitCost: 0
     },
   ])
   const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null)
@@ -88,15 +89,7 @@ const StudentReimbursement = ({ user, listOfProjects }: StudentRequestProps) => 
   const [selectedProject, setSelectedProject] = useState(listOfProjects[0].projectNum)
   const router = useRouter()
   
-  const handleUnitCostBlur = (
-    e: React.FocusEvent<HTMLInputElement>,
-    index: number
-  ) => {
-    const newItems = [...items]
-    newItems[index].unitCost = e.target.value
-    setItems(newItems)
-  }
-
+  
   // This function is called when delete button for an item is clicked
   const handleDeleteItem = (index: number) => {
     // get the array without the item to be deleted
@@ -172,15 +165,18 @@ const StudentReimbursement = ({ user, listOfProjects }: StudentRequestProps) => 
     field:
       | 'vendor'
       | 'description'
-      | 'unitCost'
   ) => {
     const newItems = [...items]
     newItems[index][field] = e.target.value
 
-    if (field === 'unitCost') {
-      const unitCost = parseFloat(newItems[index].unitCost)
-    }
+    setItems(newItems)
+  }
 
+  const handleNumericValueChangeOnItem = (value: number | null, index: number, field: 'unitCost') => {
+    console.log('[Parent] handleNumericValueChangeOnItem called with', { value, index, field });
+    const newItems = [...items]
+    newItems[index][field] = value ?? 0
+    
     setItems(newItems)
   }
 
@@ -260,7 +256,7 @@ const StudentReimbursement = ({ user, listOfProjects }: StudentRequestProps) => 
           </p>
           <p>
             <span>
-              ${(remainingBeforeItem).toFixed(4).toString()}
+              ${(remainingBeforeItem/100).toFixed(4).toString()}
             </span>
           </p>
         </Col>
@@ -269,7 +265,7 @@ const StudentReimbursement = ({ user, listOfProjects }: StudentRequestProps) => 
             <strong>Remaining: </strong>
           </p>
           <p>
-            <span>${remainingAfterItem.toFixed(4).toString()}</span>
+            <span>${(remainingAfterItem/100).toFixed(4).toString()}</span>
           </p>
         </Col>
       </Row>
@@ -407,24 +403,18 @@ const StudentReimbursement = ({ user, listOfProjects }: StudentRequestProps) => 
                     <InputGroup.Text className={styles.inputGroupText}>
                       $
                     </InputGroup.Text>
-                    <Form.Control
-                      type='number'
+                    <NumberFormControl
                       step='0.01'
                       min='0'
-                      value={item.unitCost}
-                      onChange={(e) => {
-                        const unitCostValue = e.target.value
-                        const regex = /^(?=.*[0-9])\d*(?:\.\d{0,4})?$/
-                        if (regex.test(unitCostValue) || unitCostValue === '') {
-                          handleItemChange(e, index, 'unitCost')
+                      defaultValue={item.unitCost/100}
+                      onValueChange={(e) => {
+                        if (e === null) {
+                          handleNumericValueChangeOnItem(null, index, 'unitCost')
+                        } else {
+                          handleNumericValueChangeOnItem(e * 100, index, 'unitCost')
                         }
                       }}
-                      onBlur={(e) =>
-                        handleUnitCostBlur(
-                          e as React.FocusEvent<HTMLInputElement>,
-                          index
-                        )
-                      }
+                      renderNumber={(value) => dollarsAsString(value, false)}
                       className={`${styles.costInputField} ${styles.unitCostInput} ${styles.hideArrows}`}
                       required
                     />

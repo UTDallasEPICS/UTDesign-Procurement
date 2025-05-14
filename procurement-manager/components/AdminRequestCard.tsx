@@ -27,6 +27,7 @@ import {
   Status,
 } from '@prisma/client'
 import axios from 'axios'
+import { dollarsAsString } from './NumberFormControl'
 interface AdminRequestCardProps {
   user: User
   project: Project
@@ -558,7 +559,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
               {/* ORDER SUBTOTAL */}
               <Col xs={6} lg={2}>
                 <h6 className={styles.headingLabel}>Order Subtotal</h6>
-                <p>${orderTotal.toFixed(2)}</p>
+                <p>{dollarsAsString(orderTotal/100)}</p>
               </Col>
               {/* STATUS */}
               <Col xs={6} lg={3}>

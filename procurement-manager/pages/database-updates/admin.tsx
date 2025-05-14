@@ -20,6 +20,7 @@ import AdminDeactivateModal from '@/components/admin-modals/AdminDeactivateModal
 import AdminReactivateModal from '@/components/admin-modals/AdminReactivateModal'
 import AdminSortByProjectModal from '@/components/admin-modals/AdminSortByProjectModal'
 import AdminAssignProjectModal from '@/components/admin-modals/AdminAssignProjectModal'
+import { dollarsAsString } from '@/components/NumberFormControl'
 
 export async function getServerSideProps() {
   const users = await prisma.user.findMany()
@@ -40,8 +41,8 @@ export async function getServerSideProps() {
 }
 
 interface AdminProps {
-  title: String
-  description: String
+  title: string
+  description: string
   users: User[]
   projects: Project[]
   vendors: Vendor[]
@@ -203,8 +204,22 @@ export default function Admin({
         },
         { field: 'projectTitle' },
         { field: 'projectNum' },
-        { field: 'startingBudget' },
-        { field: 'totalExpenses' },
+        { 
+          field: 'startingBudget', 
+          valueFormatter: (params: any) => {
+          if (params.value === null) {
+            return ''
+          }
+          return dollarsAsString(params.value/100, false)} 
+        },
+        { 
+          field: 'totalExpenses', 
+          valueFormatter: (params: any) => {
+          if (params.value === null) {
+            return ''
+          }
+          return dollarsAsString(params.value/100, false)} 
+        },
         { field: 'projectType' },
         { field: 'sponsorCompany' },
         { 
