@@ -202,9 +202,9 @@ async function createRequest(
     const updateExpense = await prisma.project.update({
       where: { projectID: requestForm.projectID },
       data: {
-        totalExpenses: Prisma.Decimal.add(
-          project?.totalExpenses === undefined ? 0 : project.totalExpenses,
-          body.totalExpenses,
+        totalExpenses: (
+          (project?.totalExpenses === undefined ? 0 : project.totalExpenses)+
+          body.totalExpenses
         ),
       },
     })

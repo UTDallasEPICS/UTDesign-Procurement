@@ -70,7 +70,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
       orderNumber: string
       trackingInfo: string
       orderDetails: string
-      shippingCost: Prisma.Decimal
+      shippingCost: number
       dateOrdered: string
     }[]
   >([])
@@ -80,7 +80,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
       orderNumber: string
       trackingInfo: string
       orderDetails: string
-      shippingCost: Prisma.Decimal
+      shippingCost: number
       dateOrdered: string
     }[]
   >([])
@@ -93,7 +93,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
       url: string
       partNumber: string
       quantity: number
-      unitPrice: Prisma.Decimal
+      unitPrice: number
     }[]
   >([])
   // state that contains the values of the input fields for request items in the request card
@@ -113,20 +113,20 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
 
   /**
    * this function calculates the total cost for all items in a request
-   * @returns Prisma Decimal value for total request expenses
+   * @returns Number value for total request expenses
    */
-  const calculateTotalCost = (): Prisma.Decimal => {
+  const calculateTotalCost = (): number => {
     let totalCost = 0
     items.forEach((item) => {
-      totalCost += Number(item.unitPrice) * item.quantity
+      totalCost += (item.unitPrice) * item.quantity
     })
     orders.forEach((order) => {
-      totalCost += Number(order.shippingCost) // added cost of orders as well
+      totalCost += (order.shippingCost) // added cost of orders as well
     })
-    return new Prisma.Decimal(totalCost)
+    return (totalCost)
   }
 
-  const [orderTotal, setOrderTotal] = useState<Prisma.Decimal>(calculateTotalCost())
+  const [orderTotal, setOrderTotal] = useState<number>(calculateTotalCost())
 
   // Show cards by default and rerenders everytime collapsed changes
   useEffect(() => {
@@ -292,7 +292,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
         url: '',
         partNumber: '',
         quantity: 0,
-        unitPrice: new Prisma.Decimal(0),
+        unitPrice: (0),
       },
     ])
   }
@@ -362,7 +362,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
         orderNumber: '',
         trackingInfo: '',
         orderDetails: '',
-        shippingCost: new Prisma.Decimal(0),
+        shippingCost: 0,
         dateOrdered: '',
       },
     ])

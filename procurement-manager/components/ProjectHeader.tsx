@@ -2,9 +2,7 @@
  * This component is seen in the Orders Page right before the cards. This can be reused in the Orders History Page.
  */
 
-import { Prisma } from '@prisma/client'
-import React from 'react'
-import { Col, Button, Row, Stack } from 'react-bootstrap'
+import { Col, Button, Row } from 'react-bootstrap'
 
 interface ProjectHeaderProps {
   projectName: string
@@ -30,17 +28,17 @@ const ProjectHeader: React.FC<ProjectHeaderProps> = ({
       </Col>
       <Col>
         <p style={{ fontSize: '1.15rem' }}>
-          <strong>Expenses:</strong> $<>{expenses/100}</>
+          <strong>Expenses:</strong> ${(expenses/100).toFixed(2)}
         </p>
       </Col>
       <Col>
         <p style={{ fontSize: '1.15rem' }}>
-          <strong>Available:</strong> $<>{available/100}</>
+          <strong>Available:</strong> ${(available/100).toFixed(2)}
         </p>
       </Col>
       <Col>
         <p style={{ fontSize: '1.15rem' }}>
-          <strong>Budget:</strong> $<>{budgetTotal/100}</>
+          <strong>Budget:</strong> ${(budgetTotal/100).toFixed(2)}
         </p>
       </Col>
       {isOpen !== undefined && onToggleCollapse !== undefined &&

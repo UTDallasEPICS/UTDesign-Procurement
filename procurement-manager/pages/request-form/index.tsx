@@ -78,18 +78,17 @@ const StudentRequest = ({
   const [additionalInfo, setAdditionalInfo] = useState('')
   // remaining budget before adding any items
   const [remainingBeforeItem, setRemainingBeforeItem] =
-    useState<Prisma.Decimal>(
-      Prisma.Decimal.sub(
-        new Prisma.Decimal(listOfProjects[0].startingBudget),
-        new Prisma.Decimal(listOfProjects[0].totalExpenses),
+    useState(
+      (
+        (listOfProjects[0].startingBudget)-
+        (listOfProjects[0].totalExpenses)
       ),
     )
   // remaining budget that updates every time item is added/deleted
-  const [remainingAfterItem, setRemainingAfterItem] = useState<Prisma.Decimal>(
-    Prisma.Decimal.sub(
-      new Prisma.Decimal(listOfProjects[0].startingBudget),
-      new Prisma.Decimal(listOfProjects[0].totalExpenses),
-    ),
+  const [remainingAfterItem, setRemainingAfterItem] = useState(
+      (listOfProjects[0].startingBudget)-
+      (listOfProjects[0].totalExpenses),
+    
   )
 
   const [items, setItems] = useState([
@@ -225,13 +224,10 @@ const StudentRequest = ({
       (project) => project.projectNum === selectedProject,
     )
     setRemainingAfterItem(
-      Prisma.Decimal.sub(
-        Prisma.Decimal.sub(
-          new Prisma.Decimal(proj[0].startingBudget),
-          new Prisma.Decimal(proj[0].totalExpenses),
-        ),
-        calculateTotalCost(),
-      ),
+          (proj[0].startingBudget)-
+          (proj[0].totalExpenses)
+     - calculateTotalCost()
+    
     )
   }, [items])
 
@@ -249,13 +245,13 @@ const StudentRequest = ({
     setAdditionalInfo(e.target.value)
   }
 
-  const calculateTotalCost = (): Prisma.Decimal => {
+  const calculateTotalCost = (): number => {
     let totalCost = 0
     items.forEach((item) => {
       totalCost +=
         (parseFloat(item.unitCost) || 0) * (parseInt(item.quantity) || 0)
     })
-    return new Prisma.Decimal(totalCost)
+    return totalCost
   }
 
   /**
@@ -330,7 +326,7 @@ const StudentRequest = ({
     e.preventDefault()
 
     // Check if the remaining budget is negative
-    if (remainingAfterItem < new Prisma.Decimal(0)) {
+    if (remainingAfterItem < 0) {
       alert(
         'Your remaining budget cannot be negative. Please review your items.',
       )
@@ -380,12 +376,10 @@ const StudentRequest = ({
   }
 
   function findBudget(projectNum: number, proj: Project[]) {
-    let budget: Prisma.Decimal = new Prisma.Decimal(0)
+    let budget = 0
     proj.forEach((project) => {
       if (project.projectNum === projectNum) {
-        budget = new Prisma.Decimal(
-          Prisma.Decimal.sub(project.startingBudget, project.totalExpenses),
-        )
+        budget = project.startingBudget - project.totalExpenses
       }
     })
     setRemainingBeforeItem(budget)
@@ -405,7 +399,7 @@ const StudentRequest = ({
           </p>
           <p>
             <span>
-              ${new Prisma.Decimal(remainingBeforeItem).toFixed(2).toString()}
+              ${(remainingBeforeItem).toFixed(2).toString()}
             </span>
           </p>
         </Col>

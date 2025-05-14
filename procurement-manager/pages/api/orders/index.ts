@@ -70,7 +70,7 @@ export default async function handleOrders(
             orderNumber: req.body.orderNumber,
             orderDetails: req.body.orderDetails,
             trackingInfo: req.body.trackingInfo,
-            shippingCost: new Prisma.Decimal(req.body.shippingCost),
+            shippingCost: (req.body.shippingCost),
             request: { connect: { requestID: parseInt(req.body.requestID) } },
             admin: { connect: { email: user.email } },
           },

@@ -54,7 +54,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
   const [projectNumber, setProjectNumber] = useState(project.projectNum); // sets the project number to the project number of the project passed in to the project card
   const [projectTitle, setProjectTitle] = useState(project.projectTitle);
   const [totalBudget, setTotalBudget] = useState(project.startingBudget);
-  const [remainingBudget, setRemainingBudget] = useState(Prisma.Decimal.sub(project.startingBudget, project.totalExpenses)); // subtract values of decimal data type
+  const [remainingBudget, setRemainingBudget] = useState(project.startingBudget - project.totalExpenses);
   const [mentors, setMentors] = useState<string[]>([""])
   const [students, setStudents] = useState<string[]>([""])
   // arrays are used track which of the mentors and studentsthat were edited by admin before saving
@@ -92,7 +92,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
             orderNumber: '',
             trackingInfo: '',
             orderDetails: '',
-            shippingCost: new Prisma.Decimal(0),
+            shippingCost: 0,
           }
         ]
       }
@@ -323,14 +323,14 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
   /**
    * this function calculates the total cost for all items in a request
    * @param reqIndex index of request to calculate total item cost for
-   * @returns Prisma Decimal value for total request expenses
+   * @returns Number value for total request expenses
    */
-  const calculateTotalCost = (reqIndex: number): Prisma.Decimal => {
+  const calculateTotalCost = (reqIndex: number): number => {
     let totalCost = 0
     items[reqIndex].forEach((item) => {
-      totalCost += (Number(item.unitPrice) * item.quantity)
+      totalCost += (item.unitPrice * item.quantity)
     })
-    return new Prisma.Decimal(totalCost);
+    return totalCost;
   }
 
   // TODO:: add form validation to make sure input values follow requirements (no characters for numeric values, etc.)
@@ -548,7 +548,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
         else console.log(error)
       }
     })
-    setRemainingBudget(Prisma.Decimal.sub(project.startingBudget, project.totalExpenses))
+    setRemainingBudget(project.startingBudget - project.totalExpenses)
     setReqIDs([]) // reset list of updated request IDs to empty since after save, resets to none have been edited yet
     setItemIDs([]) // reset list to none edited once done
   }
@@ -604,7 +604,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
               <Form.Control
                 name='totalBudget'
                 value={Number(totalBudget)}
-                onChange={(e) => {setTotalBudget(new Prisma.Decimal(e.target.value))}}
+                onChange={(e) => {setTotalBudget(Number(e.target.value))}}
             />
       </Col>
 
@@ -614,7 +614,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
               <Form.Control
                 name='remainingBudget'
                 value={Number(remainingBudget)}
-                onChange={(e) => {setRemainingBudget(new Prisma.Decimal(e.target.value))}}
+                onChange={(e) => {setRemainingBudget(Number(e.target.value))}}
                 readOnly={true}
             />
       </Col>

@@ -144,9 +144,9 @@ async function createReimbursement(
     const updateExpense = await prisma.project.update({
         where: { projectNum: body.projectNum },
         data: {
-        totalExpenses: Prisma.Decimal.add(
-            project?.totalExpenses === undefined ? 0 : project.totalExpenses,
-            new Prisma.Decimal(body.totalExpenses)
+        totalExpenses: (
+            (project?.totalExpenses === undefined ? 0 : project.totalExpenses)+
+            (body.totalExpenses)
         ),
         },
     })
