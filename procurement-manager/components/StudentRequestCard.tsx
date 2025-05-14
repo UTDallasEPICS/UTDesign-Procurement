@@ -120,6 +120,7 @@ const StudentRequestCard: React.FC<RequestCardProps> = ({ details, collapsed }) 
         <Collapse in={collapse}>
           <div>
             <Row className='my-4 smaller-row'>
+
               {/* JUSTIFICATION ADDITIONAL INFO */}
               <Col xs={12} lg={3}>
                 <h6 className={styles.headingLabel}>Additional info:</h6>
@@ -184,6 +185,7 @@ const StudentRequestCard: React.FC<RequestCardProps> = ({ details, collapsed }) 
                         <th>Total</th>
                         <th>Order #</th>
                         <th>Tracking Info</th>
+                        <th>Item Status</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -203,7 +205,7 @@ const StudentRequestCard: React.FC<RequestCardProps> = ({ details, collapsed }) 
                                 }
                               />
                             </td>
-                            <td>{item.vendorID}</td>
+                            <td>{vendorNames[item.vendorID] || 'Loading...'}</td>
                             <td>
                               <Form.Control
                                 name='url'
@@ -257,7 +259,7 @@ const StudentRequestCard: React.FC<RequestCardProps> = ({ details, collapsed }) 
                                 <InputGroup.Text>$</InputGroup.Text>
                                 <Form.Control
                                   value={(
-                                    item.quantity * (item.unitPrice/100 as any)
+                                    item.quantity * (item.unitPrice/100)
                                   ).toFixed(4)}
                                   disabled
                                 />
@@ -268,6 +270,14 @@ const StudentRequestCard: React.FC<RequestCardProps> = ({ details, collapsed }) 
                             </td>
                             <td>
                               <Form.Control />
+                            </td>
+                            <td>
+                              <Form.Control 
+                                value={(
+                                  //details.process.status
+                                  item.status
+                                )}
+                              />
                             </td>
                           </tr>
                         )

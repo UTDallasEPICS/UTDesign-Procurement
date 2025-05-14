@@ -123,6 +123,7 @@ model RequestItem {
   requestID   Int
   vendor      Vendor  @relation(fields: [vendorID], references: [vendorID]) // the vendor that sells the item
   vendorID    Int
+  status      Status  @default(UNDER_REVIEW) // status of each individual item
 }
 
 // An Order happens after Request has been processed (approved and verified by mentor and admin) and admin "orders" the items

@@ -25,26 +25,26 @@ const ProjectHeader: React.FC<ProjectHeaderProps> = ({
 }) => {
   return (
     <Row className='align-items-center'>
-      <Col md={5}>
+      <Col>
         <h3>{projectName}</h3>
       </Col>
-      <Col md={2}>
+      <Col>
         <p style={{ fontSize: '1.15rem' }}>
           <strong>Expenses:</strong> $<>{expenses/100}</>
         </p>
       </Col>
-      <Col md={2}>
+      <Col>
         <p style={{ fontSize: '1.15rem' }}>
           <strong>Available:</strong> $<>{available/100}</>
         </p>
       </Col>
-      <Col md={2}>
+      <Col>
         <p style={{ fontSize: '1.15rem' }}>
           <strong>Budget:</strong> $<>{budgetTotal/100}</>
         </p>
       </Col>
       {isOpen !== undefined && onToggleCollapse !== undefined &&
-      <Col md={1}>
+      <Col>
         <Button
           variant='outline-secondary'
           size='sm'

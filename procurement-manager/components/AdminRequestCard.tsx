@@ -13,6 +13,8 @@ import {
   Form,
   InputGroup,
   Collapse,
+  Dropdown,
+  DropdownButton,
 } from 'react-bootstrap'
 import styles from '@/styles/RequestCard.module.scss'
 import {
@@ -375,6 +377,20 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
     storeItemIDs.push(value) // add new value to array
     setItemIDs(storeItemIDs) // Set the state with the updated array
   }
+
+  // styling for item status dropdown
+  const getVariantForStatus = (status: Status) => {
+    switch (status) {
+      case 'UNDER_REVIEW':
+        return 'secondary' // gray
+      case 'ORDERED':
+        return 'warning'   // yellow
+      case 'RECEIVED':
+        return 'success'   // green
+      default:
+        return 'dark'      // fallback
+    }
+  }  
   
   // TODO:: add form validation to make sure input values follow requirements (no characters for numeric values, etc.)
   // use this as reference: https://react-bootstrap.netlify.app/docs/forms/validation/
@@ -584,7 +600,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
                       Accept
                     </Button>)} */}
 
-                    {details.process.status == Status.APPROVED && (
+                    {/*{details.process.status == Status.APPROVED && (
                       <Button
                         className={`${styles.cardBtn} ${styles.rejectBtn}`}
                         variant='danger'
@@ -592,7 +608,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
                       >
                         Reject
                       </Button>
-                    )}
+                    )} */}
 
                     {!editable && details.process.status == Status.APPROVED && (
                       <Button
@@ -604,7 +620,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
                       </Button>
                     )}
 
-                    {details.process.status == Status.APPROVED && (
+                    {/*{details.process.status == Status.APPROVED && (
                       <Button
                       className={`${styles.cardBtn} ${styles.rejectBtn}`}
                       variant='success'
@@ -622,7 +638,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
                       >
                         Received
                       </Button>
-                    )}
+                    )}*/}
                     
 
                   </Col>
@@ -630,7 +646,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
                 {/* REQUEST ITEMS */}
                 <Row className='my-2'>
                   <Form className={styles.requestDetails}>
-                    <fieldset disabled={!editable}>
+                    {/*<fieldset disabled={!editable}>*/}
                       <Table responsive striped>
                         <thead>
                           <tr>
@@ -643,6 +659,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
                             <th>Unit Price</th>
                             <th>Total</th>
                             <th>Order #</th>
+                            <th>Order Status</th>
                             <th> </th>
                           </tr>
                         </thead>
@@ -654,6 +671,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
                                 <td>
                                   <Form.Control
                                     name='description'
+                                    disabled
                                     value={item.description}
                                     onChange={(e) =>
                                       handleItemChange(
@@ -666,6 +684,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
                                 <td>
                                   <Form.Control
                                     name='vendorName'
+                                    disabled
                                     value={item.vendorName}
                                     onChange={(e) =>
                                       handleItemChange(
@@ -684,6 +703,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
                                   {editable ? (
                                     <Form.Control
                                       name='url'
+                                      disabled
                                       value={item.url}
                                       onChange={(e) =>
                                         handleItemChange(
@@ -713,6 +733,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
                                 <td>
                                   <Form.Control
                                     name='partNumber'
+                                    disabled
                                     value={item.partNumber}
                                     onChange={(e) =>
                                       handleItemChange(
@@ -725,6 +746,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
                                 <td width={70}>
                                   <Form.Control
                                     name='quantity'
+                                    disabled
                                     value={item.quantity}
                                     onChange={(e) =>
                                       handleItemChange(
@@ -738,6 +760,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
                                   <Form.Control
                                     name='unitPrice'
                                     value={item.unitPrice/100}
+                                    disabled
                                     onChange={(e) =>
                                       handleItemChange(
                                         e as React.ChangeEvent<HTMLInputElement>,
@@ -758,7 +781,49 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
                                   </InputGroup>
                                 </td>
                                 <td>
-                                  <Form.Control disabled />
+                                  <Form.Control />
+                                </td>
+                                <td>
+                                  <Dropdown
+                                    onSelect={async (selectedKey) => {
+                                      const newStatus = selectedKey as Status
+                                      console.log('Selected:', newStatus)
+
+                                      try {
+                                        // update backend
+                                        if (item.itemID > 0) {
+                                          await axios.post('/api/request-form/update-item-status', {
+                                            itemID: item.itemID,
+                                            status: newStatus,
+                                          })
+                                        
+
+                                        setItems((prevItems) =>
+                                          prevItems.map((i, idx) =>
+                                            idx === itemIndex ? { ...i, status: newStatus } : i
+                                          )
+                                        )
+                                        }
+                                      
+                                      } catch (error) {
+                                        console.error('Status update failed', error)
+                                      }
+                                    }}
+                                  >
+                                    <Dropdown.Toggle
+                                      variant={getVariantForStatus(item.status)}
+                                      id={`dropdown-status-${itemIndex}`}
+                                      style={{ width: '150px' }}
+                                    >
+                                      {item.status}
+                                    </Dropdown.Toggle>
+
+                                    <Dropdown.Menu>
+                                      <Dropdown.Item eventKey="UNDER_REVIEW">UNDER_REVIEW</Dropdown.Item>
+                                      <Dropdown.Item eventKey="ORDERED">ORDERED</Dropdown.Item>
+                                      <Dropdown.Item eventKey="RECEIVED">RECEIVED</Dropdown.Item>
+                                    </Dropdown.Menu>
+                                  </Dropdown>
                                 </td>
                                 <td>
                                   <Button
@@ -1018,7 +1083,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
                           </tbody>
                         </Table>
                       )}
-                    </fieldset>
+                    {/*</fieldset>*/}
                     <Row>
                       <Col xs={12} className='d-flex justify-content-end'>
                         {editable && (
