@@ -2,7 +2,7 @@
  * This is the Request Form page
  */
 
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, ComponentProps, useMemo, useCallback } from 'react'
 import { Container, Row, Col, Button, InputGroup } from 'react-bootstrap'
 import Form from 'react-bootstrap/Form'
 import 'bootstrap/dist/css/bootstrap.min.css'
@@ -98,9 +98,9 @@ const StudentRequest = ({
       description: '',
       url: '',
       partNumber: '',
-      quantity: '',
-      unitCost: '',
-      totalCost: '',
+      quantity: 0,
+      unitCost: 0,
+      totalCost: 0,
       isDropdownOpen: false,
       isNewVendor: false,
       searchTerm: '',
@@ -113,6 +113,7 @@ const StudentRequest = ({
   const [selectedProject, setSelectedProject] = useState(
     listOfProjects[0].projectNum,
   )
+
   const router = useRouter()
 
   const handleVendorChange = (
@@ -198,15 +199,7 @@ const StudentRequest = ({
     })
   }, [items])
 
-  const handleUnitCostBlur = (
-    e: React.FocusEvent<HTMLInputElement>,
-    index: number,
-  ) => {
-    const newItems = [...items]
-    newItems[index].unitCost = e.target.value
-    setItems(newItems)
-  }
-
+  
   // This function is called when delete button for an item is clicked
   const handleDeleteItem = (index: number) => {
     // get the array without the item to be deleted
@@ -249,7 +242,7 @@ const StudentRequest = ({
     let totalCost = 0
     items.forEach((item) => {
       totalCost +=
-        (parseFloat(item.unitCost) || 0) * (parseInt(item.quantity) || 0)
+        (item.unitCost || 0) * (item.quantity || 0)
     })
     return totalCost
   }
@@ -267,9 +260,9 @@ const StudentRequest = ({
         description: '',
         url: '',
         partNumber: '',
-        quantity: '',
-        unitCost: '',
-        totalCost: '',
+        quantity: 0,
+        unitCost: 0,
+        totalCost: 0,
         isDropdownOpen: false,
         isNewVendor: false,
         searchTerm: '',
@@ -295,23 +288,27 @@ const StudentRequest = ({
       | 'description'
       | 'url'
       | 'partNumber'
-      | 'quantity'
-      | 'unitCost',
   ) => {
     const newItems = [...items]
     newItems[index][field] = e.target.value
+    
+    setItems(newItems)
+  }
+  
+  const handleNumericValueChangeOnItem = (value: number | null, index: number, field: 'unitCost' | 'quantity') => {
+    const newItems = [...items]
+    newItems[index][field] = value ?? 0
 
     if (field === 'quantity' || field === 'unitCost') {
-      const quantity = parseFloat(newItems[index].quantity)
-      const unitCost = parseFloat(newItems[index].unitCost)
+      const quantity = newItems[index].quantity
+      const unitCost = newItems[index].unitCost
 
-      if (!isNaN(quantity) && !isNaN(unitCost)) {
-        newItems[index].totalCost = (quantity * unitCost).toFixed(2)
+      if (!Number.isNaN(quantity) && !Number.isNaN(unitCost)) {
+        newItems[index].totalCost = (quantity * unitCost)
       } else {
-        newItems[index].totalCost = ''
+        newItems[index].totalCost = 0
       }
     }
-
     setItems(newItems)
   }
 
@@ -337,8 +334,8 @@ const StudentRequest = ({
     const itemsToSend = items.map((item) => {
       return {
         ...item,
-        quantity: parseInt(item.quantity),
-        unitPrice: parseFloat(item.unitCost),
+        quantity: (item.quantity),
+        unitPrice: (item.unitCost),
         vendorID: parseInt(item.vendor),
       }
     })
@@ -399,7 +396,7 @@ const StudentRequest = ({
           </p>
           <p>
             <span>
-              ${(remainingBeforeItem).toFixed(2).toString()}
+              {dollarsAsString(remainingBeforeItem/100)}
             </span>
           </p>
         </Col>
@@ -408,7 +405,7 @@ const StudentRequest = ({
             <strong>Remaining: </strong>
           </p>
           <p>
-            <span>${remainingAfterItem.toFixed(2).toString()}</span>
+            <span>{dollarsAsString(remainingAfterItem/100)}</span>
           </p>
         </Col>
       </Row>
@@ -568,11 +565,10 @@ const StudentRequest = ({
                   <Form.Label>
                     <strong>Qty.</strong>
                   </Form.Label>
-                  <Form.Control
-                    type='number'
+                  <NumberFormControl
                     min='0'
                     value={item.quantity}
-                    onChange={(e) => handleItemChange(e, index, 'quantity')}
+                    onValueChange={(e) => handleNumericValueChangeOnItem(e, index, 'quantity')}
                     className={`${styles.quantityNumberInput} ${styles.hideArrows}`}
                     required
                   />
@@ -591,24 +587,18 @@ const StudentRequest = ({
                     <InputGroup.Text className={styles.inputGroupText}>
                       $
                     </InputGroup.Text>
-                    <Form.Control
-                      type='number'
+                    <NumberFormControl
                       step='0.0001'
                       min='0'
                       value={item.unitCost}
-                      onChange={(e) => {
-                        const unitCostValue = e.target.value
-                        const regex = /^(?=.*[0-9])\d*(?:\.\d{0,4})?$/
-                        if (regex.test(unitCostValue) || unitCostValue === '') {
-                          handleItemChange(e, index, 'unitCost')
+                      onValueChange={(e) => {
+                        if (e === null) {
+                          handleNumericValueChangeOnItem(null, index, 'unitCost')
+                        } else {
+                          handleNumericValueChangeOnItem(e, index, 'unitCost')
                         }
                       }}
-                      onBlur={(e) =>
-                        handleUnitCostBlur(
-                          e as React.FocusEvent<HTMLInputElement>,
-                          index,
-                        )
-                      }
+                      renderNumber={(value) => dollarsAsString(value)}
                       className={`${styles.costInputField} ${styles.unitCostInput} ${styles.hideArrows}`}
                       required
                     />
@@ -628,14 +618,16 @@ const StudentRequest = ({
                     <InputGroup.Text className={styles.inputGroupText}>
                       $
                     </InputGroup.Text>
-                    <Form.Control
-                      type='text'
+                    <NumberFormControl
                       value={
-                        item.totalCost === ''
-                          ? ''
-                          : parseFloat(item.totalCost).toFixed(2)
+                        item.totalCost
                       }
-                      readOnly
+                      renderNumber={(value) => {
+                        const v = (value).toFixed(2)
+                        console.log('v', v)
+                        return v
+                      }}
+                      
                       className={`${styles.costInputField} ${styles.totalCostInput}`}
                       disabled
                     />
@@ -834,3 +826,58 @@ const StudentRequest = ({
 }
 
 export default StudentRequest
+
+
+type NumberFormControlProps = Omit<
+  ComponentProps<typeof Form.Control>,
+  'value' | 'onChange' | 'type' | 'onBlur'> & 
+  {
+    value: number, 
+    onValueChange?: (value: number | null) => void
+    renderNumber?: (value: number) => string
+  }
+
+function NumberFormControl(props: NumberFormControlProps) {
+  const { value, onValueChange, renderNumber = dollarsAsString, ...rest } = props
+  const [stringValue, setStringValue] = useState(renderNumber(value))
+
+  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setStringValue(e.target.value)
+  }, [])
+
+  const handleBlur = useCallback((e: React.FocusEvent<HTMLInputElement>) => {
+    if (!onValueChange) {
+      return
+    }
+    const trimmed = e.target.value.trim()
+    if (trimmed.length === 0) {
+      onValueChange(null)
+    } else {
+      const parsed = Number.parseFloat(trimmed)
+      if (!Number.isNaN(parsed)) {
+        setStringValue(renderNumber(parsed))
+        onValueChange(parsed)
+      }
+    }
+  }, [onValueChange, renderNumber])
+
+
+  return (
+    <Form.Control
+      type='number'
+      value={stringValue}
+      onChange={handleChange}
+      onBlur={handleBlur}
+      {...rest}
+    />
+  )
+}
+
+const dollarsAsString = (value: number, includeCurrencySign = true) => {
+  const formattedValue = value.toLocaleString('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    useGrouping: false,
+  });
+  return includeCurrencySign ? formattedValue : formattedValue.slice(1);
+}
