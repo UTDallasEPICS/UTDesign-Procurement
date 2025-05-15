@@ -8,6 +8,7 @@ import { Card, Button, Col, Row, Collapse, Form, Table } from 'react-bootstrap'
 import styles from '@/styles/RequestCard.module.scss'
 import { RequestDetails } from '@/lib/types'
 import axios from 'axios'
+import { dollarsAsString } from './NumberFormControl'
 
 interface RequestCardProps {
   details: RequestDetails
@@ -103,12 +104,11 @@ const MentorRequestCard: React.FC<RequestCardProps> = ({
               <Col xs={6} lg={2}>
                 <h6 className={styles.headingLabel}>Order Subtotal</h6>
                 <p>
-                  $
-                  {details.RequestItem.reduce(
+                  {dollarsAsString(details.RequestItem.reduce(
                     (total, item) =>
-                      total + item.quantity * (item.unitPrice/100 as any),
+                      total + item.quantity * item.unitPrice,
                     0
-                  ).toFixed(2)}
+                  )/100)}
                 </p>
               </Col>
 
@@ -191,11 +191,9 @@ const MentorRequestCard: React.FC<RequestCardProps> = ({
                             <td>{item.url}</td>
                             <td>{item.partNumber}</td>
                             <td>{item.quantity}</td>
-                            <td>{item.unitPrice/100}</td>
+                            <td>{dollarsAsString(item.unitPrice/100)}</td>
                             <td>
-                              {(
-                                item.quantity * (item.unitPrice/100 as any)
-                              ).toFixed(4)}
+                              {dollarsAsString(item.quantity * (item.unitPrice)/100)}
                             </td>
                             <td></td>
                             <td></td>

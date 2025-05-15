@@ -8,6 +8,7 @@ import { Card, Button, Col, Row, Collapse, Form, Table } from 'react-bootstrap'
 import styles from '@/styles/RequestCard.module.scss'
 import { ReimbursementDetails } from '@/lib/types'
 import axios from 'axios'
+import { dollarsAsString } from './NumberFormControl'
 
 interface ReimbursementCardProps {
   details: ReimbursementDetails
@@ -93,12 +94,11 @@ const MentorReimbursementCard: React.FC<ReimbursementCardProps> = ({
               <Col xs={6} lg={2}>
                 <h6 className={styles.headingLabel}>Order Subtotal</h6>
                 <p>
-                  $
-                  {details.ReimbursementItem.reduce(
+                  {dollarsAsString(details.ReimbursementItem.reduce(
                     (total, item) =>
-                      total + 1 * (item.receiptTotal as any),
+                      total + 1 * (item.receiptTotal),
                     0
-                  ).toFixed(2)}
+                  )/100)}
                 </p>
               </Col>
 
@@ -174,7 +174,7 @@ const MentorReimbursementCard: React.FC<ReimbursementCardProps> = ({
                             })}</td>
                             <td>{item.vendorID}</td>
                             <td>{item.description}</td>
-                            <td>{item.receiptTotal.toString()}</td>
+                            <td>{dollarsAsString(item.receiptTotal/100)}</td>
                             <td></td>
                             <td></td>
                           </tr>

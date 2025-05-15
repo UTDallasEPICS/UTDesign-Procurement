@@ -77,7 +77,6 @@ export const authOptions: NextAuthOptions = {
     // Edit the token given to the session by passing the user object with its properties
     async jwt({ token, user }) {
       let res = null
-      console.log(token)
       if (token.email)
         res = await prisma.user.findUnique({
           where: { email: token.email },

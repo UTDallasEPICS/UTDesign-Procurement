@@ -27,7 +27,7 @@ import {
   Status,
 } from '@prisma/client'
 import axios from 'axios'
-import { dollarsAsString } from './NumberFormControl'
+import { dollarsAsString, NumberFormControl } from './NumberFormControl'
 interface AdminRequestCardProps {
   user: User
   project: Project
@@ -758,26 +758,29 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
                                   />
                                 </td>
                                 <td width={90}>
-                                  <Form.Control
+                                  <NumberFormControl
                                     name='unitPrice'
-                                    value={item.unitPrice/100}
+                                    defaultValue={item.unitPrice/100}
                                     disabled
-                                    onChange={(e) =>
-                                      handleItemChange(
-                                        e as React.ChangeEvent<HTMLInputElement>,
-                                        itemIndex,
-                                      )
+                                    onValueChange={(e) =>
+                                    {
+                                      const newItems = [...items]
+                                      newItems[itemIndex].unitPrice = (e??0)*100
+                                      setItems(newItems)
+                                    }
                                     }
                                   />
                                 </td>
                                 <td>
                                   <InputGroup>
                                     <InputGroup.Text>$</InputGroup.Text>
-                                    <Form.Control
-                                      value={(
-                                        item.quantity * (item.unitPrice/100 as any)
-                                      ).toFixed(4)}
+                                    <NumberFormControl
+                                      defaultValue={(
+                                        item.quantity * item.unitPrice/100
+                                      )}
+                                      renderNumber={(value) => dollarsAsString(value, false)}
                                       disabled
+                                      readOnly={true}
                                     />
                                   </InputGroup>
                                 </td>
@@ -928,24 +931,27 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
                                   />
                                 </td>
                                 <td width={90}>
-                                  <Form.Control
+                                  <NumberFormControl  
                                     name='unitPrice'
-                                    value={item.unitPrice.toString()}
-                                    onChange={(e) =>
-                                      handleItemChange(
-                                        e as React.ChangeEvent<HTMLInputElement>,
-                                        itemIndex + items.length,
-                                      )
+                                    defaultValue={item.unitPrice/100}
+                                    onValueChange={(e) => {
+                                      const newItems = [...items]
+                                      newItems[itemIndex + items.length].unitPrice = (e??0)*100
+                                      setItems(newItems)
                                     }
+                                    }
+                                    renderNumber={(value) => dollarsAsString(value, false)}
                                   />
                                 </td>
                                 <td>
                                   <InputGroup>
                                     <InputGroup.Text>$</InputGroup.Text>
-                                    <Form.Control
-                                      value={(
-                                        item.quantity * Number(item.unitPrice)
-                                      ).toFixed(2)}
+                                    <NumberFormControl
+                                      defaultValue={(
+                                        item.quantity * item.unitPrice/100
+                                      )}
+                                      renderNumber={(value) => dollarsAsString(value, false)}
+                                      readOnly={true}
                                       disabled
                                     />
                                   </InputGroup>
@@ -983,6 +989,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
                         </Col>
                       </Row>
                       {/* ORDERS (based on number of vendors) */}
+                      {Boolean(orders.length > 0) && (
                       <Table responsive striped>
                         <thead>
                           <tr>
@@ -1122,6 +1129,3 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
 }
 
 export default AdminRequestCard
-function newDetails(arg0: string, newDetails: any) {
-  throw new Error('Function not implemented.')
-}

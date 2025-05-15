@@ -755,7 +755,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
                       <Col xs={12} md={2}>
                         <h6 className={styles.headingLabel}> Order Subtotal</h6>
                         <p>
-                        ${calculateTotalCost(reqIndex).toFixed(2)}
+                        {dollarsAsString(calculateTotalCost(reqIndex)/100)}
                         </p>
                         </Col>
                       </Row>
@@ -856,27 +856,26 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
                                       />
                                     </td>
                                     <td>
-                                      <Form.Control
-                                        name='unitPrice'
-                                        value={item.unitPrice/100}
-                                        onChange={(e) =>
-                                          handleItemChange(
-                                            e as React.ChangeEvent<HTMLInputElement>,
-                                            itemIndex, 
-                                            reqIndex, 
-                                            requests[projectIndex][reqIndex]
-                                          )
-                                        }
+                                      <NumberFormControl
+                                        defaultValue={item.unitPrice/100}
+                                        onValueChange={(e) => {
+                                          const newItems = [...items]
+                                          newItems[reqIndex][itemIndex].unitPrice = (e??0)*100
+                                          setItems(newItems)
+                                        }}
+                                        renderNumber={(value) => dollarsAsString(value, false)}
                                       />
                                     </td>
                                     <td>
                                       <InputGroup>
                                         <InputGroup.Text>$</InputGroup.Text>
-                                        <Form.Control
-                                          value={(
-                                            item.quantity * (item.unitPrice/100 as any)
-                                          ).toFixed(4)}
+                                        <NumberFormControl
+                                          defaultValue={(
+                                            item.quantity * item.unitPrice/100
+                                          )}
+                                          renderNumber={(value) => dollarsAsString(value, false)}
                                           disabled
+                                          readOnly={true}
                                         />
                                       </InputGroup>
                                     </td>

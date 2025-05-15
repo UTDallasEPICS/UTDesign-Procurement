@@ -14,6 +14,7 @@ import {
 } from 'react-bootstrap'
 import styles from '@/styles/RequestCard.module.scss'
 import { Status } from '@prisma/client'
+import { dollarsAsString, NumberFormControl } from './NumberFormControl'
 
 interface RequestCardProps {
   details: RequestDetails
@@ -104,12 +105,11 @@ const StudentRequestCard: React.FC<RequestCardProps> = ({ details, collapsed }) 
           <Col xs={6} lg={2}>
             <h6 className={styles.headingLabel}>Order Subtotal</h6>
             <p>
-              $
-              {details.RequestItem.reduce(
-                (total, item) =>
-                  total + item.quantity * (item.unitPrice/100 as any),
-                0
-              ).toFixed(4)}
+              {dollarsAsString(details.RequestItem.reduce(
+                    (total, item) =>
+                      total + item.quantity * item.unitPrice,
+                    0
+                  )/100)}
             </p>
           </Col>
           <Col xs={6} lg={3}>
@@ -231,39 +231,30 @@ const StudentRequestCard: React.FC<RequestCardProps> = ({ details, collapsed }) 
                               />
                             </td>
                             <td>
-                              <Form.Control
+                              <NumberFormControl
                                 name='quantity'
-                                value={item.quantity}
-                                onChange={(e) =>
-                                  handleInputChange(
-                                    e as React.ChangeEvent<HTMLInputElement>,
-                                    itemIndex
-                                  )
+                                defaultValue={item.quantity/100}
+                                onValueChange={(e) => {
+                                  const newItems = [...inputValues]
+                                  newItems[itemIndex].quantity = (e??0)*100
+                                  setInputValues(newItems)
+                                }
                                 }
                               />
                             </td>
                             <td>
-                              <Form.Control
+                              <NumberFormControl
                                 name='unitPrice'
-                                value={item.unitPrice/100}
-                                onChange={(e) =>
-                                  handleInputChange(
-                                    e as React.ChangeEvent<HTMLInputElement>,
-                                    itemIndex
-                                  )
-                                }
+                                defaultValue={item.unitPrice/100}
+                                onValueChange={(e) => {
+                                  const newItems = [...inputValues]
+                                  newItems[itemIndex].unitPrice = (e??0)*100
+                                  setInputValues(newItems)
+                                }}
                               />
                             </td>
                             <td>
-                              <InputGroup>
-                                <InputGroup.Text>$</InputGroup.Text>
-                                <Form.Control
-                                  value={(
-                                    item.quantity * (item.unitPrice/100)
-                                  ).toFixed(4)}
-                                  disabled
-                                />
-                              </InputGroup>
+                              <p>{dollarsAsString(item.quantity * (item.unitPrice)/100)}</p>
                             </td>
                             <td>
                               <Form.Control />

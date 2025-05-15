@@ -3,6 +3,7 @@
  */
 
 import { Col, Button, Row } from 'react-bootstrap'
+import { dollarsAsString } from './NumberFormControl'
 
 interface ProjectHeaderProps {
   projectName: string
@@ -28,17 +29,17 @@ const ProjectHeader: React.FC<ProjectHeaderProps> = ({
       </Col>
       <Col>
         <p style={{ fontSize: '1.15rem' }}>
-          <strong>Expenses:</strong> ${(expenses/100).toFixed(2)}
+          <strong>Expenses:</strong> {dollarsAsString(expenses/100)}
         </p>
       </Col>
       <Col>
         <p style={{ fontSize: '1.15rem' }}>
-          <strong>Available:</strong> ${(available/100).toFixed(2)}
+          <strong>Available:</strong> {dollarsAsString(available/100)}
         </p>
       </Col>
       <Col>
         <p style={{ fontSize: '1.15rem' }}>
-          <strong>Budget:</strong> ${(budgetTotal/100).toFixed(2)}
+          <strong>Budget:</strong> {dollarsAsString(budgetTotal/100)}
         </p>
       </Col>
       {isOpen !== undefined && onToggleCollapse !== undefined &&

@@ -256,7 +256,7 @@ const StudentReimbursement = ({ user, listOfProjects }: StudentRequestProps) => 
           </p>
           <p>
             <span>
-              ${(remainingBeforeItem/100).toFixed(4).toString()}
+              {dollarsAsString(remainingBeforeItem/100)}
             </span>
           </p>
         </Col>
@@ -265,7 +265,7 @@ const StudentReimbursement = ({ user, listOfProjects }: StudentRequestProps) => 
             <strong>Remaining: </strong>
           </p>
           <p>
-            <span>${(remainingAfterItem/100).toFixed(4).toString()}</span>
+            <span>{dollarsAsString(remainingAfterItem/100)}</span>
           </p>
         </Col>
       </Row>

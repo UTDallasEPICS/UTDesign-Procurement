@@ -342,33 +342,116 @@ export default function Admin({
         <h1>Welcome back {user && user.firstName}</h1>
       </Row>
   
-      {projects.map((project, projIndex) => {
-        return (
-          <Row key={projIndex}>
-            <ProjectHeader
-              projectName={project.projectTitle}
-              expenses={project.totalExpenses}
-              available={(
-                project.startingBudget-
-                project.totalExpenses
-              )}
-              budgetTotal={project.startingBudget}
-              onToggleCollapse={() => {
-                // toggleProjectCollapse(projIndex)
-                toggleCards(projIndex)
-              }}
-              isOpen={isOpen[projIndex]}
-            />
-            {/* Details of the request forms modeled into cards */}
-            {/* These are the request forms associated to its project */}
-            {/* The Collapse below was an old feature that might be used again */}
-            {/* <Collapse in={isOpen[projIndex]}> */}
-            {/* <div> */}
-            {projectRequests[projIndex]?.map((request, reqIndex) => {
-                // TODO:: only show request cards if approved and not processed, works using an if and 'processed' function but resolve rendering issue:
-                // i.e. when you open or refresh orders page, it still tries to display the request cards of processed requests, then the cards disappear
-                // maybe try getting processed requests and update the request array in getServerSideProps() instead of in the component
-                return (
+      <Row>
+         <Col>
+           <Accordion>
+             {projects.map((project, projIndex) => (
+                 <Fragment key={project.projectID}>
+                   <Accordion.Item eventKey={project.projectID.toString()}>
+                     <Accordion.Header>
+                       <ProjectHeader
+                         projectName={project.projectTitle}
+                         expenses={project.totalExpenses}
+                         available={project.startingBudget -
+                           project.totalExpenses}
+                         budgetTotal={project.startingBudget}
+                         onToggleCollapse={() => toggleCards(projIndex)}
+                         isOpen={isOpen[projIndex]}
+                       />
+                     </Accordion.Header>
+                     <Accordion.Body>
+                       <ListGroup>
+                         {projectRequests[projIndex].map((request, reqIndex) => {
+                           return (
+                             <Link
+                               href={{
+                                 query: {
+                                   itemId: request.requestID,
+                                   projectId: project.projectID,
+                                   type: 'request',
+                                 },
+                               }}
+                               key={request.requestID}
+                             >
+                               <ListGroup.Item>
+                                 <Stack direction='horizontal' gap={2}>
+                                   <span>Req#{request.requestID}</span>
+                                   <span bg='secondary'>${request.expense}</span>
+
+                                   <span>
+                                     Requested {request.dateSubmitted.toLocaleString()}, needed{' '}
+                                     <TimeAgo date={request.dateNeeded} />{' '}
+                                   </span>
+                                 </Stack>
+                               </ListGroup.Item>
+                             </Link>
+                           )
+                         })}
+                         {projectReimbursements[projIndex]?.map(
+                           (reimbursement) => {
+                             return (
+                               <Link
+                                 href={{
+                                   query: {
+                                     itemId: reimbursement.reimbursementID,
+                                     projectId: project.projectID,
+                                     type: 'reimbursement',
+                                   },
+                                 }}
+                                 key={reimbursement.reimbursementID}
+                               >
+                                 <ListGroup.Item>
+                                   <Stack direction='horizontal' gap={2}>
+                                     <span>
+                                       Reim#{reimbursement.reimbursementID}
+                                     </span>
+                                     <span bg='secondary'>
+                                       ${reimbursement.expense}
+                                     </span>
+                                     <span>
+                                       Submitted {reimbursement.dateSubmitted.toLocaleString()}
+                                     </span>
+                                   </Stack>
+                                 </ListGroup.Item>
+                               </Link>
+                             )
+                           },
+                         )}
+                       </ListGroup>
+                     </Accordion.Body>
+                   </Accordion.Item>
+                 </Fragment>
+               )
+             )}
+           </Accordion>
+         </Col>
+         <Col>
+           {open.type === 'request' &&
+             open.itemId !== null &&
+             (() => {
+               const projectIndex = projects.findIndex(
+                 (p) => p.projectID === open.projectId,
+               )
+               if (projectIndex === -1) return null
+               const project = projects[projectIndex]
+               const request = projectRequests[projectIndex].find(
+                 (r) => r.requestID === open.itemId,
+               )
+               if (!request) return null
+               return (
+                 <>
+                   <Button
+                     variant='primary'
+                     onClick={() =>
+                       setOpen({
+                         type: null,
+                         itemId: null,
+                         projectId: null,
+                       })
+                     }
+                   >
+                     Close
+                   </Button>
                   <AdminRequestCard
                     user={user}
                     project={project}
@@ -382,7 +465,10 @@ export default function Admin({
                     }
                     onSave={() => getAdminRequests()}
                     collapsed={true}
-                    />)})}
+                    />
+                 </>
+               )
+             })()}
                 
                 
           {open.type === 'reimbursement' &&
@@ -425,13 +511,13 @@ export default function Admin({
                 </>
               )
             })()}
-        
+        </Col>
         <RejectionModal
           show={showRejectModal}
           onHide={() => setShowRejectModal(false)}
           onSubmit={handleSubmitRejection}
         />
-      </Row>)})}
+      </Row>
     </>
   )
 }
