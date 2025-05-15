@@ -71,10 +71,10 @@ export default async function handler(
         const undoExpense = await prisma.project.update({
           where: { projectID: process.request.projectID },
           data: {
-            totalExpenses: Prisma.Decimal.sub(
-              project?.totalExpenses === undefined
+            totalExpenses: (
+              (project?.totalExpenses === undefined
                 ? process.request.expense
-                : project.totalExpenses,
+                : project.totalExpenses) -
               process.request.expense
             ),
           },
@@ -89,10 +89,10 @@ export default async function handler(
         const undoExpense = await prisma.project.update({
           where: { projectID: process.reimbursement.projectID },
           data: {
-            totalExpenses: Prisma.Decimal.sub(
-              project?.totalExpenses === undefined
+            totalExpenses: (
+              (project?.totalExpenses === undefined
                 ? process.reimbursement.expense
-                : project.totalExpenses,
+                : project.totalExpenses) -
               process.reimbursement.expense
             ),
           },
@@ -135,10 +135,10 @@ export default async function handler(
         const undoExpense = await prisma.project.update({
           where: { projectID: process.request.projectID },
           data: {
-            totalExpenses: Prisma.Decimal.sub(
-              project?.totalExpenses === undefined
+            totalExpenses: (
+              (project?.totalExpenses === undefined
                 ? process.request.expense
-                : project.totalExpenses,
+                : project.totalExpenses) -
               process.request.expense
             ),
           },
@@ -153,10 +153,10 @@ export default async function handler(
         const undoExpense = await prisma.project.update({
           where: { projectID: process.reimbursement.projectID },
           data: {
-            totalExpenses: Prisma.Decimal.sub(
-              project?.totalExpenses === undefined
+            totalExpenses: (
+              (project?.totalExpenses === undefined
                 ? process.reimbursement.expense
-                : project.totalExpenses,
+                : project.totalExpenses) - 
               process.reimbursement.expense
             ),
           },

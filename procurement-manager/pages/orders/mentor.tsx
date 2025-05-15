@@ -193,8 +193,8 @@ export default function Mentor({ session, user }: MentorProps) {
             <ProjectHeader
               projectName={project.projectTitle}
               expenses={project.totalExpenses}
-              available={Prisma.Decimal.sub(
-                project.startingBudget,
+              available={(
+                project.startingBudget-
                 project.totalExpenses
               )}
               budgetTotal={project.startingBudget}

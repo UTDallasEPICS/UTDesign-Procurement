@@ -27,6 +27,7 @@ import {
   Status,
 } from '@prisma/client'
 import axios from 'axios'
+import { dollarsAsString, NumberFormControl } from './NumberFormControl'
 interface AdminRequestCardProps {
   user: User
   project: Project
@@ -70,7 +71,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
       orderNumber: string
       trackingInfo: string
       orderDetails: string
-      shippingCost: Prisma.Decimal
+      shippingCost: number
       dateOrdered: string
     }[]
   >([])
@@ -80,7 +81,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
       orderNumber: string
       trackingInfo: string
       orderDetails: string
-      shippingCost: Prisma.Decimal
+      shippingCost: number
       dateOrdered: string
     }[]
   >([])
@@ -93,7 +94,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
       url: string
       partNumber: string
       quantity: number
-      unitPrice: Prisma.Decimal
+      unitPrice: number
     }[]
   >([])
   // state that contains the values of the input fields for request items in the request card
@@ -113,20 +114,20 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
 
   /**
    * this function calculates the total cost for all items in a request
-   * @returns Prisma Decimal value for total request expenses
+   * @returns Number value for total request expenses
    */
-  const calculateTotalCost = (): Prisma.Decimal => {
+  const calculateTotalCost = (): number => {
     let totalCost = 0
     items.forEach((item) => {
-      totalCost += Number(item.unitPrice) * item.quantity
+      totalCost += (item.unitPrice) * item.quantity
     })
     orders.forEach((order) => {
-      totalCost += Number(order.shippingCost) // added cost of orders as well
+      totalCost += (order.shippingCost) // added cost of orders as well
     })
-    return new Prisma.Decimal(totalCost)
+    return (totalCost)
   }
 
-  const [orderTotal, setOrderTotal] = useState<Prisma.Decimal>(calculateTotalCost())
+  const [orderTotal, setOrderTotal] = useState<number>(calculateTotalCost())
 
   // Show cards by default and rerenders everytime collapsed changes
   useEffect(() => {
@@ -292,7 +293,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
         url: '',
         partNumber: '',
         quantity: 0,
-        unitPrice: new Prisma.Decimal(0),
+        unitPrice: (0),
       },
     ])
   }
@@ -362,7 +363,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
         orderNumber: '',
         trackingInfo: '',
         orderDetails: '',
-        shippingCost: new Prisma.Decimal(0),
+        shippingCost: 0,
         dateOrdered: '',
       },
     ])
@@ -558,7 +559,7 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
               {/* ORDER SUBTOTAL */}
               <Col xs={6} lg={2}>
                 <h6 className={styles.headingLabel}>Order Subtotal</h6>
-                <p>${orderTotal.toFixed(2)}</p>
+                <p>{dollarsAsString(orderTotal/100)}</p>
               </Col>
               {/* STATUS */}
               <Col xs={6} lg={3}>
@@ -757,26 +758,29 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
                                   />
                                 </td>
                                 <td width={90}>
-                                  <Form.Control
+                                  <NumberFormControl
                                     name='unitPrice'
+                                    defaultValue={item.unitPrice/100}
                                     disabled
-                                    value={item.unitPrice.toString()}
-                                    onChange={(e) =>
-                                      handleItemChange(
-                                        e as React.ChangeEvent<HTMLInputElement>,
-                                        itemIndex,
-                                      )
+                                    onValueChange={(e) =>
+                                    {
+                                      const newItems = [...items]
+                                      newItems[itemIndex].unitPrice = (e??0)*100
+                                      setItems(newItems)
+                                    }
                                     }
                                   />
                                 </td>
                                 <td>
                                   <InputGroup>
                                     <InputGroup.Text>$</InputGroup.Text>
-                                    <Form.Control
-                                      value={(
-                                        item.quantity * (item.unitPrice as any)
-                                      ).toFixed(2)}
+                                    <NumberFormControl
+                                      defaultValue={(
+                                        item.quantity * item.unitPrice/100
+                                      )}
+                                      renderNumber={(value) => dollarsAsString(value, false)}
                                       disabled
+                                      readOnly={true}
                                     />
                                   </InputGroup>
                                 </td>
@@ -927,24 +931,27 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
                                   />
                                 </td>
                                 <td width={90}>
-                                  <Form.Control
+                                  <NumberFormControl  
                                     name='unitPrice'
-                                    value={item.unitPrice.toString()}
-                                    onChange={(e) =>
-                                      handleItemChange(
-                                        e as React.ChangeEvent<HTMLInputElement>,
-                                        itemIndex + items.length,
-                                      )
+                                    defaultValue={item.unitPrice/100}
+                                    onValueChange={(e) => {
+                                      const newItems = [...items]
+                                      newItems[itemIndex + items.length].unitPrice = (e??0)*100
+                                      setItems(newItems)
                                     }
+                                    }
+                                    renderNumber={(value) => dollarsAsString(value, false)}
                                   />
                                 </td>
                                 <td>
                                   <InputGroup>
                                     <InputGroup.Text>$</InputGroup.Text>
-                                    <Form.Control
-                                      value={(
-                                        item.quantity * Number(item.unitPrice)
-                                      ).toFixed(2)}
+                                    <NumberFormControl
+                                      defaultValue={(
+                                        item.quantity * item.unitPrice/100
+                                      )}
+                                      renderNumber={(value) => dollarsAsString(value, false)}
+                                      readOnly={true}
                                       disabled
                                     />
                                   </InputGroup>
@@ -983,17 +990,17 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
                       </Row>
                       {/* ORDERS (based on number of vendors) */}
                       {Boolean(orders.length > 0) && (
-                        <Table responsive striped>
-                          <thead>
-                            <tr>
-                              <th>Order #</th>
-                              <th>Tracking Info</th>
-                              <th>Order Details</th>
-                              <th>Shipping Cost</th>
-                              <th>Date Ordered</th>
-                            </tr>
-                          </thead>
-                          <tbody>
+                      <Table responsive striped>
+                        <thead>
+                          <tr>
+                            <th>Order #</th>
+                            <th>Tracking Info</th>
+                            <th>Order Details</th>
+                            <th>Shipping Cost</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+    
                             {orders.map((order, orderIndex) => {
                               return (
                                 <tr key={orderIndex}>
@@ -1122,6 +1129,3 @@ const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
 }
 
 export default AdminRequestCard
-function newDetails(arg0: string, newDetails: any) {
-  throw new Error('Function not implemented.')
-}

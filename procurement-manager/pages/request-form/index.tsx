@@ -2,7 +2,7 @@
  * This is the Request Form page
  */
 
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, ComponentProps, useMemo, useCallback } from 'react'
 import { Container, Row, Col, Button, InputGroup } from 'react-bootstrap'
 import Form from 'react-bootstrap/Form'
 import 'bootstrap/dist/css/bootstrap.min.css'
@@ -14,6 +14,7 @@ import { Session, getServerSession } from 'next-auth'
 import { authOptions } from '@/pages/api/auth/[...nextauth]'
 import { useRouter } from 'next/router'
 import { prisma } from '@/db'
+import { dollarsAsString, NumberFormControl } from '@/components/NumberFormControl'
 
 export async function getServerSideProps(context: any) {
   const session = await getServerSession(context.req, context.res, authOptions)
@@ -41,8 +42,8 @@ export async function getServerSideProps(context: any) {
       return {
         projectNum: project.projectNum,
         projectTitle: project.projectTitle,
-        startingBudget: project.startingBudget.toNumber(),
-        totalExpenses: project.totalExpenses.toNumber(),
+        startingBudget: project.startingBudget,
+        totalExpenses: project.totalExpenses,
       }
     })
   } catch (error) {
@@ -78,18 +79,17 @@ const StudentRequest = ({
   const [additionalInfo, setAdditionalInfo] = useState('')
   // remaining budget before adding any items
   const [remainingBeforeItem, setRemainingBeforeItem] =
-    useState<Prisma.Decimal>(
-      Prisma.Decimal.sub(
-        new Prisma.Decimal(listOfProjects[0].startingBudget),
-        new Prisma.Decimal(listOfProjects[0].totalExpenses),
+    useState(
+      (
+        (listOfProjects[0].startingBudget)-
+        (listOfProjects[0].totalExpenses)
       ),
     )
   // remaining budget that updates every time item is added/deleted
-  const [remainingAfterItem, setRemainingAfterItem] = useState<Prisma.Decimal>(
-    Prisma.Decimal.sub(
-      new Prisma.Decimal(listOfProjects[0].startingBudget),
-      new Prisma.Decimal(listOfProjects[0].totalExpenses),
-    ),
+  const [remainingAfterItem, setRemainingAfterItem] = useState(
+      (listOfProjects[0].startingBudget)-
+      (listOfProjects[0].totalExpenses),
+    
   )
 
   const [items, setItems] = useState([
@@ -99,9 +99,9 @@ const StudentRequest = ({
       description: '',
       url: '',
       partNumber: '',
-      quantity: '',
-      unitCost: '',
-      totalCost: '',
+      quantity: 0,
+      unitCost: 0,
+      totalCost: 0,
       isDropdownOpen: false,
       isNewVendor: false,
       searchTerm: '',
@@ -114,6 +114,7 @@ const StudentRequest = ({
   const [selectedProject, setSelectedProject] = useState(
     listOfProjects[0].projectNum,
   )
+
   const router = useRouter()
 
   const handleVendorChange = (
@@ -199,15 +200,7 @@ const StudentRequest = ({
     })
   }, [items])
 
-  const handleUnitCostBlur = (
-    e: React.FocusEvent<HTMLInputElement>,
-    index: number,
-  ) => {
-    const newItems = [...items]
-    newItems[index].unitCost = e.target.value
-    setItems(newItems)
-  }
-
+  
   // This function is called when delete button for an item is clicked
   const handleDeleteItem = (index: number) => {
     // get the array without the item to be deleted
@@ -225,13 +218,10 @@ const StudentRequest = ({
       (project) => project.projectNum === selectedProject,
     )
     setRemainingAfterItem(
-      Prisma.Decimal.sub(
-        Prisma.Decimal.sub(
-          new Prisma.Decimal(proj[0].startingBudget),
-          new Prisma.Decimal(proj[0].totalExpenses),
-        ),
-        calculateTotalCost(),
-      ),
+          (proj[0].startingBudget)-
+          (proj[0].totalExpenses)
+     - calculateTotalCost()
+    
     )
   }, [items])
 
@@ -249,13 +239,14 @@ const StudentRequest = ({
     setAdditionalInfo(e.target.value)
   }
 
-  const calculateTotalCost = (): Prisma.Decimal => {
+  const calculateTotalCost = (): number => {
     let totalCost = 0
     items.forEach((item) => {
+      console.log('[calculateTotalCost] item', item)
       totalCost +=
-        (parseFloat(item.unitCost) || 0) * (parseInt(item.quantity) || 0)
+        (item.unitCost || 0) * (item.quantity || 0)
     })
-    return new Prisma.Decimal(totalCost)
+    return totalCost
   }
 
   /**
@@ -271,9 +262,9 @@ const StudentRequest = ({
         description: '',
         url: '',
         partNumber: '',
-        quantity: '',
-        unitCost: '',
-        totalCost: '',
+        quantity: 0,
+        unitCost: 0,
+        totalCost: 0,
         isDropdownOpen: false,
         isNewVendor: false,
         searchTerm: '',
@@ -299,24 +290,30 @@ const StudentRequest = ({
       | 'description'
       | 'url'
       | 'partNumber'
-      | 'quantity'
-      | 'unitCost',
   ) => {
     const newItems = [...items]
     newItems[index][field] = e.target.value
+    
+    setItems(newItems)
+  }
+  
+  const handleNumericValueChangeOnItem = (value: number | null, index: number, field: 'unitCost' | 'quantity') => {
+    console.log('[Parent] handleNumericValueChangeOnItem called with', { value, index, field });
+    const newItems = [...items]
+    newItems[index][field] = value ?? 0
 
     if (field === 'quantity' || field === 'unitCost') {
-      const quantity = parseFloat(newItems[index].quantity)
-      const unitCost = parseFloat(newItems[index].unitCost)
-
-      if (!isNaN(quantity) && !isNaN(unitCost)) {
-        newItems[index].totalCost = (quantity * unitCost).toFixed(2)
+      const quantity = newItems[index].quantity
+      const unitCost = newItems[index].unitCost
+      console.log('[Parent] Calculating totalCost with', { quantity, unitCost });
+      if (!Number.isNaN(quantity) && !Number.isNaN(unitCost)) {
+        newItems[index].totalCost = (quantity * unitCost)
       } else {
-        newItems[index].totalCost = ''
+        newItems[index].totalCost = 0
       }
     }
-
     setItems(newItems)
+    console.log('[Parent] setItems called with', newItems);
   }
 
   // TODO:: change vendorID to vendorName similar to AdminRequestCard
@@ -330,7 +327,7 @@ const StudentRequest = ({
     e.preventDefault()
 
     // Check if the remaining budget is negative
-    if (remainingAfterItem < new Prisma.Decimal(0)) {
+    if (remainingAfterItem < 0) {
       alert(
         'Your remaining budget cannot be negative. Please review your items.',
       )
@@ -341,8 +338,8 @@ const StudentRequest = ({
     const itemsToSend = items.map((item) => {
       return {
         ...item,
-        quantity: parseInt(item.quantity),
-        unitPrice: parseFloat(item.unitCost),
+        quantity: (item.quantity),
+        unitPrice: (item.unitCost),
         vendorID: parseInt(item.vendor),
       }
     })
@@ -380,12 +377,10 @@ const StudentRequest = ({
   }
 
   function findBudget(projectNum: number, proj: Project[]) {
-    let budget: Prisma.Decimal = new Prisma.Decimal(0)
+    let budget = 0
     proj.forEach((project) => {
       if (project.projectNum === projectNum) {
-        budget = new Prisma.Decimal(
-          Prisma.Decimal.sub(project.startingBudget, project.totalExpenses),
-        )
+        budget = project.startingBudget - project.totalExpenses
       }
     })
     setRemainingBeforeItem(budget)
@@ -405,7 +400,7 @@ const StudentRequest = ({
           </p>
           <p>
             <span>
-              ${new Prisma.Decimal(remainingBeforeItem).toFixed(2).toString()}
+              {dollarsAsString(remainingBeforeItem/100)}
             </span>
           </p>
         </Col>
@@ -414,7 +409,7 @@ const StudentRequest = ({
             <strong>Remaining: </strong>
           </p>
           <p>
-            <span>${remainingAfterItem.toFixed(2).toString()}</span>
+            <span>{dollarsAsString(remainingAfterItem/100)}</span>
           </p>
         </Col>
       </Row>
@@ -574,11 +569,10 @@ const StudentRequest = ({
                   <Form.Label>
                     <strong>Qty.</strong>
                   </Form.Label>
-                  <Form.Control
-                    type='number'
+                  <NumberFormControl
                     min='0'
-                    value={item.quantity}
-                    onChange={(e) => handleItemChange(e, index, 'quantity')}
+                    defaultValue={item.quantity}
+                    onValueChange={(e) => handleNumericValueChangeOnItem(e, index, 'quantity')}
                     className={`${styles.quantityNumberInput} ${styles.hideArrows}`}
                     required
                   />
@@ -597,25 +591,20 @@ const StudentRequest = ({
                     <InputGroup.Text className={styles.inputGroupText}>
                       $
                     </InputGroup.Text>
-                    <Form.Control
-                      type='number'
+                    <NumberFormControl
                       step='0.0001'
                       min='0'
-                      value={item.unitCost}
-                      onChange={(e) => {
-                        const unitCostValue = e.target.value
-                        const regex = /^(?=.*[0-9])\d*(?:\.\d{0,4})?$/
-                        if (regex.test(unitCostValue) || unitCostValue === '') {
-                          handleItemChange(e, index, 'unitCost')
+                      defaultValue={item.unitCost/100}
+                      onValueChange={(e) => {
+                        console.log('[NumberFormControl] onValueChange: e', e)  
+                        if (e === null) {
+                          handleNumericValueChangeOnItem(null, index, 'unitCost')
+                        } else {
+                          handleNumericValueChangeOnItem(e * 100, index, 'unitCost')
                         }
                       }}
-                      onBlur={(e) =>
-                        handleUnitCostBlur(
-                          e as React.FocusEvent<HTMLInputElement>,
-                          index,
-                        )
-                      }
                       className={`${styles.costInputField} ${styles.unitCostInput} ${styles.hideArrows}`}
+                      renderNumber={(value) => dollarsAsString(value, false)}
                       required
                     />
                   </InputGroup>
@@ -624,30 +613,14 @@ const StudentRequest = ({
 
               {/* TOTAL COST */}
               <Col md={2}>
-                <Form.Group controlId={`item${index}TotalCost`}>
-                  <Form.Label>
-                    <strong>Total</strong>
-                  </Form.Label>
-                  <InputGroup
-                    className={`${styles.unitcostField} ${styles.customInputGroup}`}
-                  >
-                    <InputGroup.Text className={styles.inputGroupText}>
-                      $
-                    </InputGroup.Text>
-                    <Form.Control
-                      type='text'
-                      value={
-                        item.totalCost === ''
-                          ? ''
-                          : parseFloat(item.totalCost).toFixed(2)
-                      }
-                      readOnly
-                      className={`${styles.costInputField} ${styles.totalCostInput}`}
-                      disabled
-                    />
-                  </InputGroup>
-                </Form.Group>
-                <Col className='d-flex justify-content-end mt-2 w-100'>
+                <p>
+                  <strong>Total</strong>
+                </p>
+                <p>
+                  {dollarsAsString(item.totalCost/100)}
+                </p>
+              </Col>
+              <Col className='justify-content-end w-100'>
                   {items.length > 1 && (
                     <Button
                       variant='danger'
@@ -660,7 +633,6 @@ const StudentRequest = ({
                       Delete
                     </Button>
                   )}
-                </Col>
               </Col>
             </Row>
             <Row className="my-4">
@@ -840,3 +812,6 @@ const StudentRequest = ({
 }
 
 export default StudentRequest
+
+
+

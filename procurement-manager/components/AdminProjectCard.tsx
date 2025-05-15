@@ -17,6 +17,7 @@ import {
 import styles from '@/styles/RequestCard.module.scss'
 import { Prisma, User, Project, WorksOn, Status, Order } from '@prisma/client'
 import axios from 'axios'
+import { dollarsAsString, NumberFormControl } from './NumberFormControl'
 
 const MAX_STUDENTS = 6;
 
@@ -54,7 +55,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
   const [projectNumber, setProjectNumber] = useState(project.projectNum); // sets the project number to the project number of the project passed in to the project card
   const [projectTitle, setProjectTitle] = useState(project.projectTitle);
   const [totalBudget, setTotalBudget] = useState(project.startingBudget);
-  const [remainingBudget, setRemainingBudget] = useState(Prisma.Decimal.sub(project.startingBudget, project.totalExpenses)); // subtract values of decimal data type
+  const [remainingBudget, setRemainingBudget] = useState(project.startingBudget - project.totalExpenses);
   const [mentors, setMentors] = useState<string[]>([""])
   const [students, setStudents] = useState<string[]>([""])
   // arrays are used track which of the mentors and studentsthat were edited by admin before saving
@@ -92,7 +93,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
             orderNumber: '',
             trackingInfo: '',
             orderDetails: '',
-            shippingCost: new Prisma.Decimal(0),
+            shippingCost: 0,
           }
         ]
       }
@@ -323,14 +324,14 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
   /**
    * this function calculates the total cost for all items in a request
    * @param reqIndex index of request to calculate total item cost for
-   * @returns Prisma Decimal value for total request expenses
+   * @returns Number value for total request expenses
    */
-  const calculateTotalCost = (reqIndex: number): Prisma.Decimal => {
+  const calculateTotalCost = (reqIndex: number): number => {
     let totalCost = 0
     items[reqIndex].forEach((item) => {
-      totalCost += (Number(item.unitPrice) * item.quantity)
+      totalCost += (item.unitPrice * item.quantity)
     })
-    return new Prisma.Decimal(totalCost);
+    return totalCost;
   }
 
   // TODO:: add form validation to make sure input values follow requirements (no characters for numeric values, etc.)
@@ -548,7 +549,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
         else console.log(error)
       }
     })
-    setRemainingBudget(Prisma.Decimal.sub(project.startingBudget, project.totalExpenses))
+    setRemainingBudget(project.startingBudget - project.totalExpenses)
     setReqIDs([]) // reset list of updated request IDs to empty since after save, resets to none have been edited yet
     setItemIDs([]) // reset list to none edited once done
   }
@@ -598,25 +599,38 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
             />
       </Col>
 
-              {/* Total Budget */}
-                <Col xs={12} md={3}>
-                  <h6 className={styles.headingLabel}>Total Budget</h6>
-              <Form.Control
-                name='totalBudget'
-                value={Number(totalBudget)}
-                onChange={(e) => {setTotalBudget(new Prisma.Decimal(e.target.value))}}
-            />
+      {/* Total Budget */}
+      <Col xs={12} md={3}>
+        <h6 className={styles.headingLabel}>Total Budget</h6>
+        <NumberFormControl
+          name='totalBudget'
+          defaultValue={totalBudget/100}
+          onValueChange={(e) => {
+            if (e === null) {
+              return
+            }
+            setTotalBudget(e*100)}
+          }
+          renderNumber={(value) => dollarsAsString(value, false)}
+        />
       </Col>
 
               {/* Remaining Budget */}
                 <Col xs={12} md={2}>
                   <h6 className={styles.headingLabel}>Remaining Budget</h6>
-              <Form.Control
-                name='remainingBudget'
-                value={Number(remainingBudget)}
-                onChange={(e) => {setRemainingBudget(new Prisma.Decimal(e.target.value))}}
-                readOnly={true}
-            />
+
+<NumberFormControl
+          name='remainingBudget'
+          defaultValue={remainingBudget/100}
+          readOnly={true}
+          onValueChange={(e) => {
+            if (e === null) {
+              return
+            }
+            setRemainingBudget(e*100)}
+          }
+          renderNumber={(value) => dollarsAsString(value, false)}
+        />
       </Col>
       </Row>
               </fieldset>
@@ -741,7 +755,7 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
                       <Col xs={12} md={2}>
                         <h6 className={styles.headingLabel}> Order Subtotal</h6>
                         <p>
-                        ${calculateTotalCost(reqIndex).toFixed(2)}
+                        {dollarsAsString(calculateTotalCost(reqIndex)/100)}
                         </p>
                         </Col>
                       </Row>
@@ -842,27 +856,26 @@ const AdminProjectCard: React.FC<AdminProjectCardProps> = ({
                                       />
                                     </td>
                                     <td>
-                                      <Form.Control
-                                        name='unitPrice'
-                                        value={item.unitPrice.toString()}
-                                        onChange={(e) =>
-                                          handleItemChange(
-                                            e as React.ChangeEvent<HTMLInputElement>,
-                                            itemIndex, 
-                                            reqIndex, 
-                                            requests[projectIndex][reqIndex]
-                                          )
-                                        }
+                                      <NumberFormControl
+                                        defaultValue={item.unitPrice/100}
+                                        onValueChange={(e) => {
+                                          const newItems = [...items]
+                                          newItems[reqIndex][itemIndex].unitPrice = (e??0)*100
+                                          setItems(newItems)
+                                        }}
+                                        renderNumber={(value) => dollarsAsString(value, false)}
                                       />
                                     </td>
                                     <td>
                                       <InputGroup>
                                         <InputGroup.Text>$</InputGroup.Text>
-                                        <Form.Control
-                                          value={(
-                                            item.quantity * (item.unitPrice as any)
-                                          ).toFixed(2)}
+                                        <NumberFormControl
+                                          defaultValue={(
+                                            item.quantity * item.unitPrice/100
+                                          )}
+                                          renderNumber={(value) => dollarsAsString(value, false)}
                                           disabled
+                                          readOnly={true}
                                         />
                                       </InputGroup>
                                     </td>

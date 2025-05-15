@@ -112,7 +112,7 @@ async function updateItem(item: Item)
         itemID: item.itemID,
         receiptDate: item.receiptDate,
         description: item.description,
-        receiptTotal: new Prisma.Decimal(item.receiptTotal),
+        receiptTotal: (item.receiptTotal),
         vendorID: vendor.vendorID
       }
     })

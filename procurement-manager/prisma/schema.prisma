@@ -55,13 +55,13 @@ model Project {
   projectType       String // Capstone, EPICS, etc.
   projectNum        Int                 @unique // The project number given by UTDesign
   projectTitle      String // The title of the project
-  startingBudget    Decimal // The starting budget of the project
+  startingBudget    Int // The starting budget of the project
   sponsorCompany    String // The company that is sponsoring the project
   activationDate    DateTime            @default(now()) // The date the project was activated
   deactivationDate  DateTime? // The date the project was deactivated, can be null if project is still active
   additionalInfo    String? // Any additional information about the project, can be null
   costCenter        Int? // "The cost center is used by the admins when we buy parts for projects sponsored by another department at UTD. Like an internal bank account"
-  totalExpenses     Decimal             @default(0) // The total expenses of the project
+  totalExpenses     Int             @default(0) // The total expenses of the project
   // RELATIONSHIPS HERE ::
   Request           Request[]
   PreviousRecord    PreviousRecord[]
@@ -94,7 +94,7 @@ model Request {
   dateReceived   DateTime? // date the order was received by the student
   dateApproved   DateTime? // date the request was approved by mentor
   additionalInfo String? // any additional information about the request and why request is needed
-  expense        Decimal        @default(0) // the total expense of the request - used to calculate totalExpenses in Project
+  expense        Int        @default(0) // the total expense of the request - used to calculate totalExpenses in Project
   // RELATIONSHIPS HERE ::
   project        Project        @relation(fields: [projectID], references: [projectID])
   projectID      Int
@@ -117,7 +117,7 @@ model RequestItem {
   url         String // link url of the item
   partNumber  String // item's part number
   quantity    Int // quantity of the item needed
-  unitPrice   Decimal // unit price of the item
+  unitPrice   Int // unit price of the item
   // RELATIONSHIPS HERE ::
   request     Request @relation(fields: [requestID], references: [requestID]) // the request that the item is in
   requestID   Int
@@ -134,7 +134,7 @@ model Order {
   orderNumber  String // order number given by vendor
   orderDetails String // any additional information about the order
   trackingInfo String // tracking information of the order
-  shippingCost Decimal // shipping cost of the order
+  shippingCost Int // shipping cost of the order
   // RELATIONSHIPS HERE ::
   request      Request  @relation(fields: [requestID], references: [requestID]) // the request that the order is in
   requestID    Int
@@ -146,7 +146,7 @@ model Order {
 model OtherExpense {
   expenseID       Int      @id @default(autoincrement()) // unique identifier for each expense
   expenseType     String // type of expense
-  expenseAmount   Decimal // amount of expense
+  expenseAmount   Int // amount of expense
   expenseDate     DateTime // date of expense 
   expenseComments String? // any additional comments about the expense - can be null
   // RELATIONSHIPS HERE ::
@@ -173,7 +173,7 @@ model Reimbursement {
   reimbursementID   Int                 @id @default(autoincrement())
   dateSubmitted     DateTime // date the reimbursement form was submitted
   additionalInfo    String? // any additional information and why the reimbursement is being requested 
-  expense           Decimal             @default(0)
+  expense           Int             @default(0)
   // RELATIONSHIPS HERE ::
   project           Project             @relation(fields: [projectID], references: [projectID]) // the project that the reimbursement is in
   projectID         Int
@@ -189,7 +189,7 @@ model ReimbursementItem {
   itemID          Int                  @id @default(autoincrement()) // unique identifier for each item
   receiptDate     DateTime // date of the receipt
   description     String // description/name of the item 
-  receiptTotal    Decimal // total amount of the receipt
+  receiptTotal    Int // total amount of the receipt
   // RELATIONSHIPS HERE ::
   reimbursement   Reimbursement        @relation(fields: [reimbursementID], references: [reimbursementID])
   reimbursementID Int

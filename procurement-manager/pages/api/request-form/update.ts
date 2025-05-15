@@ -112,10 +112,10 @@ export default async function handler(
       let updateExpense = await prisma.project.update({
         where: { projectID: parseInt(body.projectID) },
         data: {
-          totalExpenses: Prisma.Decimal.sub(
-            project?.totalExpenses === undefined
+          totalExpenses: (
+            (project?.totalExpenses === undefined
               ? oldReqExpense
-              : project.totalExpenses,
+              : project.totalExpenses)-
             oldReqExpense
           ),
         },
@@ -131,7 +131,7 @@ export default async function handler(
           requestID: oldRequestForm.requestID,
         },
           data: {
-            expense: new Prisma.Decimal(body.totalExpenses)
+            expense: (body.totalExpenses)
           },
       })
       request = await prisma.request.findUnique({
@@ -146,8 +146,8 @@ export default async function handler(
       updateExpense = await prisma.project.update({
         where: { projectID: parseInt(body.projectID) },
         data: {
-          totalExpenses: Prisma.Decimal.add(
-            project?.totalExpenses === undefined ? 0 : project.totalExpenses,
+          totalExpenses: (
+            (project?.totalExpenses === undefined ? 0 : project.totalExpenses)+
             request.expense
           ),
         },
@@ -326,7 +326,7 @@ async function updateOrder( order: Order)
         orderNumber: order.orderNumber,
         trackingInfo: order.trackingInfo,
         orderDetails: order.orderDetails,
-        shippingCost: new Prisma.Decimal(order.shippingCost)
+        shippingCost: (order.shippingCost)
       }
     })
   }

@@ -18,6 +18,7 @@ import {
 } from 'react-bootstrap'
 import styles from '@/styles/RequestCard.module.scss'
 import { Status } from '@prisma/client'
+import { dollarsAsString, NumberFormControl } from './NumberFormControl'
 
 interface ReimbursementCardProps {
   details: ReimbursementDetails
@@ -158,12 +159,11 @@ const StudentReimbursementCard: React.FC<ReimbursementCardProps> = ({
           <Col xs={6} lg={2}>
             <h6 className={styles.headingLabel}>Order Subtotal</h6>
             <p>
-              $
-              {details.ReimbursementItem.reduce(
+              {dollarsAsString(details.ReimbursementItem.reduce(
                 (total, item) =>
-                    total + 1 * (item.receiptTotal as any),
+                    total + 1 * (item.receiptTotal),
                 0
-              ).toFixed(2)}
+              )/100)}
             </p>
           </Col>
 
@@ -277,15 +277,15 @@ const StudentReimbursementCard: React.FC<ReimbursementCardProps> = ({
                             <td>
                                 <InputGroup>
                                     <InputGroup.Text>$</InputGroup.Text>
-                                    <Form.Control
+                                    <NumberFormControl
                                         name='recieptTotal'
-                                        value={item.receiptTotal.toString()}
-                                        onChange={(e) =>
-                                            handleInputChange(
-                                            e as React.ChangeEvent<HTMLInputElement>,
-                                            itemIndex
-                                            )
-                                        }
+                                        defaultValue={item.receiptTotal/100}
+                                        onValueChange={(e) => {
+                                           const newItems = [...inputValues]
+                                           newItems[itemIndex].receiptTotal = (e??0)*100
+                                           setInputValues(newItems)
+                                        }}
+                                        renderNumber={(value) => dollarsAsString(value)}
                                     />
                                 </InputGroup>
                             </td>

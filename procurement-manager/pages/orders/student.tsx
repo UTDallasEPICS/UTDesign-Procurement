@@ -137,8 +137,8 @@ export default function Student({ session, user }: StudentProps) {
             <ProjectHeader
               projectName={project.projectTitle}
               expenses={project.totalExpenses}
-              available={Prisma.Decimal.sub(
-                project.startingBudget,
+              available={(
+                project.startingBudget -
                 project.totalExpenses
               )}
               budgetTotal={project.startingBudget}

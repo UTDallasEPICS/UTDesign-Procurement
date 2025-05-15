@@ -341,119 +341,117 @@ export default function Admin({
       <Row className='my-4'>
         <h1>Welcome back {user && user.firstName}</h1>
       </Row>
+  
       <Row>
-        <Col>
-          <Accordion>
-            {projects.map((project, projIndex) => (
-                <Fragment key={projIndex}>
-                  <Accordion.Item eventKey={projIndex.toString()}>
-                    <Accordion.Header>
-                      <ProjectHeader
-                        projectName={project.projectTitle}
-                        expenses={project.totalExpenses}
-                        available={Prisma.Decimal.sub(
-                          project.startingBudget,
-                          project.totalExpenses,
-                        )}
-                        budgetTotal={project.startingBudget}
-                        onToggleCollapse={() => toggleCards(projIndex)}
-                        isOpen={isOpen[projIndex]}
-                      />
-                    </Accordion.Header>
-                    <Accordion.Body>
-                      <ListGroup>
-                        {projectRequests[projIndex].map((request, reqIndex) => {
-                          return (
-                            <Link
-                              href={{
-                                query: {
-                                  itemId: request.requestID,
-                                  projectId: project.projectID,
-                                  type: 'request',
-                                },
-                              }}
-                              key={reqIndex}
-                            >
-                              <ListGroup.Item>
-                                <Stack direction='horizontal' gap={2}>
-                                  <span>Req#{request.requestID}</span>
-                                  <span bg='secondary'>${request.expense}</span>
+         <Col>
+           <Accordion>
+             {projects.map((project, projIndex) => (
+                 <Fragment key={project.projectID}>
+                   <Accordion.Item eventKey={project.projectID.toString()}>
+                     <Accordion.Header>
+                       <ProjectHeader
+                         projectName={project.projectTitle}
+                         expenses={project.totalExpenses}
+                         available={project.startingBudget -
+                           project.totalExpenses}
+                         budgetTotal={project.startingBudget}
+                         onToggleCollapse={() => toggleCards(projIndex)}
+                         isOpen={isOpen[projIndex]}
+                       />
+                     </Accordion.Header>
+                     <Accordion.Body>
+                       <ListGroup>
+                         {projectRequests[projIndex].map((request, reqIndex) => {
+                           return (
+                             <Link
+                               href={{
+                                 query: {
+                                   itemId: request.requestID,
+                                   projectId: project.projectID,
+                                   type: 'request',
+                                 },
+                               }}
+                               key={request.requestID}
+                             >
+                               <ListGroup.Item>
+                                 <Stack direction='horizontal' gap={2}>
+                                   <span>Req#{request.requestID}</span>
+                                   <span bg='secondary'>${request.expense}</span>
 
-                                  <span>
-                                    Requested {request.dateSubmitted}, needed{' '}
-                                    <TimeAgo date={request.dateNeeded} />{' '}
-                                  </span>
-                                </Stack>
-                              </ListGroup.Item>
-                            </Link>
-                          )
-                        })}
-                        {projectReimbursements[projIndex]?.map(
-                          (reimbursement, reimIndex) => {
-                            return (
-                              <Link
-                                href={{
-                                  query: {
-                                    itemId: reimbursement.reimbursementID,
-                                    projectId: project.projectID,
-                                    type: 'reimbursement',
-                                  },
-                                }}
-                                key={reimIndex}
-                              >
-                                <ListGroup.Item>
-                                  <Stack direction='horizontal' gap={2}>
-                                    <span>
-                                      Reim#{reimbursement.reimbursementID}
-                                    </span>
-                                    <span bg='secondary'>
-                                      ${reimbursement.expense}
-                                    </span>
-                                    <span>
-                                      Submitted {reimbursement.dateSubmitted}
-                                    </span>
-                                  </Stack>
-                                </ListGroup.Item>
-                              </Link>
-                            )
-                          },
-                        )}
-                      </ListGroup>
-                    </Accordion.Body>
-                  </Accordion.Item>
-                </Fragment>
-              )
-            )}
-          </Accordion>
-        </Col>
-        <Col>
-          {open.type === 'request' &&
-            open.itemId !== null &&
-            (() => {
-              const projectIndex = projects.findIndex(
-                (p) => p.projectID === open.projectId,
-              )
-              if (projectIndex === -1) return null
-              const project = projects[projectIndex]
-              const request = projectRequests[projectIndex].find(
-                (r) => r.requestID === open.itemId,
-              )
-              if (!request) return null
-              return (
-                <>
-                  <Button
-                    variant='primary'
-                    onClick={() =>
-                      setOpen({
-                        type: null,
-                        itemId: null,
-                        projectId: null,
-                      })
-                    }
-                  >
-                    Close
-                  </Button>
-
+                                   <span>
+                                     Requested {request.dateSubmitted.toLocaleString()}, needed{' '}
+                                     <TimeAgo date={request.dateNeeded} />{' '}
+                                   </span>
+                                 </Stack>
+                               </ListGroup.Item>
+                             </Link>
+                           )
+                         })}
+                         {projectReimbursements[projIndex]?.map(
+                           (reimbursement) => {
+                             return (
+                               <Link
+                                 href={{
+                                   query: {
+                                     itemId: reimbursement.reimbursementID,
+                                     projectId: project.projectID,
+                                     type: 'reimbursement',
+                                   },
+                                 }}
+                                 key={reimbursement.reimbursementID}
+                               >
+                                 <ListGroup.Item>
+                                   <Stack direction='horizontal' gap={2}>
+                                     <span>
+                                       Reim#{reimbursement.reimbursementID}
+                                     </span>
+                                     <span bg='secondary'>
+                                       ${reimbursement.expense}
+                                     </span>
+                                     <span>
+                                       Submitted {reimbursement.dateSubmitted.toLocaleString()}
+                                     </span>
+                                   </Stack>
+                                 </ListGroup.Item>
+                               </Link>
+                             )
+                           },
+                         )}
+                       </ListGroup>
+                     </Accordion.Body>
+                   </Accordion.Item>
+                 </Fragment>
+               )
+             )}
+           </Accordion>
+         </Col>
+         <Col>
+           {open.type === 'request' &&
+             open.itemId !== null &&
+             (() => {
+               const projectIndex = projects.findIndex(
+                 (p) => p.projectID === open.projectId,
+               )
+               if (projectIndex === -1) return null
+               const project = projects[projectIndex]
+               const request = projectRequests[projectIndex].find(
+                 (r) => r.requestID === open.itemId,
+               )
+               if (!request) return null
+               return (
+                 <>
+                   <Button
+                     variant='primary'
+                     onClick={() =>
+                       setOpen({
+                         type: null,
+                         itemId: null,
+                         projectId: null,
+                       })
+                     }
+                   >
+                     Close
+                   </Button>
                   <AdminRequestCard
                     user={user}
                     project={project}
@@ -467,10 +465,12 @@ export default function Admin({
                     }
                     onSave={() => getAdminRequests()}
                     collapsed={true}
-                  />
-                </>
-              )
-            })()}
+                    />
+                 </>
+               )
+             })()}
+                
+                
           {open.type === 'reimbursement' &&
             open.itemId !== null &&
             (() => {
