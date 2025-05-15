@@ -264,11 +264,10 @@ const StudentRequestCard: React.FC<RequestCardProps> = ({ details, collapsed }) 
                             </td>
                             <td>
                               <p 
-                                value={(
-                                  //details.process.status
-                                  item.status
-                                )}
-                              ></p>
+                                >
+                                  {item.status}
+
+                                </p>
                             </td>
                           </tr>
                         )

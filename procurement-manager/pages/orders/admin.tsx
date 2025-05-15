@@ -27,6 +27,7 @@ import { parseAsInteger, parseAsStringLiteral, useQueryStates } from 'nuqs'
 import Link from 'next/link'
 import TimeAgo from 'react-timeago'
 import Accordion from 'react-bootstrap/Accordion'
+import { dollarsAsString } from '@/components/NumberFormControl'
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const session = await getServerSession(context.req, context.res, authOptions)
@@ -376,7 +377,7 @@ export default function Admin({
                                <ListGroup.Item>
                                  <Stack direction='horizontal' gap={2}>
                                    <span>Req#{request.requestID}</span>
-                                   <span bg='secondary'>${request.expense}</span>
+                                   <span>{dollarsAsString(request.expense/100)}</span>
 
                                    <span>
                                      Requested {request.dateSubmitted.toLocaleString()}, needed{' '}
@@ -405,8 +406,8 @@ export default function Admin({
                                      <span>
                                        Reim#{reimbursement.reimbursementID}
                                      </span>
-                                     <span bg='secondary'>
-                                       ${reimbursement.expense}
+                                     <span>
+                                     {dollarsAsString(reimbursement.expense/100)}
                                      </span>
                                      <span>
                                        Submitted {reimbursement.dateSubmitted.toLocaleString()}
