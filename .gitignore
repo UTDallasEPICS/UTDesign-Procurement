@@ -1,4 +1,10 @@
 procurement-manager/.env
-.vscode
+.vscode/*
+!.vscode/extensions.json
 procurement-manager/uploads
-procurement-manager/exports/files/report.xlsx
+procurement-manager/exports
+*.xlsx
+!Test*.xlsx
+.DS_Store
+nohup.out
+

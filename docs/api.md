@@ -16,7 +16,7 @@ There are some things listed in the .docx file that might have been done already
 
 - `POST process/update` - updates the process of a request/reimbursement
   - Use cases: when admin rejects/orders; mentor rejects/approves; student cancels/recalls
-  - body params: `{netID, requestID, comment, status}`
+  - body params: `{email, requestID, comment, status}`
 
 ## project
 
@@ -32,7 +32,7 @@ There are some things listed in the .docx file that might have been done already
 - `POST request-form/` - creates a new request form
   - body params: `{dateNeeded, projectNum, studentEmail, additionalInfo, items with fields: {description, url, partNumber, quantity, unitPrice, upload, vendorID}}`
 - `POST request-form/get` - returns the requests in a project that is associated to a user
-  - body params: `{netID}`
+  - body params: `{email}`
 - `POST request-form/update` - updates request information and project expenses after changes in request total expenses (includes more optional params like orders, status, etc.)
   - body params: `{projectID, requestID, items with fields: {itemID, description, url, partNumber, quantity, unitPrice, vendorName or vendorID}, totalExpenses}`
 
@@ -59,9 +59,9 @@ There are some things listed in the .docx file that might have been done already
 ## worksOn
 - `GET /worksOn` - gets all worksOn entries from the database
 - `POST /worksOn` - creates a new worksOn entry for a user and project
-  - body params: `{netID, projectNum}`
+  - body params: `{email, projectNum}`
 - `POST /worksOn/deactivate` - deactivates user in project (make current project user a past user) by updating endDate in worksOn
-  - body params: `{netID, projectNum, comments (optional)}`
+  - body params: `{email, projectNum, comments (optional)}`
 - `GET /worksOn/currentProjects` - gets all the current projects of a user (returns worksOn entries of user with no end date, so ongoing)
   - query params: `userID`
 - `GET /worksOn/pastUsers` - gets all the previous users on a project (returns worksOn entries of users with an end date that isn't null)
@@ -71,7 +71,7 @@ There are some things listed in the .docx file that might have been done already
 
 ## reimbursement-form
 - `POST /reimbursement-form/get` - gives the projects and reimbursements associated with a user
-  - body params: `{netID}`
+  - body params: `{email}`
 - `POST /reimbursement-form` - creates a new reimbursement entry, new reimbursement items for every component in the submission, and updates the status of the reimbursement to under review after a student submits the reimbursement form
   - body params: `{dateNeeded, projectNum, studentEmail, additionalInfo, items with fields: {description, vendorID, receiptDate, receiptTotal}}`
 - `POST/reimbursement-form/update` - updates information in a reimbursement (status is optional param)

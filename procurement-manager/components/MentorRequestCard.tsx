@@ -8,6 +8,7 @@ import { Card, Button, Col, Row, Collapse, Form, Table } from 'react-bootstrap'
 import styles from '@/styles/RequestCard.module.scss'
 import { RequestDetails } from '@/lib/types'
 import axios from 'axios'
+import { dollarsAsString } from './NumberFormControl'
 
 interface RequestCardProps {
   details: RequestDetails
@@ -15,7 +16,7 @@ interface RequestCardProps {
   onApprove: () => void
   collapsed: boolean
 }
-
+ 
 const MentorRequestCard: React.FC<RequestCardProps> = ({
   details,
   onReject,
@@ -44,7 +45,7 @@ const MentorRequestCard: React.FC<RequestCardProps> = ({
    */
   async function getStudentThatRequested() {
     try {
-      if (!details.Process[0].mentorID) return null
+      if (!details.process.mentorID) return null
       const user = await axios.get(`/api/user/${details.studentID}`)
       if (user.status === 200) setStudentThatRequested(user.data)
       return user
@@ -103,41 +104,21 @@ const MentorRequestCard: React.FC<RequestCardProps> = ({
               <Col xs={6} lg={2}>
                 <h6 className={styles.headingLabel}>Order Subtotal</h6>
                 <p>
-                  $
-                  {details.RequestItem.reduce(
+                  {dollarsAsString(details.RequestItem.reduce(
                     (total, item) =>
-                      total + item.quantity * (item.unitPrice as any),
+                      total + item.quantity * item.unitPrice,
                     0
-                  ).toFixed(4)}
+                  )/100)}
                 </p>
               </Col>
 
               {/* STATUS */}
               <Col xs={6} lg={3}>
                 <h6 className={styles.headingLabel}>Status</h6>
-                <p>{details.Process[0].status}</p>
+                <p>{details.process.status}</p>
               </Col>
 
-              {/* <Col xs='auto' className='d-flex align-items-center'>
-                <div className='d-flex align-items-start'>
-                  <Button
-                    variant='success'
-                    size='sm'
-                    className='mb-2'
-                    onClick={onApprove}
-                  >
-                    APPROVE
-                  </Button>{' '}
-                  <Button
-                    variant='dark'
-                    size='sm'
-                    onClick={onReject}
-                    className='ms-4'
-                  >
-                    REJECT
-                  </Button>
-                </div>
-              </Col> */}
+              
             </Row>
 
             {/* COLLAPSED ROW */}
@@ -210,11 +191,9 @@ const MentorRequestCard: React.FC<RequestCardProps> = ({
                             <td>{item.url}</td>
                             <td>{item.partNumber}</td>
                             <td>{item.quantity}</td>
-                            <td>{item.unitPrice.toString()}</td>
+                            <td>{dollarsAsString(item.unitPrice/100)}</td>
                             <td>
-                              {(
-                                item.quantity * (item.unitPrice as any)
-                              ).toFixed(4)}
+                              {dollarsAsString(item.quantity * (item.unitPrice)/100)}
                             </td>
                             <td></td>
                             <td></td>

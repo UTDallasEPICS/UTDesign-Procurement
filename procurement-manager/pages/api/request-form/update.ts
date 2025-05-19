@@ -5,16 +5,30 @@ import { prisma } from '@/db'
 import { Prisma, Vendor } from '@prisma/client'
 
 // used for type checking items and orders passed in so that each attribute is valid
-interface Item
-{
-  itemID: number,
-  description: string,
-  url: string,
-  partNumber: string,
-  quantity: number,
-  unitPrice: number,
-  vendorID: number | undefined,
-  vendorName: string | undefined // only vendorName should be passed in but project page not updated so for now made ID and name optional and pass in 1
+// interface Item
+// {
+//   itemID: number,
+//   description: string,
+//   url: string,
+//   partNumber: string,
+//   quantity: number,
+//   unitPrice: number,
+//   vendorID: number | undefined,
+//   vendorName: string | undefined // only vendorName should be passed in but project page not updated so for now made ID and name optional and pass in 1
+// }
+
+interface Item {
+  itemID: number;
+  description: string;
+  url: string;
+  partNumber: string;
+  quantity: number;
+  unitPrice: number;
+  vendorID: number | undefined;  // Can be null or undefined for 'Other' vendor
+  vendorName: string | undefined;      // Vendor name can be undefined
+  newVendorName?: string;              // Optional, for 'Other' vendors
+  newVendorEmail?: string;             // Optional, for 'Other' vendors
+  newVendorURL?: string;               // Optional, for 'Other' vendors
 }
 
 interface Order
@@ -67,17 +81,13 @@ export default async function handler(
         request = await prisma.request.update({
           where: {
             requestID: oldRequestForm.requestID,
+            processID: process.processID,
           },
           data: {
-            Process: {
+            process: {
               update: {
-                where: {
-                  processID: parseInt(body.processID)
-                },
-                data: {
-                  // TODO:: use type checking (could allow admin to pass in status string like "approved" and create status using Status.APPROVED, etc. for different ones)
-                  status: body.status
-                }
+                // TODO:: use type checking (could allow admin to pass in status string like "approved" and create status using Status.APPROVED, etc. for different ones)
+                status: body.status
               }
             }
           },
@@ -102,10 +112,10 @@ export default async function handler(
       let updateExpense = await prisma.project.update({
         where: { projectID: parseInt(body.projectID) },
         data: {
-          totalExpenses: Prisma.Decimal.sub(
-            project?.totalExpenses === undefined
+          totalExpenses: (
+            (project?.totalExpenses === undefined
               ? oldReqExpense
-              : project.totalExpenses,
+              : project.totalExpenses)-
             oldReqExpense
           ),
         },
@@ -121,7 +131,7 @@ export default async function handler(
           requestID: oldRequestForm.requestID,
         },
           data: {
-            expense: new Prisma.Decimal(body.totalExpenses)
+            expense: (body.totalExpenses)
           },
       })
       request = await prisma.request.findUnique({
@@ -136,8 +146,8 @@ export default async function handler(
       updateExpense = await prisma.project.update({
         where: { projectID: parseInt(body.projectID) },
         data: {
-          totalExpenses: Prisma.Decimal.add(
-            project?.totalExpenses === undefined ? 0 : project.totalExpenses,
+          totalExpenses: (
+            (project?.totalExpenses === undefined ? 0 : project.totalExpenses)+
             request.expense
           ),
         },
@@ -220,6 +230,78 @@ async function updateItem(item: Item)
   }
 }
 
+// async function updateItem(item: Item) {
+//   try {
+//     let vendor;
+
+//     // Log to check if `newVendorName` is set
+//     console.log(`New Vendor Name: ${item.newVendorName}`);
+
+//     // Handle 'Other' vendor case: Create a new vendor with pending status
+//     if (item.newVendorName) {
+//       vendor = await prisma.vendor.create({
+//         data: {
+//           vendorName: item.newVendorName,
+//           vendorStatus: 'PENDING',
+//           vendorEmail: item.newVendorEmail || null, // Ensure null is acceptable in the schema
+//           vendorURL: item.newVendorURL?.trim() || 'https://default.com',
+//         },
+//       });
+//       console.log(`Created new vendor: ${vendor.vendorName} with ID: ${vendor.vendorID}`);
+//     }
+
+//     // If not 'Other', find the vendor by name or ID
+//     if (!vendor && item.vendorName) {
+//       vendor = await prisma.vendor.findFirst({
+//         where: {
+//           vendorName: item.vendorName,
+//         },
+//       });
+//       if (!vendor) throw new Error('Invalid vendor for item');
+//     }
+
+//     if (!vendor && item.vendorID) {
+//       vendor = await prisma.vendor.findUnique({
+//         where: {
+//           vendorID: Number(item.vendorID),
+//         },
+//       });
+//       if (!vendor) throw new Error('Invalid vendor for item');
+//     }
+
+//     // Validate that the request item exists
+//     const reqItem = await prisma.requestItem.findUnique({
+//       where: {
+//         itemID: item.itemID,
+//       },
+//     });
+//     if (!reqItem) throw new Error('Request item not found');
+
+//     // Update the request item with the new vendor information
+//     const newItem = await prisma.requestItem.update({
+//       where: {
+//         itemID: reqItem.itemID,
+//       },
+//       data: {
+//         description: item.description,
+//         url: item.url,
+//         partNumber: item.partNumber,
+//         quantity: item.quantity,
+//         unitPrice: item.unitPrice,
+//         vendorID: vendor?.vendorID, // Use the vendorID of the new or existing vendor
+//       },
+//     });
+
+//     console.log(`Updated item ${item.itemID} with vendor ${vendor?.vendorName || 'unknown'}`);
+//   } catch (error) {
+//     console.error(error);
+//     if (error instanceof Error) {
+//       console.error(error.message);
+//     }
+//   }
+// }
+
+
 /**
  * This function first checks if the orderID is valid and then updates the data fields for the order
  * @param order order from orders array passed in to API (after type checking)
@@ -244,7 +326,7 @@ async function updateOrder( order: Order)
         orderNumber: order.orderNumber,
         trackingInfo: order.trackingInfo,
         orderDetails: order.orderDetails,
-        shippingCost: new Prisma.Decimal(order.shippingCost)
+        shippingCost: (order.shippingCost)
       }
     })
   }

@@ -33,7 +33,7 @@ export async function getServerSideProps(context: any) {
       },
       include: {
         RequestItem: true,
-        Process: true,
+        process: true,
         OtherExpense: true,
         project: true,
       },
@@ -67,7 +67,7 @@ export default function Admin({
 }: AdminProps): JSX.Element {
   // state for opening the collapsed cards - an array due to multiple projects
   const [isOpen, setIsOpen] = useState<boolean[]>([])
- 
+
   // state for the requests inside the different projects associated to the user
   const [projectRequests, setProjectRequests] =
     useState<RequestDetails[][]>(reqs)
@@ -76,7 +76,8 @@ export default function Admin({
 
   // Opens all the cards by default
   useEffect(() => {
-    setIsOpen(projects.map(() => true))
+    // setIsOpen(projects.map(() => true))
+    getAdmin()
   }, [])
 
   // Client-side data fetching whenever we need to refetch the data and rerender the page
@@ -86,7 +87,7 @@ export default function Admin({
    */
   async function getAdmin() {
     const response = await axios.post('/api/request-form/get', {
-      netID: user.netID,
+      email: user.email,
     })
     const [projects, requestsOfMultipleProjects] = await Promise.all([
       response.data.projects,
@@ -126,12 +127,12 @@ export default function Admin({
   return (
     <>
       <Row className='my-4'>
+
       </Row>
       {/* Creates the ProjectHeader  */}
-      {projects.map((project, projIndex) => 
-      {
+      {projects.map((project, projIndex) => {
         return (
-          <Row key={projIndex}>
+          <Row key={project.projectID}>
             <ProjectPageHeader
               projectID={project.projectID}
               onToggleCollapse={() => {
@@ -141,10 +142,10 @@ export default function Admin({
               isOpen={isOpen[projIndex]}
             />
             <AdminProjectCard
-            projectIndex={projIndex}
-            project={project}
-            requests={projectRequests} // array of requests for multiple projects so use project index to access request list for a project
-            collapsed={isOpen[projIndex]}
+              projectIndex={projIndex}
+              project={project}
+              requests={projectRequests} // array of requests for multiple projects so use project index to access request list for a project
+              collapsed={isOpen[projIndex]}
             />
           </Row>
         )

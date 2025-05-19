@@ -10,7 +10,7 @@ export default async function handler(
   try {
     await prisma.user.update({
       where: {
-        netID: 'ghi000000',
+        email: 'ghi000000@utdallas.edu',
       },
       data: {
         email: 'ghi000000@utdallas.edu',

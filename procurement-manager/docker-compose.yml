@@ -1,0 +1,12 @@
+services:
+  db:
+    image: mysql:8.0
+    command: --lower_case_table_names=1
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+    ports:
+      - "3306:3306"
+    volumes:
+      - db-data:/var/lib/mysql
+volumes:
+  db-data:

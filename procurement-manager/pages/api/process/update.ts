@@ -26,26 +26,28 @@ export default async function handler(
     }
 
     //post method as we are getting info
-    const { netID, requestID, comment, status } = req.body
+    const { email, processID, comment, status } = req.body
 
-    // Finds the user and request based on the netID and requestID provided in the request body
-    const [user, request] = await Promise.all([
-      await prisma.user.findUnique({ where: { netID: netID } }),
-      await prisma.request.findUnique({
-        where: { requestID: requestID },
-        include: { Process: true },
+    // TODO: proper auth instead of passing email
+
+    // Finds the user and request based on the netID and ID provided in the request body
+    const [user, process] = await Promise.all([
+      await prisma.user.findUnique({ where: { email: email } }),
+      await prisma.process.findUnique({
+        where: { processID },
+        include: { request: true, reimbursement: true },
       }),
     ])
 
     if (!user) throw new Error('User not found')
-    if (!request) throw new Error('Request not found')
+    if (!process) throw new Error('Request not found')
 
     // CHECK FOR ROLE -- DIFFERENT ROLES HAVE DIFFERENT PERMISSIONS TO UPDATE THE PROCESS
     // user.roleID is admin so update the comment and status given by admin
     if (user.roleID === 1) {
       console.log(comment)
       const updateC = await prisma.process.update({
-        where: { processID: request.Process[0].processID },
+        where: { processID: processID },
         data: {
           adminProcessedComments: comment,
           status: status,
@@ -55,33 +57,58 @@ export default async function handler(
           request: true,
         },
       })
+        
+
+
       
       // undo expense for rejected request
-      if (status === Status.REJECTED) {
+      if (status === Status.REJECTED && process.request != null) {
         const project = await prisma.project.findUnique({
-          where: { projectID: request.projectID },
+          where: { 
+            projectID: process.request.projectID 
+          },
         })
         const undoExpense = await prisma.project.update({
-          where: { projectID: request.projectID },
+          where: { projectID: process.request.projectID },
           data: {
-            totalExpenses: Prisma.Decimal.sub(
-              project?.totalExpenses === undefined
-                ? request.expense
-                : project.totalExpenses,
-              request.expense
+            totalExpenses: (
+              (project?.totalExpenses === undefined
+                ? process.request.expense
+                : project.totalExpenses) -
+              process.request.expense
             ),
           },
         })
       }
+      else if(status === Status.REJECTED && process.reimbursement != null) {
+        const project = await prisma.project.findUnique({
+          where: { 
+            projectID: process.reimbursement.projectID 
+          },
+        })
+        const undoExpense = await prisma.project.update({
+          where: { projectID: process.reimbursement.projectID },
+          data: {
+            totalExpenses: (
+              (project?.totalExpenses === undefined
+                ? process.reimbursement.expense
+                : project.totalExpenses) -
+              process.reimbursement.expense
+            ),
+          },
+        })
+      }
+
       res.status(200).json({
-        message: `Process ${request.Process[0].processID} in Request #${requestID} was updated successfully`,
+        message: `Process ${process.processID} updated successfully`,
         update: updateC,
       })
     }
+  
     //user.roleID is mentor so update the the comment and status given by mentor
     else if (user.roleID === 2) {
       const updateC = await prisma.process.update({
-        where: { processID: request.Process[0].processID },
+        where: { processID },
         data: {
           mentorID: user.userID,
           mentorProcessedComments: comment,
@@ -92,50 +119,70 @@ export default async function handler(
           request: true,
         },
       })
-
+  
       // if the given status in req.body is APPROVED also update the dateApproved field for the request
-      if (status === Status.APPROVED) {
+      if (status === Status.APPROVED && process.request != null) {
         await prisma.request.update({
-          where: { requestID: requestID },
+          where: { requestID: process.request.requestID },
           data: { dateApproved: new Date() },
         })
       }
-
-      if (status === Status.REJECTED) {
+  
+      if (status === Status.REJECTED && process.request != null) {
         const project = await prisma.project.findUnique({
-          where: { projectID: request.projectID },
+          where: { projectID: process.request.projectID },
         })
         const undoExpense = await prisma.project.update({
-          where: { projectID: request.projectID },
+          where: { projectID: process.request.projectID },
           data: {
-            totalExpenses: Prisma.Decimal.sub(
-              project?.totalExpenses === undefined
-                ? request.expense
-                : project.totalExpenses,
-              request.expense
+            totalExpenses: (
+              (project?.totalExpenses === undefined
+                ? process.request.expense
+                : project.totalExpenses) -
+              process.request.expense
             ),
           },
         })
       }
-
+      else if(status === Status.REJECTED && process.reimbursement != null) {
+        const project = await prisma.project.findUnique({
+          where: { 
+            projectID: process.reimbursement.projectID 
+          },
+        })
+        const undoExpense = await prisma.project.update({
+          where: { projectID: process.reimbursement.projectID },
+          data: {
+            totalExpenses: (
+              (project?.totalExpenses === undefined
+                ? process.reimbursement.expense
+                : project.totalExpenses) - 
+              process.reimbursement.expense
+            ),
+          },
+        })
+      }
+  
       res.status(200).json({
-        message: `Process ${request.Process[0].processID} in Request #${requestID} was updated successfully`,
+        message: `Process ${process.processID} was updated successfully`,
         update: updateC,
       })
     }
+      
     //user.roleID is student, so student can reject the status
     else if (user.roleID === 3) {
       const updatedProcess = await prisma.process.update({
-        where: { processID: request.Process[0].processID },
+        where: { processID },
         data: {
           status: status,
         },
       })
       res.status(200).json({
-        message: `Process ${request.Process[0].processID} was updated successfully`,
+        message: `Process ${process.processID} was updated successfully`,
         update: updatedProcess,
       })
     }
+
   } catch (error) {
     console.log(error)
     res.status(500).send(error)

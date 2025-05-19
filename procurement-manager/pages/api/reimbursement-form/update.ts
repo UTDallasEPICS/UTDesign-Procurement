@@ -47,17 +47,13 @@ export default async function handler(
         reimbursement = await prisma.reimbursement.update({
           where: {
             reimbursementID: oldReimbursementForm.reimbursementID,
+            processID: process.processID
           },
           data: {
-            Process: {
+            process: {
               update: {
-                where: {
-                  processID: parseInt(body.processID)
-                },
-                data: {
-                  // TODO:: use type checking (could allow admin to pass in status string like "approved" and create status using Status.APPROVED, etc. for different ones)
-                  status: body.status
-                }
+                // TODO:: use type checking (could allow admin to pass in status string like "approved" and create status using Status.APPROVED, etc. for different ones)
+                status: body.status
               }
             }
           },
@@ -116,7 +112,7 @@ async function updateItem(item: Item)
         itemID: item.itemID,
         receiptDate: item.receiptDate,
         description: item.description,
-        receiptTotal: new Prisma.Decimal(item.receiptTotal),
+        receiptTotal: (item.receiptTotal),
         vendorID: vendor.vendorID
       }
     })

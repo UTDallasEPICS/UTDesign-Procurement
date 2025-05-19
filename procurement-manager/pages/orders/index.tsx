@@ -17,7 +17,7 @@ export async function getServerSideProps() {
   }
 }
 
-export default function index({ title }: { title: string }) {
+export default function Index({ title }: { title: string }) {
   const router = useRouter()
   const { data: session } = useSession()
   const user = session?.user as User

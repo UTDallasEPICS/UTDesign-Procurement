@@ -2,17 +2,16 @@
  * This component is seen in the Orders Page right before the cards. This can be reused in the Orders History Page.
  */
 
-import { Prisma } from '@prisma/client'
-import React from 'react'
 import { Col, Button, Row } from 'react-bootstrap'
+import { dollarsAsString } from './NumberFormControl'
 
 interface ProjectHeaderProps {
   projectName: string
-  expenses: Prisma.Decimal
-  available: Prisma.Decimal
-  budgetTotal: Prisma.Decimal
-  onToggleCollapse: () => void
-  isOpen: boolean
+  expenses: number
+  available: number
+  budgetTotal: number
+  onToggleCollapse?: () => void
+  isOpen?: boolean
 }
 
 const ProjectHeader: React.FC<ProjectHeaderProps> = ({
@@ -21,29 +20,30 @@ const ProjectHeader: React.FC<ProjectHeaderProps> = ({
   available,
   budgetTotal,
   onToggleCollapse,
-  isOpen,
+  isOpen
 }) => {
   return (
     <Row className='align-items-center'>
-      <Col md={5}>
+      <Col>
         <h3>{projectName}</h3>
       </Col>
-      <Col md={2}>
-        <p style={{ fontSize: '1.5rem' }}>
-          <strong>Expenses:</strong> $<>{expenses}</>
+      <Col>
+        <p style={{ fontSize: '1.15rem' }}>
+          <strong>Expenses:</strong> {dollarsAsString(expenses/100)}
         </p>
       </Col>
-      <Col md={2}>
-        <p style={{ fontSize: '1.5rem' }}>
-          <strong>Available:</strong> $<>{available.toString()}</>
+      <Col>
+        <p style={{ fontSize: '1.15rem' }}>
+          <strong>Available:</strong> {dollarsAsString(available/100)}
         </p>
       </Col>
-      <Col md={2}>
-        <p style={{ fontSize: '1.5rem' }}>
-          <strong>Budget:</strong> $<>{budgetTotal}</>
+      <Col>
+        <p style={{ fontSize: '1.15rem' }}>
+          <strong>Budget:</strong> {dollarsAsString(budgetTotal/100)}
         </p>
       </Col>
-      <Col md={1}>
+      {isOpen !== undefined && onToggleCollapse !== undefined &&
+      <Col>
         <Button
           variant='outline-secondary'
           size='sm'
@@ -53,7 +53,7 @@ const ProjectHeader: React.FC<ProjectHeaderProps> = ({
         >
           {isOpen ? 'Hide' : 'Show'}
         </Button>
-      </Col>
+      </Col>}
     </Row>
   )
 }
