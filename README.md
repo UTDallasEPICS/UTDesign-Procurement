@@ -84,39 +84,18 @@ The current process for managing procurement paperwork submitted by students fro
 
 ### Front-end
 
-- Update Login Page for UTD SSO Integration.
-- Implement Reimbursement Form In Student View.
 - Add form validation to make sure input values follow type requirements.
-- Enhance UI, test, and fix the Database Updates Page.
-- Enhance UI, test, and fix the request form page (Student View).
 - Complete remaining TODOs for Orders, Projects & Order History, and Request Form pages.
 - Make sure all work adheres to the UTD guidelines.
 
 ### Back-end
 
-- Implement UTD SSO (Single Sign-On) feature for user authentication.
 - Continue developing API endpoints and integrating them with the front-end to provide full functionality of the application. APIs to work on: [Backend_APIs.docx](https://github.com/UTDallasEPICS/UTDesign-Procurement/raw/main/docs/Backend_APIs.docx)
 - Update the list of APIs done so far with the new add/delete orders APIs. (docs/api.md)
 - Integrate cloud software to store uploaded request/reimbursement files in the cloud (DB Updates Page & Student View of Request Form).
 - Improve code by implementing type-checking and error handling, and resolve any bugs/TODO comments in code/APIs from previous semesters.
 
-### User Workflows
 
-- Student
-  - Able to request reimbursement of funds with the reimbursement form (TODO) and the ordering of parts with the request form. Also able to
-  view requests made in the Orders page.
-  - The Student opens the Request Form page and fills it out, then press submit.
-  - Reimbursement Form. (TODO)
-- Mentor
-  - Role: Views requests made by the student on the Orders page and can either approve or deny the request to go to the admin.
-- Admin
-  - Role: Views requests approved by the mentor and can review request orders, edit order request information, add shipment details, and view the history of previous projects and orders. They can also edit information in the DB
-  - In the orders page, the admin can edit the request by pressing the edit button, enabling the admin to add/remove shipping details and
-  order details.
-  - In the Projects and Order history page, the admin can view the history of previous projects and orders and edit them by pressing the edit
-  button.
-  - In the Database Updates page, the admin can add/delete users and projects (TODO). They are also able to upload files by clicking the
-  Upload Files button.
 
 ## 🔗 Pre-requisites for running the app locally 🔗
 
@@ -192,13 +171,13 @@ Dependencies are the packages used to create the project.
 > [!NOTE]
 > The steps in the [database setup](#-database-setup-) section need to be complete before continuing with environment configuration.
 
-7. Copy the **.env.example** from the **docs** folder into the **procurement-manager** folder and rename it to **.env**.
+7. Make a copy of the **.env.example** in the **procurement-manager** folder and rename the copy to **.env**.
 8. In the **.env** file, update the line beginning with `DATABASE_URL=`.
 
     - On **Windows**, replace `YOUR_MYSQL_ROOT_PASSWORD` with the password you set when initially setting up MySQL.
     - On **macOS**, replace `YOUR_MYSQL_ROOT_PASSWORD` with `password`.
 
-9. Open a terminal and change directory to the **procurement-manager** directory. The next step requires you to be in the **procurement-manager** directory.
+9. Open a terminal and change directory to the **procurement-manager** directory by running `cd procurement-manager`. The next step requires you to be in the **procurement-manager** directory.
 
 10. To sync your database with the project schema, run `npx prisma migrate dev`.
 
