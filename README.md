@@ -97,7 +97,11 @@ The current process for managing procurement paperwork submitted by students fro
 
 
 
-## 🔗 Pre-requisites for running the app locally 🔗
+---
+
+## 🛠️ Setting up local development environment  🛠️
+
+### 🔗 Install Pre-requisites 🔗
 
 You must have the following tools installed:
 
@@ -108,10 +112,27 @@ You must have the following tools installed:
 - [GitHub Desktop](https://desktop.github.com/) - optional, provides a GUI to interact with Git repositories
 - [MySQL Workbench](https://dev.mysql.com/downloads/workbench/) - optional, provides a GUI to interact with the database
 
+Before continuing, verify that you have `git`, `node` (Node.js), and `npm` (package manager for Node.js) installed correctly by typing in your terminal: `git --version` and `npm --version`.
 
-### 💾 Database setup 💾
+If you haven't learned how to use the terminal, please do so first to your respective operating system. Some basic commands are `cd`, `pwd`, and `mkdir`.
 
-This project uses MySQL as the database where all application data is stored. On Windows**, you'll run MySQL **directly** on your computer. On **macOS**, you'll run MySQL **in a Docker container** on your computer.
+### Clone Repository
+
+#### 😎 Using Git CLI (Recommended) 😎
+
+- Find a folder to save this repository and go there using your terminal. For example mine is saved in `C:\Isaac\Programming`.
+- In your terminal, write `git clone https://github.com/UTDallasEPICS/UTDesign-Procurement.git` or the SSH link if you have that set up. Sign in to GitHub if asked.
+- Cloning a repository should create a folder for you inside the folder the terminal is in, so don't make a folder like "UTDesign Procurement"
+
+
+#### 😑 Using GitHub Desktop 😑
+
+Clone a repository by clicking `File > Clone Repository` and finding it through GitHub.com or through URL tabs.
+
+
+### 💾 Set Up Database 💾
+
+This project uses MySQL as the database where all application data is stored. On **Windows**, you'll run MySQL **directly** on your computer. On **macOS**, you'll run MySQL **in a Docker container** on your computer.
 
 > [!TIP]
 > For more info about Docker, see ['What is Docker?'](https://github.com/UTDallasEPICS/Guides/blob/main/tooling/docker_wsl_setup.md#what-is-docker) on the [EPICS Guide](https://github.com/UTDallasEPICS/Guides) repo.
@@ -135,38 +156,15 @@ Once Docker Desktop is installed and running on your computer, open a terminal t
 
 In the Docker Desktop app, you should see a new Docker container running. In the future, you can run the database server by pressing the Start button on the container in Docker Desktop, or running `docker compose up -d` in the terminal.
 
----
+### 📦 Install Dependencies 📦
 
-## 🛠️ Setting up local environment 🛠️
+Many software projects, including this one, use a number of 'dependencies' to help with developing the application. A dependency is a piece of pre-written code (often called a 'package' or 'library') that provides specific functionality your project needs, so you don't have to write everything from scratch.
 
-1. Install all the required software specified above.
-2. Check if you have git, Node.js, and npm installed by typing in your terminal: `git --version` and `npm --version`
-3. If you haven't learned how to use the terminal, please do so first to your respective operating system. Some basic commands are `cd`, `pwd`, and `mkdir`.
+For example, instead of writing hundreds of lines of code to create buttons, forms, and navigation bars, we use 'react-bootstrap' which gives us pre-built, professional-looking UI components. This lets us focus on writing code specific to the project rather than reinventing the wheel on things that other developers have built before.
 
-### Cloning Repository
+To install the dependencies, create a new terminal in the editor and run `cd procurement-manager/` to make sure that the terminal is in the **procurement-manager** folder (the project itself) and run `npm install` or `npm i`. This will install all the packages as specified in our `package.json` file.
 
-#### 😎 Using Git CLI (Recommended) 😎
-
-4. Find a folder to save this repository and go there using your terminal. For example mine is saved in `C:\Isaac\Programming`.
-
-   a. In your terminal, write `git clone https://github.com/UTDallasEPICS/UTDesign-Procurement.git` or the SSH link if you have that set up. Sign in to GitHub if asked.
-
-   b. Cloning a repository should create a folder for you inside the folder the terminal is in, so don't make a folder like "UTDesign Procurement"
-
-5. Open the repository in VS Code.
-
-#### 😑 Using GitHub Desktop 😑
-
-4. Clone a repository by clicking `File > Clone Repository` and finding it through GitHub.com or through URL tabs.
-5. Open the repository in VS Code.
-
-### 📦 Dependency installation 📦
-
-Dependencies are the packages used to create the project.
-
-6. To install the dependencies, in VS Code, create a new terminal in the editor and run `cd procurement-manager/` to make sure that the terminal is in the **procurement-manager** folder (the project itself) and run `npm install` or `npm i`. This will install all the packages as specified in our `package.json` file.
-
-### 💾 Environment configuration 💾
+### 💾 Configure Environment 💾
 
 > [!NOTE]
 > The steps in the [database setup](#-database-setup-) section need to be complete before continuing with environment configuration.
@@ -179,7 +177,7 @@ Dependencies are the packages used to create the project.
 
 9. Open a terminal and change directory to the **procurement-manager** directory by running `cd procurement-manager`. The next step requires you to be in the **procurement-manager** directory.
 
-10. To sync your database with the project schema, run `npx prisma migrate dev`.
+- To sync your database with the project schema, run `npx prisma migrate dev`.
 
 The `schema.prisma` file under the `prisma` folder has the schema setup and can be edited to change the database.
 After making any changes to the database schema, running `npx prisma migrate dev` will also update the database.
@@ -192,22 +190,21 @@ If you installed MySQL Workbench, you can use it to manually add some data into 
 
 ### 1️⃣ more thing: 1️⃣
 
-11. In the terminal, enter `openssl rand -base64 32` which will generate random characters and copy it.
-12. In the **.env** file, below the DATABASE_URL, fill in EXAMPLE_NEXTAUTH_SECRET by pasting the random characters in the randomcode.
-    > This is what makes the fake authentication work.
-13. (Only for external servers) If setting up the repository in an environment where it's not being accessed on  `localhost`, change the `NEXTAUTH_URL` value to match the external URL.
+- In the terminal, enter `openssl rand -base64 32` which will generate random characters. Copy those characters.
+- In the **.env** file, replace `"EXAMPLE_NEXTAUTH_SECRET"` with the random characters you copied.
+- (Only for external servers) If setting up the repository in an environment where it's not being accessed on `localhost`, change the `NEXTAUTH_URL` value to match the external URL.
 
       - More documentation on this option is provided here: https://next-auth.js.org/configuration/options#nextauth_url
 
-14. Change the `NODEMAILER_PASSWORD` to be `"nnft zpaq rooq iwkq"`. This allows the Upload Files page to email error files to admins.
+- Change the `NODEMAILER_PASSWORD` to be `"nnft zpaq rooq iwkq"`. This allows the Upload Files page to email error files to admins.
 <!-- TO DISCUSS: we really need to invalidate this app specific password and remove it from the README - anyone who has it can send emails on behalf of the utd procurement manager email :skull: -->
 
 ### 😁 Finally!!! 😁
 
-15. Making sure you are still in the **procurement-manager** folder, run `npm run dev` which runs the website.
-16. In your browser, go to http://localhost:3000/api/test. This creates all the sample data to run the project.
-17. Finally, go to the website at http://localhost:3000.
-18. 🎉🎉 GOOD LUCK AND HAVE FUN! 🎉🎉
+- Making sure you are still in the **procurement-manager** folder, run `npm run dev` which runs the website.
+- In your browser, go to [http://localhost:3000/api/test](http://localhost:3000/api/test). This creates all the sample data to run the project.
+- Finally, go to the website at [http://localhost:3000](http://localhost:3000).
+- 🎉🎉 GOOD LUCK AND HAVE FUN! 🎉🎉
 
 #### Sample Login Credentials
 
