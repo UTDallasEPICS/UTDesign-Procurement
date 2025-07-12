@@ -14,6 +14,7 @@ import { authOptions } from '@/pages/api/auth/[...nextauth]'
 import { useRouter } from 'next/router'
 import { prisma } from '@/db'
 import { dollarsAsString, NumberFormControl } from '@/components/NumberFormControl'
+import VendorSelection from '@/components/VendorSelection'
 
 export async function getServerSideProps(context: any) {
   const session = await getServerSession(context.req, context.res, authOptions)
@@ -65,7 +66,11 @@ interface StudentRequestProps {
   vendors: Vendor[]
 }
 
-const StudentReimbursement = ({ user, listOfProjects }: StudentRequestProps) => {
+const StudentReimbursement = ({
+  user,
+  listOfProjects,
+  vendors,
+}: StudentRequestProps) => {
   // State and handlers
   const [date, setDate] = useState('')
   const [additionalInfo, setAdditionalInfo] = useState('')
@@ -81,7 +86,10 @@ const StudentReimbursement = ({ user, listOfProjects }: StudentRequestProps) => 
       receiptDate: '',
       vendor: '',
       description: '',
-      unitCost: 0
+      unitCost: 0,
+      newVendorName: '',
+      newVendorEmail: '',
+      newVendorURL: '',
     },
   ])
   const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null)
@@ -148,7 +156,10 @@ const StudentReimbursement = ({ user, listOfProjects }: StudentRequestProps) => 
         receiptDate: '',
         vendor: '',
         description: '',
-        unitCost: ''
+        unitCost: 0,
+        newVendorName: '',
+        newVendorEmail: '',
+        newVendorURL: '',
       },
     ])
   }
@@ -162,9 +173,7 @@ const StudentReimbursement = ({ user, listOfProjects }: StudentRequestProps) => 
   const handleItemChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
     index: number,
-    field:
-      | 'vendor'
-      | 'description'
+    field: 'description',
   ) => {
     const newItems = [...items]
     newItems[index][field] = e.target.value
@@ -172,11 +181,41 @@ const StudentReimbursement = ({ user, listOfProjects }: StudentRequestProps) => 
     setItems(newItems)
   }
 
-  const handleNumericValueChangeOnItem = (value: number | null, index: number, field: 'unitCost') => {
-    console.log('[Parent] handleNumericValueChangeOnItem called with', { value, index, field });
+  const handleVendorChange = (
+    index: number,
+    vendorId: number | string,
+    newVendorData?: { name: string; email: string; url: string },
+  ) => {
+    const newItems = [...items]
+    newItems[index].vendor = vendorId.toString()
+
+    if (vendorId === 'other' && newVendorData) {
+      newItems[index].newVendorName = newVendorData.name
+      newItems[index].newVendorEmail = newVendorData.email
+      newItems[index].newVendorURL = newVendorData.url
+    } else {
+      // Reset new vendor details if selecting a predefined vendor
+      newItems[index].newVendorName = ''
+      newItems[index].newVendorURL = ''
+      newItems[index].newVendorEmail = ''
+    }
+
+    setItems(newItems)
+  }
+
+  const handleNumericValueChangeOnItem = (
+    value: number | null,
+    index: number,
+    field: 'unitCost',
+  ) => {
+    console.log('[Parent] handleNumericValueChangeOnItem called with', {
+      value,
+      index,
+      field,
+    })
     const newItems = [...items]
     newItems[index][field] = value ?? 0
-    
+
     setItems(newItems)
   }
 
@@ -204,7 +243,11 @@ const StudentReimbursement = ({ user, listOfProjects }: StudentRequestProps) => 
         receiptDate: item.receiptDate,
         description: item.description,
         receiptTotal: item.unitCost,
-        vendorID: parseInt(item.vendor)
+        vendorID: item.vendor === 'other' ? null : parseInt(item.vendor),
+        newVendorName: item.vendor === 'other' ? item.newVendorName : undefined,
+        newVendorEmail:
+          item.vendor === 'other' ? item.newVendorEmail : undefined,
+        newVendorURL: item.vendor === 'other' ? item.newVendorURL : undefined,
       }
     })
 
@@ -234,7 +277,7 @@ const StudentReimbursement = ({ user, listOfProjects }: StudentRequestProps) => 
     let budget = 0
     proj.forEach((project) => {
       if (project.projectNum === projectNum) {
-        budget = ((project.startingBudget - project.totalExpenses))
+        budget = project.startingBudget - project.totalExpenses
       }
     })
     setRemainingBeforeItem(budget)
@@ -244,7 +287,6 @@ const StudentReimbursement = ({ user, listOfProjects }: StudentRequestProps) => 
 
   return (
     <Container className={styles.container}>
-
       <div className={styles.titleContainer}>
         <h1 className={styles.requestForm}>Reimbursement Form</h1>
       </div>
@@ -255,9 +297,7 @@ const StudentReimbursement = ({ user, listOfProjects }: StudentRequestProps) => 
             <strong>Budget: </strong>
           </p>
           <p>
-            <span>
-              {dollarsAsString(remainingBeforeItem/100)}
-            </span>
+            <span>{dollarsAsString(remainingBeforeItem / 100)}</span>
           </p>
         </Col>
         <Col>
@@ -321,7 +361,6 @@ const StudentReimbursement = ({ user, listOfProjects }: StudentRequestProps) => 
 
         {items.map((item, index) => (
           <div key={index} className={`${styles.itemSection} my-2`}>
-
             <Row>
 
               {/* SEQUENCE NUMBER */}
@@ -349,28 +388,15 @@ const StudentReimbursement = ({ user, listOfProjects }: StudentRequestProps) => 
                   <Form.Control
                     type='date'
                     value={item.receiptDate}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleDateChange(e, index)}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      handleDateChange(e, index)
+                    }
                     required
                   />
                 </Form.Group>
               </Col>
 
-              {/* VENDOR */}
-              <Col md={2}>
-                <Form.Group controlId={`item${index}Vendor`}>
-                  <Form.Label>
-                    <strong>Vendor</strong>
-                  </Form.Label>
-                  <div className={styles.tooltip}>
-                    <Form.Control
-                      type='text'
-                      value={item.vendor}
-                      onChange={(e) => handleItemChange(e, index, 'vendor')}
-                      required
-                    />
-                  </div>
-                </Form.Group>
-              </Col>
+              
 
               {/* ITEM DESCRIPTION */}
               <Col md={4}>
@@ -406,12 +432,20 @@ const StudentReimbursement = ({ user, listOfProjects }: StudentRequestProps) => 
                     <NumberFormControl
                       step='0.01'
                       min='0'
-                      defaultValue={item.unitCost/100}
+                      defaultValue={item.unitCost / 100}
                       onValueChange={(e) => {
                         if (e === null) {
-                          handleNumericValueChangeOnItem(null, index, 'unitCost')
+                          handleNumericValueChangeOnItem(
+                            null,
+                            index,
+                            'unitCost',
+                          )
                         } else {
-                          handleNumericValueChangeOnItem(e * 100, index, 'unitCost')
+                          handleNumericValueChangeOnItem(
+                            e * 100,
+                            index,
+                            'unitCost',
+                          )
                         }
                       }}
                       renderNumber={(value) => dollarsAsString(value, false)}
@@ -420,8 +454,36 @@ const StudentReimbursement = ({ user, listOfProjects }: StudentRequestProps) => 
                     />
                   </InputGroup>
                 </Form.Group>
-              </Col>   
-                    
+              </Col>
+            </Row>
+
+            <Row>
+              <Col>
+                <VendorSelection
+                  vendors={vendors}
+                  selectedVendorId={
+                    item.vendor === 'other'
+                      ? 'other'
+                      : parseInt(item.vendor) || undefined
+                  }
+                  newVendorData={
+                    item.vendor === 'other'
+                      ? {
+                          name: item.newVendorName,
+                          email: item.newVendorEmail,
+                          url: item.newVendorURL,
+                        }
+                      : undefined
+                  }
+                  onVendorChange={(vendorId, newVendorData) =>
+                    handleVendorChange(index, vendorId, newVendorData)
+                  }
+                  required
+                />
+              </Col>
+            </Row>
+
+            <Row>
               {/* RECEIPT UPLOAD */}
               <Col md={12}>
                 <div className={styles.fileUpload}>
