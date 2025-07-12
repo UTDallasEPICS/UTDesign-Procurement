@@ -9,7 +9,6 @@ import React, {
 import { Container, Row, Col, Button, InputGroup } from 'react-bootstrap'
 import Form from 'react-bootstrap/Form'
 import 'bootstrap/dist/css/bootstrap.min.css'
-import { ReactSearchAutocomplete } from 'react-search-autocomplete'
 import styles from '@/styles/request.module.css'
 import { Prisma, Project, User, Vendor } from '@prisma/client'
 import axios from 'axios'
