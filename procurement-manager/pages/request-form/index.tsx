@@ -2,7 +2,10 @@
  * This is the Request Form page
  */
 
-import React, { useState, useEffect, useRef, ComponentProps, useMemo, useCallback } from 'react'
+import React, {
+  useState,
+  useEffect
+} from 'react'
 import { Container, Row, Col, Button, InputGroup } from 'react-bootstrap'
 import Form from 'react-bootstrap/Form'
 import 'bootstrap/dist/css/bootstrap.min.css'
@@ -14,7 +17,11 @@ import { Session, getServerSession } from 'next-auth'
 import { authOptions } from '@/pages/api/auth/[...nextauth]'
 import { useRouter } from 'next/router'
 import { prisma } from '@/db'
-import { dollarsAsString, NumberFormControl } from '@/components/NumberFormControl'
+import {
+  dollarsAsString,
+  NumberFormControl,
+} from '@/components/NumberFormControl'
+import VendorSelection from '@/components/VendorSelection'
 
 export async function getServerSideProps(context: any) {
   const session = await getServerSession(context.req, context.res, authOptions)
@@ -78,18 +85,12 @@ const StudentRequest = ({
   const [date, setDate] = useState('')
   const [additionalInfo, setAdditionalInfo] = useState('')
   // remaining budget before adding any items
-  const [remainingBeforeItem, setRemainingBeforeItem] =
-    useState(
-      (
-        (listOfProjects[0].startingBudget)-
-        (listOfProjects[0].totalExpenses)
-      ),
-    )
+  const [remainingBeforeItem, setRemainingBeforeItem] = useState(
+    listOfProjects[0].startingBudget - listOfProjects[0].totalExpenses,
+  )
   // remaining budget that updates every time item is added/deleted
   const [remainingAfterItem, setRemainingAfterItem] = useState(
-      (listOfProjects[0].startingBudget)-
-      (listOfProjects[0].totalExpenses),
-    
+    listOfProjects[0].startingBudget - listOfProjects[0].totalExpenses,
   )
 
   const [items, setItems] = useState([
@@ -102,9 +103,6 @@ const StudentRequest = ({
       quantity: 0,
       unitCost: 0,
       totalCost: 0,
-      isDropdownOpen: false,
-      isNewVendor: false,
-      searchTerm: '',
       newVendorName: '',
       newVendorEmail: '',
       newVendorURL: '',
@@ -118,40 +116,26 @@ const StudentRequest = ({
   const router = useRouter()
 
   const handleVendorChange = (
-    e: React.ChangeEvent<any> | { target: { value: any } },
-    index: number
+    index: number,
+    vendorId: number | string,
+    newVendorData?: { name: string; email: string; url: string },
   ) => {
-    const value = e.target.value;
+    const newItems = [...items]
+    newItems[index].vendor = vendorId.toString()
 
-    const newItems = [...items];
-    newItems[index].vendor = value;
-    newItems[index].isNewVendor = value === 'other';
-
-    // Reset new vendor details if selecting a predefined vendor
-    if (value !== 'other') {
-      newItems[index].newVendorName = '';
-      newItems[index].newVendorURL = '';
-      newItems[index].newVendorEmail = '';
+    if (vendorId === 'other' && newVendorData) {
+      newItems[index].newVendorName = newVendorData.name
+      newItems[index].newVendorEmail = newVendorData.email
+      newItems[index].newVendorURL = newVendorData.url
+    } else {
+      // Reset new vendor details if selecting a predefined vendor
+      newItems[index].newVendorName = ''
+      newItems[index].newVendorURL = ''
+      newItems[index].newVendorEmail = ''
     }
 
-    setItems(newItems);
-  };
-
-
-  const handleDropdownToggle = (
-    index: number,
-    isOpen: boolean
-  ) => {
-    const newItems = [...items];
-    newItems[index].isDropdownOpen = isOpen;
-    setItems(newItems);
-  };
-
-  const handleSearchTermChange = (index: number, value: string) => {
-    const newItems = [...items];
-    newItems[index].searchTerm = value;
-    setItems(newItems);
-  };
+    setItems(newItems)
+  }
 
   //------------
 
@@ -265,9 +249,6 @@ const StudentRequest = ({
         quantity: 0,
         unitCost: 0,
         totalCost: 0,
-        isDropdownOpen: false,
-        isNewVendor: false,
-        searchTerm: '',
         newVendorName: '',
         newVendorEmail: '',
         newVendorURL: '',
@@ -621,162 +602,41 @@ const StudentRequest = ({
                 </p>
               </Col>
               <Col className='justify-content-end w-100'>
-                  {items.length > 1 && (
-                    <Button
-                      variant='danger'
-                      size='sm'
-                      type='button'
-                      onClick={() => handleDeleteItem(index)}
-                      className={styles.deleteButton}
-                      disabled={items.length === 1}
-                    >
-                      Delete
-                    </Button>
-                  )}
+                {items.length > 1 && (
+                  <Button
+                    variant='danger'
+                    size='sm'
+                    type='button'
+                    onClick={() => handleDeleteItem(index)}
+                    className={styles.deleteButton}
+                    disabled={items.length === 1}
+                  >
+                    Delete
+                  </Button>
+                )}
               </Col>
             </Row>
-            <Row className="my-4">
-              <Col md={4}>
-                <Form.Group controlId={`vendorSelect-${index}`}>
-                  <Form.Label>
-                    <strong>Vendor</strong>
-                  </Form.Label>
-                  {/* Searchable dropdown */}
-                  <div style={{ position: 'relative' }}>
-                    <Form.Control
-                      type="text"
-                      placeholder="Search or select a vendor..."
-                      value={item.searchTerm} // Use the item's specific search term
-                      onChange={(e) => handleSearchTermChange(index, e.target.value)}
-                      onFocus={() => handleDropdownToggle(index, true)}
-                      onBlur={() =>
-                        setTimeout(() => handleDropdownToggle(index, false), 200)
-                      }
-                    />
-                    {item.isDropdownOpen && (
-                      <ul
-                        style={{
-                          position: 'absolute',
-                          width: '100%',
-                          maxHeight: '200px',
-                          overflowY: 'auto',
-                          backgroundColor: 'white',
-                          border: '1px solid #ccc',
-                          borderRadius: '4px',
-                          zIndex: 1000,
-                          listStyle: 'none',
-                          padding: 0,
-                          margin: 0,
-                        }}
-                      >
-                        {vendors
-                          .filter(
-                            (vendor: any) =>
-                              vendor.vendorStatus === 'APPROVED' &&
-                              vendor.vendorName
-                                .toLowerCase()
-                                .includes(item.searchTerm.toLowerCase())
-                          )
-                          .map((vendor: any) => (
-                            <li
-                              key={vendor.vendorID}
-                              style={{
-                                padding: '10px',
-                                cursor: 'pointer',
-                                borderBottom: '1px solid #ddd',
-                              }}
-                              onClick={() => {
-                                handleVendorChange(
-                                  { target: { value: vendor.vendorID } },
-                                  index
-                                );
-                                handleSearchTermChange(index, vendor.vendorName);
-                                handleDropdownToggle(index, false);
-                              }}
-                            >
-                              {vendor.vendorName}
-                            </li>
-                          ))}
-                        <li
-                          style={{
-                            padding: '10px',
-                            cursor: 'pointer',
-                            backgroundColor: '#f9f9f9',
-                          }}
-                          onClick={() => {
-                            handleVendorChange({ target: { value: 'other' } }, index);
-                            handleSearchTermChange(index, 'Other');
-                            handleDropdownToggle(index, false);
-                          }}
-                        >
-                          Other
-                        </li>
-                      </ul>
-                    )}
-                  </div>
-                </Form.Group>
-              </Col>
-            </Row>
-            {item.isNewVendor && (
-              <Row className="my-4">
-                <Col md={4}>
-                  <Form.Group controlId={`newVendorName-${index}`}>
-                    <Form.Label>
-                      <strong>New Vendor Name</strong>
-                    </Form.Label>
-                    <Form.Control
-                      type="text"
-                      value={item.newVendorName || ''}
-                      onChange={(e) =>
-                        setItems((prev) => {
-                          const newItems = [...prev];
-                          newItems[index].newVendorName = e.target.value;
-                          return newItems;
-                        })
-                      }
-                      required
-                    />
-                  </Form.Group>
-                </Col>
-                <Col md={4}>
-                  <Form.Group controlId={`newVendorURL-${index}`}>
-                    <Form.Label>
-                      <strong>New Vendor URL</strong>
-                    </Form.Label>
-                    <Form.Control
-                      type="url"
-                      value={item.newVendorURL || ''}
-                      onChange={(e) =>
-                        setItems((prev) => {
-                          const newItems = [...prev];
-                          newItems[index].newVendorURL = e.target.value;
-                          return newItems;
-                        })
-                      }
-                      required
-                    />
-                  </Form.Group>
-                </Col>
-                <Col md={4}>
-                  <Form.Group controlId={`newVendorEmail-${index}`}>
-                    <Form.Label>
-                      <strong>New Vendor Email (Optional)</strong>
-                    </Form.Label>
-                    <Form.Control
-                      type="email"
-                      value={item.newVendorEmail || ''}
-                      onChange={(e) =>
-                        setItems((prev) => {
-                          const newItems = [...prev];
-                          newItems[index].newVendorEmail = e.target.value;
-                          return newItems;
-                        })
-                      }
-                    />
-                  </Form.Group>
-                </Col>
-              </Row>
-            )}
+            <VendorSelection
+              vendors={vendors}
+              selectedVendorId={
+                item.vendor === 'other'
+                  ? 'other'
+                  : parseInt(item.vendor) || undefined
+              }
+              newVendorData={
+                item.vendor === 'other'
+                  ? {
+                      name: item.newVendorName,
+                      email: item.newVendorEmail,
+                      url: item.newVendorURL,
+                    }
+                  : undefined
+              }
+              onVendorChange={(vendorId, newVendorData) =>
+                handleVendorChange(index, vendorId, newVendorData)
+              }
+              required
+            />
           </div>
         ))}
         <Row className='my-4'>
