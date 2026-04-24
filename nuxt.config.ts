@@ -6,6 +6,14 @@ export default defineNuxtConfig({
   typescript: {
     strict: true,
   },
+
+  // Fix for Windows: Prisma uses absolute paths that break Node ESM loader
+  nitro: {
+    moduleSideEffects: ['@prisma/client', '.prisma/client'],
+    externals: {
+      inline: ['@prisma/client', '.prisma/client'],
+    },
+  },
   runtimeConfig: {
     betterAuthSecret: process.env.BETTER_AUTH_SECRET,
     nodemailerEmail: process.env.NODEMAILER_EMAIL,
