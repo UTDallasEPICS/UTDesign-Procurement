@@ -7,11 +7,15 @@ export default defineNuxtConfig({
     strict: true,
   },
 
-  // Fix for Windows: Prisma uses absolute paths that break Node ESM loader
+  // Fix for Windows: Prisma engine uses absolute C:\ paths that break ESM loader
   nitro: {
-    moduleSideEffects: ['@prisma/client', '.prisma/client'],
     externals: {
-      inline: ['@prisma/client', '.prisma/client'],
+      external: ['@prisma/client', '.prisma/client'],
+    },
+  },
+  vite: {
+    optimizeDeps: {
+      exclude: ['@prisma/client'],
     },
   },
   runtimeConfig: {
