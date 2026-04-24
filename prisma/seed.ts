@@ -1,26 +1,29 @@
 import { PrismaClient } from '@prisma/client'
+import { scrypt, randomBytes } from 'node:crypto'
+import { promisify } from 'node:util'
 
 /**
- * Dev seed data — run with: npm run db:seed
+ * Dev seed — run with: npm run db:seed
  *
- * Creates:
- *  - 3 roles (Admin, Mentor, Student)
- *  - 3 dev users (one per role)
- *  - 2 sample projects
- *  - 3 sample vendors (APPROVED, PENDING, DENIED)
- *  - WorksOn entries linking users to projects
+ * Creates roles, users, projects, vendors, WorksOn entries,
+ * AND BetterAuth login accounts so you can sign in immediately.
  *
- * Dev credentials (email + password "password123"):
- *  - abc000000@utdallas.edu  → Student
- *  - def000000@utdallas.edu  → Mentor
- *  - ghi000000@utdallas.edu  → Admin
- *
- * NOTE: Passwords are handled by BetterAuth.
- * After seeding, create accounts via BetterAuth signUp or the admin panel.
- * This seed only creates the User records in our custom table.
+ * Dev credentials (password: "password123"):
+ *  abc000000@utdallas.edu → Student
+ *  def000000@utdallas.edu → Mentor
+ *  ghi000000@utdallas.edu → Admin
  */
 
 const prisma = new PrismaClient()
+const scryptAsync = promisify(scrypt)
+
+async function hashPassword(password: string): Promise<string> {
+  const salt = randomBytes(16).toString('hex')
+  const key = await scryptAsync(password.normalize('NFKC'), salt, 64, {
+    N: 16384, r: 16, p: 1, maxmem: 128 * 16384 * 16 * 2,
+  }) as Buffer
+  return `${salt}:${key.toString('hex')}`
+}
 
 async function main() {
   console.log('Seeding database...')
@@ -44,47 +47,54 @@ async function main() {
 
   console.log(`Roles: Admin=${adminRole.roleID}, Mentor=${mentorRole.roleID}, Student=${studentRole.roleID}`)
 
-  // ── Users ──────────────────────────────────────────────────────────────────
-  const student = await prisma.user.upsert({
-    where: { email: 'abc000000@utdallas.edu' },
-    update: {},
-    create: {
-      email: 'abc000000@utdallas.edu',
-      firstName: 'Alex',
-      lastName: 'Student',
-      netID: 'abc000000',
-      roleID: studentRole.roleID,
-      active: true,
-    },
-  })
+  // ── App Users ──────────────────────────────────────────────────────────────
+  const devUsers = [
+    { email: 'abc000000@utdallas.edu', firstName: 'Alex',  lastName: 'Student', netID: 'abc000000', roleID: studentRole.roleID },
+    { email: 'def000000@utdallas.edu', firstName: 'Dana',  lastName: 'Mentor',  netID: 'def000000', roleID: mentorRole.roleID  },
+    { email: 'ghi000000@utdallas.edu', firstName: 'Grace', lastName: 'Admin',   netID: 'ghi000000', roleID: adminRole.roleID   },
+  ]
 
-  const mentor = await prisma.user.upsert({
-    where: { email: 'def000000@utdallas.edu' },
-    update: {},
-    create: {
-      email: 'def000000@utdallas.edu',
-      firstName: 'Dana',
-      lastName: 'Mentor',
-      netID: 'def000000',
-      roleID: mentorRole.roleID,
-      active: true,
-    },
-  })
+  const createdUsers = []
+  for (const u of devUsers) {
+    const user = await prisma.user.upsert({
+      where: { email: u.email },
+      update: {},
+      create: { email: u.email, firstName: u.firstName, lastName: u.lastName, netID: u.netID, roleID: u.roleID, active: true },
+    })
+    createdUsers.push(user)
+    console.log(`User: ${u.email} (id=${user.id})`)
+  }
 
-  const admin = await prisma.user.upsert({
-    where: { email: 'ghi000000@utdallas.edu' },
-    update: {},
-    create: {
-      email: 'ghi000000@utdallas.edu',
-      firstName: 'Grace',
-      lastName: 'Admin',
-      netID: 'ghi000000',
-      roleID: adminRole.roleID,
-      active: true,
-    },
-  })
+  const [student, mentor, admin] = createdUsers
 
-  console.log(`Users: student=${student.id}, mentor=${mentor.id}, admin=${admin.id}`)
+  // ── BetterAuth Login Accounts (AuthUser + AuthAccount) ────────────────────
+  const passwordHash = await hashPassword('password123')
+  const now = new Date().toISOString()
+
+  for (const user of createdUsers) {
+    const displayName = devUsers.find(u => u.email === user.email)!
+    const name = `${displayName.firstName} ${displayName.lastName}`
+
+    const authUserId = crypto.randomUUID()
+    await prisma.$executeRawUnsafe(
+      `INSERT OR IGNORE INTO "AuthUser" ("id","name","email","emailVerified","createdAt","updatedAt") VALUES (?,?,?,0,?,?)`,
+      authUserId, name, user.email, now, now
+    )
+
+    // If user already existed in AuthUser, get their id
+    const existing = await prisma.$queryRawUnsafe<{ id: string }[]>(
+      `SELECT id FROM "AuthUser" WHERE email = ?`, user.email
+    )
+    const finalId = existing[0].id
+
+    const hash = await hashPassword('password123')
+    await prisma.$executeRawUnsafe(
+      `INSERT OR IGNORE INTO "AuthAccount" ("id","accountId","providerId","userId","password","createdAt","updatedAt") VALUES (?,?,?,?,?,?,?)`,
+      crypto.randomUUID(), user.email, 'credential', finalId, hash, now, now
+    )
+  }
+
+  console.log('BetterAuth login accounts created.')
 
   // ── Projects ───────────────────────────────────────────────────────────────
   const project1 = await prisma.project.upsert({
@@ -116,78 +126,28 @@ async function main() {
   console.log(`Projects: ${project1.projectNum}, ${project2.projectNum}`)
 
   // ── Vendors ────────────────────────────────────────────────────────────────
-  await prisma.vendor.upsert({
-    where: { vendorID: 1 },
-    update: {},
-    create: {
-      vendorName: 'Digi-Key Electronics',
-      vendorStatus: 'APPROVED',
-      vendorURL: 'https://www.digikey.com',
-    },
-  })
-
-  await prisma.vendor.upsert({
-    where: { vendorID: 2 },
-    update: {},
-    create: {
-      vendorName: 'McMaster-Carr',
-      vendorStatus: 'APPROVED',
-      vendorURL: 'https://www.mcmaster.com',
-    },
-  })
-
-  await prisma.vendor.upsert({
-    where: { vendorID: 3 },
-    update: {},
-    create: {
-      vendorName: 'Unknown Supplier',
-      vendorStatus: 'PENDING',
-      vendorURL: 'https://default.com',
-    },
-  })
-
+  await prisma.vendor.upsert({ where: { vendorID: 1 }, update: {}, create: { vendorName: 'Digi-Key Electronics', vendorStatus: 'APPROVED', vendorURL: 'https://www.digikey.com' } })
+  await prisma.vendor.upsert({ where: { vendorID: 2 }, update: {}, create: { vendorName: 'McMaster-Carr',        vendorStatus: 'APPROVED', vendorURL: 'https://www.mcmaster.com' } })
+  await prisma.vendor.upsert({ where: { vendorID: 3 }, update: {}, create: { vendorName: 'Unknown Supplier',     vendorStatus: 'PENDING',  vendorURL: 'https://default.com' } })
   console.log('Vendors seeded.')
 
   // ── WorksOn ────────────────────────────────────────────────────────────────
-  const worksOnStudent = await prisma.worksOn.upsert({
-    where: {
-      userID_projectID_startDate: {
-        userID: student.id,
-        projectID: project1.projectID,
-        startDate: new Date('2025-01-01'),
-      },
-    },
+  await prisma.worksOn.upsert({
+    where: { userID_projectID_startDate: { userID: student.id, projectID: project1.projectID, startDate: new Date('2025-01-01') } },
     update: {},
-    create: {
-      userID: student.id,
-      projectID: project1.projectID,
-      startDate: new Date('2025-01-01'),
-    },
+    create: { userID: student.id, projectID: project1.projectID, startDate: new Date('2025-01-01') },
+  })
+  await prisma.worksOn.upsert({
+    where: { userID_projectID_startDate: { userID: mentor.id, projectID: project1.projectID, startDate: new Date('2025-01-01') } },
+    update: {},
+    create: { userID: mentor.id, projectID: project1.projectID, startDate: new Date('2025-01-01') },
   })
 
-  const worksOnMentor = await prisma.worksOn.upsert({
-    where: {
-      userID_projectID_startDate: {
-        userID: mentor.id,
-        projectID: project1.projectID,
-        startDate: new Date('2025-01-01'),
-      },
-    },
-    update: {},
-    create: {
-      userID: mentor.id,
-      projectID: project1.projectID,
-      startDate: new Date('2025-01-01'),
-    },
-  })
-
-  console.log('WorksOn entries seeded.')
-  console.log('\nSeed complete!')
-  console.log('\nDev login emails:')
+  console.log('\n✅ Seed complete!')
+  console.log('\nDev login credentials (password: password123):')
   console.log('  Student: abc000000@utdallas.edu')
   console.log('  Mentor:  def000000@utdallas.edu')
   console.log('  Admin:   ghi000000@utdallas.edu')
-  console.log('\nCreate BetterAuth accounts for these emails after first run.')
 }
 
 main()
