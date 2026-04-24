@@ -1,0 +1,20 @@
+# Package managers and build outputs
+node_modules
+.nuxt
+.output
+dist
+
+# Prisma and Database
+prisma/migrations
+*.db
+*.db-journal
+
+# Version control
+.git
+
+# Public assets (often minified or binary)
+public/
+
+# Environment files
+.env
+.env.*
