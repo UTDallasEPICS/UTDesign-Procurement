@@ -1,0 +1,36 @@
+{
+  "name": "utdesign-procurement",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare",
+    "db:push": "prisma db push",
+    "db:migrate": "prisma migrate dev",
+    "db:seed": "tsx prisma/seed.ts",
+    "db:studio": "prisma studio"
+  },
+  "dependencies": {
+    "@nuxt/ui": "^3.0.2",
+    "@prisma/client": "^6.6.0",
+    "ag-grid-community": "^33.3.0",
+    "ag-grid-vue3": "^33.3.0",
+    "bcryptjs": "^3.0.3",
+    "better-auth": "^1.2.7",
+    "nodemailer": "^6.9.16",
+    "nuxt": "^3.17.1",
+    "vue": "^3.5.13",
+    "vue-router": "^4.5.0",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "@nuxt/devtools": "latest",
+    "@types/nodemailer": "^6.4.17",
+    "prisma": "^6.6.0",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.3"
+  }
+}
