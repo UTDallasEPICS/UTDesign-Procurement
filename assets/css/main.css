@@ -1,0 +1,18 @@
+@import "tailwindcss";
+
+:root {
+  --utd-orange: #E87722;
+  --utd-orange-dark: #C75B12;
+  --utd-green: #154734;
+  --white: #FFFFFF;
+  --gray-light: #F4F4F4;
+  --gray-border: #D9D9D9;
+  --text-dark: #1A1A1A;
+  --text-muted: #5A5A5A;
+}
+
+body {
+  background-color: var(--gray-light);
+  color: var(--text-dark);
+  font-family: 'Arial', sans-serif;
+}

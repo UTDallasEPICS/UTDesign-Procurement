@@ -1,0 +1,340 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Enums (SQLite uses String + manual validation) ───────────────────────────
+
+// Process / RequestItem status
+// Values: UNDER_REVIEW | DRAFT | CANCELLED | APPROVED | REJECTED | ORDERED | RECEIVED | PROCESSED
+
+// Vendor status
+// Values: APPROVED | PENDING | DENIED
+
+// ─── Core Models ──────────────────────────────────────────────────────────────
+
+model Role {
+  roleID Int    @id @default(autoincrement())
+  role   String @unique // "Admin" | "Mentor" | "Student"
+
+  users          User[]
+  previousRecord PreviousRecord[]
+}
+
+model User {
+  id                 Int       @id @default(autoincrement())
+  netID              String?
+  firstName          String
+  lastName           String
+  email              String    @unique
+  active             Boolean   @default(true)
+  responsibilities   String?
+  deactivationDate   DateTime?
+  roleID             Int    @default(3) // 3=Student, 2=Mentor, 1=Admin
+
+  role              Role              @relation(fields: [roleID], references: [roleID])
+  requests          Request[]         @relation("StudentRequests")
+  reimbursements    Reimbursement[]   @relation("StudentReimbursements")
+  mentorProcesses   Process[]         @relation("MentorProcesses")
+  adminProcesses    Process[]         @relation("AdminProcesses")
+  orders            Order[]
+  worksOn           WorksOn[]
+  departmentUsers   DepartmentUser[]
+  previousRecords   PreviousRecord[]
+}
+
+// ─── BetterAuth Tables (separate from app User model) ─────────────────────────
+
+model AuthUser {
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  emailVerified Boolean   @default(false)
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  sessions      AuthSession[]
+  accounts      AuthAccount[]
+}
+
+model AuthSession {
+  id           String   @id
+  expiresAt    DateTime
+  token        String   @unique
+  createdAt    DateTime
+  updatedAt    DateTime
+  ipAddress    String?
+  userAgent    String?
+  userId       String
+  user         AuthUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model AuthAccount {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  AuthUser  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime
+  updatedAt             DateTime
+
+  @@unique([providerId, accountId])
+}
+
+model AuthVerification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime?
+  updatedAt  DateTime?
+
+  @@unique([identifier, value])
+}
+
+model Project {
+  projectID       Int       @id @default(autoincrement())
+  projectNum      String    @unique
+  projectTitle    String
+  projectType     String    // "Capstone" | "EPICS" | etc.
+  startingBudget  Int
+  sponsorCompany  String
+  totalExpenses   Int       @default(0)
+  activationDate  DateTime  @default(now())
+  deactivationDate DateTime?
+  additionalInfo  String?
+  costCenter      String?   // for internal UTD departments
+
+  requests          Request[]
+  reimbursements    Reimbursement[]
+  otherExpenses     OtherExpense[]
+  worksOn           WorksOn[]
+  projectDepartments ProjectDepartment[]
+  previousRecords   PreviousRecord[]
+}
+
+// ─── Request Flow ─────────────────────────────────────────────────────────────
+
+model Request {
+  requestID      Int       @id @default(autoincrement())
+  dateNeeded     DateTime
+  dateSubmitted  DateTime  @default(now())
+  dateOrdered    DateTime?
+  dateReceived   DateTime?
+  dateApproved   DateTime?
+  additionalInfo String?
+  expense        Int       @default(0)
+
+  projectID  Int
+  studentID  Int
+  processID  Int       @unique
+  uploadID   Int?
+
+  project  Project        @relation(fields: [projectID], references: [projectID])
+  student  User           @relation("StudentRequests", fields: [studentID], references: [id])
+  process  Process        @relation(fields: [processID], references: [processID])
+  upload   RequestUpload? @relation(fields: [uploadID], references: [uploadID])
+
+  items         RequestItem[]
+  orders        Order[]
+  otherExpenses OtherExpense[]
+}
+
+model RequestItem {
+  itemID      Int    @id @default(autoincrement())
+  description String
+  url         String
+  partNumber  String
+  quantity    Int
+  unitPrice   Float
+  status      String @default("UNDER_REVIEW") // Status enum
+
+  requestID Int
+  vendorID  Int
+
+  request Request @relation(fields: [requestID], references: [requestID])
+  vendor  Vendor  @relation(fields: [vendorID], references: [vendorID])
+}
+
+model RequestUpload {
+  uploadID       Int     @id @default(autoincrement())
+  attachmentPath String?
+  attachmentName String?
+
+  requests Request[]
+}
+
+// ─── Reimbursement Flow ───────────────────────────────────────────────────────
+
+model Reimbursement {
+  reimbursementID Int      @id @default(autoincrement())
+  dateSubmitted   DateTime @default(now())
+  additionalInfo  String?
+  expense         Int      @default(0)
+
+  projectID Int
+  studentID Int
+  processID Int @unique
+
+  project Project @relation(fields: [projectID], references: [projectID])
+  student User    @relation("StudentReimbursements", fields: [studentID], references: [id])
+  process Process @relation(fields: [processID], references: [processID])
+
+  items ReimbursementItem[]
+}
+
+model ReimbursementItem {
+  itemID       Int      @id @default(autoincrement())
+  receiptDate  DateTime
+  description  String
+  receiptTotal Float
+
+  reimbursementID Int
+  vendorID        Int
+  uploadID        Int?
+
+  reimbursement Reimbursement        @relation(fields: [reimbursementID], references: [reimbursementID])
+  vendor        Vendor               @relation(fields: [vendorID], references: [vendorID])
+  upload        ReimbursementUpload? @relation(fields: [uploadID], references: [uploadID])
+}
+
+model ReimbursementUpload {
+  uploadID       Int    @id @default(autoincrement())
+  attachmentPath String
+  attachmentName String
+
+  items ReimbursementItem[]
+}
+
+// ─── Workflow Process ─────────────────────────────────────────────────────────
+
+model Process {
+  processID              Int       @id @default(autoincrement())
+  status                 String    @default("UNDER_REVIEW") // Status enum
+  mentorProcessed        DateTime?
+  mentorProcessedComments String?
+  adminProcessed         DateTime?
+  adminProcessedComments String?
+
+  mentorID Int?
+  adminID  Int?
+
+  mentor User? @relation("MentorProcesses", fields: [mentorID], references: [id])
+  admin  User? @relation("AdminProcesses", fields: [adminID], references: [id])
+
+  request       Request?
+  reimbursement Reimbursement?
+}
+
+// ─── Orders ───────────────────────────────────────────────────────────────────
+
+model Order {
+  orderID      Int      @id @default(autoincrement())
+  dateOrdered  DateTime
+  orderNumber  String
+  orderDetails String
+  trackingInfo String
+  shippingCost Float
+
+  requestID Int
+  adminID   Int
+
+  request Request @relation(fields: [requestID], references: [requestID])
+  admin   User    @relation(fields: [adminID], references: [id])
+}
+
+model OtherExpense {
+  expenseID       Int      @id @default(autoincrement())
+  expenseType     String
+  expenseAmount   Float
+  expenseDate     DateTime
+  expenseComments String?
+
+  projectID Int
+  requestID Int
+
+  project Project @relation(fields: [projectID], references: [projectID])
+  request Request @relation(fields: [requestID], references: [requestID])
+}
+
+// ─── Vendors ──────────────────────────────────────────────────────────────────
+
+model Vendor {
+  vendorID     Int    @id @default(autoincrement())
+  vendorName   String
+  vendorStatus String @default("PENDING") // APPROVED | PENDING | DENIED
+  vendorEmail  String?
+  vendorURL    String @default("https://default.com")
+
+  requestItems      RequestItem[]
+  reimbursementItems ReimbursementItem[]
+}
+
+// ─── Departments ──────────────────────────────────────────────────────────────
+
+model Department {
+  departmentID Int    @id @default(autoincrement())
+  department   String @unique
+
+  departmentUsers    DepartmentUser[]
+  projectDepartments ProjectDepartment[]
+}
+
+// ─── Association Tables ───────────────────────────────────────────────────────
+
+model WorksOn {
+  userID    Int
+  projectID Int
+  startDate DateTime
+
+  endDate  DateTime?
+  comments String?
+
+  user    User    @relation(fields: [userID], references: [id])
+  project Project @relation(fields: [projectID], references: [projectID])
+
+  @@id([userID, projectID, startDate])
+}
+
+model DepartmentUser {
+  departmentID Int
+  userID       Int
+
+  department Department @relation(fields: [departmentID], references: [departmentID])
+  user       User       @relation(fields: [userID], references: [id])
+
+  @@id([departmentID, userID])
+}
+
+model ProjectDepartment {
+  departmentID Int
+  projectID    Int
+
+  department Department @relation(fields: [departmentID], references: [departmentID])
+  project    Project    @relation(fields: [projectID], references: [projectID])
+
+  @@id([departmentID, projectID])
+}
+
+model PreviousRecord {
+  recordID  Int @id @default(autoincrement())
+  projectID Int
+  roleID    Int
+  userID    Int
+
+  project Project @relation(fields: [projectID], references: [projectID])
+  role    Role    @relation(fields: [roleID], references: [roleID])
+  user    User    @relation(fields: [userID], references: [id])
+}
