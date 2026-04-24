@@ -1,0 +1,35 @@
+{
+  "name": "epics-template",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "concurrently \"nuxt dev\" \"prisma studio\"",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare",
+    "prisma:reset": "prisma migrate reset -f && prisma migrate dev  && prisma generate && prisma db seed"
+  },
+  "dependencies": {
+    "@nuxt/image": "2.0.0",
+    "@nuxt/ui": "^4.4.0",
+    "@prisma/adapter-better-sqlite3": "^7.3.0",
+    "@prisma/client": "^7.3.0",
+    "@types/nodemailer": "^7.0.4",
+    "better-auth": "^1.4.7",
+    "dotenv": "^17.2.3",
+    "nodemailer": "^7.0.11",
+    "nuxt": "^4.3.1",
+    "vue": "^3.5.25",
+    "vue-router": "^4.6.4",
+    "zod": "^4.2.1"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "concurrently": "^9.2.1",
+    "prettier": "3.7.4",
+    "prettier-plugin-tailwindcss": "^0.7.2",
+    "prisma": "^7.3.0",
+    "tsx": "^4.21.0"
+  }
+}
