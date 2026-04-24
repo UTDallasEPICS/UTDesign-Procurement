@@ -5,9 +5,9 @@ node_modules/
 .cache/
 
 # Environment
-.env
 .env.*
 !.env.example
+!.env
 
 # Database (dev only)
 prisma/dev.db
