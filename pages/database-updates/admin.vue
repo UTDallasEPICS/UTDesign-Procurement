@@ -2,9 +2,6 @@
   <div class="space-y-6">
     <div class="flex items-center justify-between">
       <h1 class="text-2xl font-bold text-[#1A1A1A]">Database Management</h1>
-      <NuxtLink to="/database-updates/upload">
-        <UButton variant="outline" class="border-[#E87722] text-[#E87722]">Bulk XLSX Upload</UButton>
-      </NuxtLink>
     </div>
 
     <UTabs :items="tabs" v-model="activeTab" />
@@ -131,32 +128,32 @@ const activeTab = ref(0)
 // ── Users ──────────────────────────────────────────────────────────────────
 const { data: userData, refresh: refreshUsers } = await useFetch('/api/user')
 const users = computed(() => userData.value ?? [])
-const selectedUser = ref<any>(null)
+const selectedUser = ref<{ id: number; firstName: string; lastName: string; active: boolean } | null>(null)
 
 const userColumns = [
   { field: 'netID', headerName: 'NetID' },
   { field: 'firstName', headerName: 'First Name', editable: true },
   { field: 'lastName', headerName: 'Last Name', editable: true },
   { field: 'email', headerName: 'Email' },
-  { field: 'role.role', headerName: 'Role' },
-  { field: 'active', headerName: 'Active', valueFormatter: (p: any) => p.value ? 'Yes' : 'No' },
+  { field: 'role', headerName: 'Role' },
+  { field: 'active', headerName: 'Active', valueFormatter: (p: { value: boolean }) => p.value ? 'Yes' : 'No' },
 ]
 
-function onUserSelect(e: any) {
+function onUserSelect(e: { api: { getSelectedRows: () => typeof selectedUser.value[] } }) {
   selectedUser.value = e.api.getSelectedRows()[0] ?? null
 }
 
-async function onUserEdit(e: any) {
+async function onUserEdit(e: { data: { id: number }; colDef: { field: string }; newValue: unknown }) {
   await $fetch('/api/admin/edit', {
     method: 'POST',
-    body: { type: 'user', id: e.data.userID, field: e.colDef.field, value: e.newValue },
+    body: { type: 'user', id: e.data.id, field: e.colDef.field, value: e.newValue },
   })
 }
 
 // ── Projects ───────────────────────────────────────────────────────────────
 const { data: projectData, refresh: refreshProjects } = await useFetch('/api/project')
 const projects = computed(() => projectData.value ?? [])
-const selectedProject = ref<any>(null)
+const selectedProject = ref<{ projectID: number; projectTitle: string } | null>(null)
 
 const projectColumns = [
   { field: 'projectNum', headerName: 'Project #' },
@@ -167,11 +164,11 @@ const projectColumns = [
   { field: 'totalExpenses', headerName: 'Expenses ($)' },
 ]
 
-function onProjectSelect(e: any) {
+function onProjectSelect(e: { api: { getSelectedRows: () => typeof selectedProject.value[] } }) {
   selectedProject.value = e.api.getSelectedRows()[0] ?? null
 }
 
-async function onProjectEdit(e: any) {
+async function onProjectEdit(e: { data: { projectID: number }; colDef: { field: string }; newValue: unknown }) {
   await $fetch('/api/admin/edit', {
     method: 'POST',
     body: { type: 'project', id: e.data.projectID, field: e.colDef.field, value: e.newValue },
@@ -179,12 +176,13 @@ async function onProjectEdit(e: any) {
 }
 
 // ── Vendors ────────────────────────────────────────────────────────────────
-const { data: vendorData, refresh: refreshVendors } = await useFetch('/api/vendor/all')
+const { data: vendorData } = await useFetch('/api/vendor/all')
 const vendors = computed(() => vendorData.value ?? [])
 
 const vendorColumns = [
   { field: 'vendorName', headerName: 'Vendor Name', editable: true },
-  { field: 'vendorStatus', headerName: 'Status', editable: true,
+  {
+    field: 'vendorStatus', headerName: 'Status', editable: true,
     cellEditor: 'agSelectCellEditor',
     cellEditorParams: { values: ['APPROVED', 'PENDING', 'DENIED'] },
   },
@@ -192,7 +190,7 @@ const vendorColumns = [
   { field: 'vendorURL', headerName: 'URL', editable: true },
 ]
 
-async function onVendorEdit(e: any) {
+async function onVendorEdit(e: { data: { vendorID: number }; colDef: { field: string }; newValue: unknown }) {
   if (e.colDef.field === 'vendorStatus') {
     await $fetch('/api/vendor/updateStatus', {
       method: 'POST',
@@ -216,7 +214,7 @@ const assignOpen = ref(false)
 async function deactivateUser() {
   await $fetch('/api/admin/deactivate-user', {
     method: 'POST',
-    body: { userID: selectedUser.value.userID },
+    body: { userID: selectedUser.value!.id },
   })
   selectedUser.value = null
   refreshUsers()
@@ -225,7 +223,7 @@ async function deactivateUser() {
 async function reactivateUser() {
   await $fetch('/api/admin/reactivate-user', {
     method: 'POST',
-    body: { userID: selectedUser.value.userID },
+    body: { userID: selectedUser.value!.id },
   })
   selectedUser.value = null
   refreshUsers()
@@ -234,7 +232,7 @@ async function reactivateUser() {
 async function deactivateProject() {
   await $fetch('/api/admin/deactivate-project', {
     method: 'POST',
-    body: { projectID: selectedProject.value.projectID },
+    body: { projectID: selectedProject.value!.projectID },
   })
   selectedProject.value = null
   refreshProjects()

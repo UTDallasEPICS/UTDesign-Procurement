@@ -1,75 +1,78 @@
 <template>
-  <div class="min-h-screen bg-[#F4F4F4] flex items-center justify-center">
-    <div class="w-full max-w-md">
-      <!-- UTD Header -->
-      <div class="bg-[#C75B12] text-white px-8 py-6 rounded-t-xl">
-        <div class="flex items-center gap-3 mb-1">
-          <div class="font-bold text-2xl tracking-tight border-2 border-white px-2 py-0.5 text-[#E87722]">
-            UT<span class="text-white">D</span>
+  <div class="min-h-screen flex flex-col" style="background: linear-gradient(160deg, #154734 0%, #0f3326 60%, #1a1a1a 100%);">
+    <!-- Top accent bar -->
+    <div class="h-1 bg-[#E87722]" />
+
+    <div class="flex-1 flex items-center justify-center px-4 py-12">
+      <div class="w-full max-w-sm">
+        <!-- Logo block -->
+        <div class="text-center mb-8">
+          <div class="inline-flex items-center gap-3 mb-3">
+            <div class="font-black text-3xl tracking-tight bg-white text-[#154734] px-2.5 py-1 leading-tight">
+              UT<span class="text-[#E87722]">D</span>
+            </div>
           </div>
-          <div>
-            <p class="text-xs text-white/70 uppercase tracking-widest">The University of Texas at Dallas</p>
-            <p class="font-bold text-lg">UTDesign Procurement</p>
-          </div>
+          <p class="text-white/50 text-xs uppercase tracking-widest">The University of Texas at Dallas</p>
+          <h1 class="text-white font-bold text-xl mt-1">UTDesign Procurement</h1>
         </div>
-      </div>
 
-      <!-- Login Card -->
-      <div class="bg-white border border-[#D9D9D9] px-8 py-8 rounded-b-xl shadow-lg">
-        <h2 class="text-xl font-bold text-[#1A1A1A] mb-1">Sign In</h2>
-        <p class="text-sm text-[#5A5A5A] mb-6">Use your UTD email address</p>
-
-        <form class="space-y-4" @submit.prevent="handleLogin">
-          <div>
-            <label class="block text-sm font-medium text-[#1A1A1A] mb-1">UTD Email</label>
-            <UInput
-              v-model="email"
-              type="email"
-              placeholder="abc123456@utdallas.edu"
-              autocomplete="email"
-              required
-            />
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-[#1A1A1A] mb-1">Password</label>
-            <UInput
-              v-model="password"
-              type="password"
-              placeholder="Password"
-              autocomplete="current-password"
-              required
-            />
+        <!-- Login Card -->
+        <div class="bg-white rounded-xl shadow-2xl overflow-hidden">
+          <div class="px-8 py-6 border-b border-[#E8E8E8]">
+            <h2 class="text-lg font-bold text-[#154734]">Sign In</h2>
+            <p class="text-sm text-[#5A5A5A] mt-0.5">Use your UTD NetID and password</p>
           </div>
 
-          <div
-            v-if="error"
-            class="text-sm text-red-600 bg-red-50 border border-red-200 rounded px-3 py-2"
-          >
-            {{ error }}
-          </div>
+          <form class="px-8 py-6 space-y-4" @submit.prevent="handleLogin">
+            <div>
+              <label class="block text-sm font-semibold text-[#1A1A1A] mb-1.5">UTD Email</label>
+              <UInput
+                v-model="email"
+                type="email"
+                placeholder="abc123456@utdallas.edu"
+                autocomplete="email"
+                size="lg"
+                required
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-[#1A1A1A] mb-1.5">Password</label>
+              <UInput
+                v-model="password"
+                type="password"
+                placeholder="Password"
+                autocomplete="current-password"
+                size="lg"
+                required
+              />
+            </div>
 
-          <UButton
-            type="submit"
-            block
-            class="bg-[#154734] hover:bg-[#0f3326] text-white font-semibold py-2"
-            :loading="loading"
-          >
-            Sign In
-          </UButton>
-        </form>
+            <div
+              v-if="error"
+              class="text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2.5"
+            >
+              {{ error }}
+            </div>
 
-        <!-- UTD SSO stub — enable when OIT provides credentials -->
-        <!-- <div class="mt-4 pt-4 border-t border-[#D9D9D9]">
-          <UButton block variant="outline" class="border-[#E87722] text-[#E87722]" disabled>
-            Sign in with UTD Microsoft SSO (coming soon)
-          </UButton>
-        </div> -->
+            <UButton
+              type="submit"
+              block
+              size="lg"
+              class="bg-[#154734] hover:bg-[#0f3326] text-white font-semibold mt-2"
+              :loading="loading"
+            >
+              Sign In
+            </UButton>
+          </form>
+        </div>
 
-        <p class="text-xs text-[#5A5A5A] text-center mt-6">
+        <p class="text-white/30 text-xs text-center mt-6">
           Access is restricted to authorized UTD personnel.
         </p>
       </div>
     </div>
+
+    <div class="h-1 bg-[#154734]/50" />
   </div>
 </template>
 

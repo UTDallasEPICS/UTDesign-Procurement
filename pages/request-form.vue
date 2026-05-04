@@ -88,7 +88,7 @@
 
         <!-- Running Total -->
         <div class="mt-3 text-right text-sm font-semibold text-[#1A1A1A]">
-          Items Total: <span class="text-[#C75B12]">${{ itemsTotal.toFixed(2) }}</span>
+          Items Total: <span class="text-[#E87722]">${{ itemsTotal.toFixed(2) }}</span>
         </div>
       </div>
 

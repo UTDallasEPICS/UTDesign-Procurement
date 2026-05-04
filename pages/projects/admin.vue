@@ -71,11 +71,11 @@ const { data, pending } = await useFetch<any[]>('/api/project')
 const projects = computed(() => (data.value ?? []) as any[])
 
 function getMentors(project: any) {
-  return (project.worksOn ?? []).filter((w: any) => w.user?.roleID === 2 && !w.endDate)
+  return (project.worksOn ?? []).filter((w: any) => w.user?.role === 'MENTOR' && !w.endDate)
 }
 
 function getStudents(project: any) {
-  return (project.worksOn ?? []).filter((w: any) => w.user?.roleID === 3 && !w.endDate)
+  return (project.worksOn ?? []).filter((w: any) => w.user?.role === 'STUDENT' && !w.endDate)
 }
 
 function formatDate(d: string) {

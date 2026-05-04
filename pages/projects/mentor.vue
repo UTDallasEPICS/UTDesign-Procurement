@@ -9,7 +9,7 @@
         :key="project.projectID"
         class="bg-white border border-[#D9D9D9] rounded-xl overflow-hidden"
       >
-        <div class="bg-[#C75B12] text-white px-6 py-4 flex items-center justify-between">
+        <div class="bg-[#154734] text-white px-6 py-4 flex items-center justify-between">
           <div>
             <span class="text-xs text-white/70">#{{ project.projectNum }}</span>
             <h2 class="text-lg font-bold">{{ project.projectTitle }}</h2>

@@ -8,7 +8,7 @@
 const props = defineProps<{ status: string }>()
 
 const STATUS_MAP: Record<string, { bg: string; color: string; label: string }> = {
-  UNDER_REVIEW: { bg: '#FFF3E0', color: '#C75B12', label: 'Under Review' },
+  UNDER_REVIEW: { bg: '#FFF3E0', color: '#E87722', label: 'Under Review' },
   APPROVED:     { bg: '#E8F5E9', color: '#154734', label: 'Approved' },
   REJECTED:     { bg: '#FFEBEE', color: '#C62828', label: 'Rejected' },
   ORDERED:      { bg: '#E3F2FD', color: '#1565C0', label: 'Ordered' },

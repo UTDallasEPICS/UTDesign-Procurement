@@ -7,7 +7,7 @@
         <UInput v-model="form.lastName" placeholder="Last Name *" />
         <UInput v-model="form.email" type="email" placeholder="UTD Email * (abc123456@utdallas.edu)" />
         <USelect
-          v-model="form.roleID"
+          v-model="form.role"
           :items="roles"
           value-key="value"
           label-key="label"
@@ -29,18 +29,18 @@ const open = defineModel<boolean>('open', { default: false })
 const emit = defineEmits(['saved'])
 
 const roles = [
-  { label: 'Admin', value: 1 },
-  { label: 'Mentor', value: 2 },
-  { label: 'Student', value: 3 },
+  { label: 'Admin',   value: 'ADMIN'   },
+  { label: 'Mentor',  value: 'MENTOR'  },
+  { label: 'Student', value: 'STUDENT' },
 ]
 
-const form = reactive({ firstName: '', lastName: '', email: '', roleID: undefined as number | undefined, projectNum: '' })
+const form = reactive({ firstName: '', lastName: '', email: '', role: undefined as string | undefined, projectNum: '' })
 const saving = ref(false)
 const error = ref('')
 
 async function save() {
   error.value = ''
-  if (!form.firstName || !form.lastName || !form.email || !form.roleID) {
+  if (!form.firstName || !form.lastName || !form.email || !form.role) {
     error.value = 'All fields are required.'
     return
   }
@@ -52,9 +52,9 @@ async function save() {
     })
     emit('saved')
     open.value = false
-    Object.assign(form, { firstName: '', lastName: '', email: '', roleID: undefined, projectNum: '' })
-  } catch (e: any) {
-    error.value = e?.data?.message ?? 'Failed to add user.'
+    Object.assign(form, { firstName: '', lastName: '', email: '', role: undefined, projectNum: '' })
+  } catch (e: unknown) {
+    error.value = (e as { data?: { message?: string } })?.data?.message ?? 'Failed to add user.'
   } finally {
     saving.value = false
   }

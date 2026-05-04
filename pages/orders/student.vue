@@ -2,7 +2,6 @@
   <div class="space-y-6">
     <h1 class="text-2xl font-bold text-[#1A1A1A]">My Orders</h1>
 
-    <!-- Tabs -->
     <UTabs :items="tabs" v-model="activeTab" />
 
     <!-- Requests Tab -->
@@ -12,12 +11,12 @@
         No requests yet. <NuxtLink to="/request-form" class="text-[#E87722] underline">Submit one?</NuxtLink>
       </div>
       <div v-else class="space-y-4">
-        <StudentRequestCard
+        <RequestCard
           v-for="req in requests"
           :key="req.requestID"
           :request="req"
+          user-role="STUDENT"
           @cancel="cancelRequest(req)"
-          @refresh="refresh()"
         />
       </div>
     </div>
@@ -29,11 +28,11 @@
         No reimbursements yet. <NuxtLink to="/reimbursement/student" class="text-[#E87722] underline">Submit one?</NuxtLink>
       </div>
       <div v-else class="space-y-4">
-        <StudentReimbursementCard
+        <ReimbursementCard
           v-for="r in reimbursements"
           :key="r.reimbursementID"
           :reimbursement="r"
-          @refresh="reimbRefresh()"
+          user-role="STUDENT"
         />
       </div>
     </div>
@@ -55,11 +54,8 @@ const requests = computed(() => requestData.value?.requests ?? [])
 const { data: reimbData, pending: reimbPending, refresh: reimbRefresh } = await useFetch('/api/reimbursement/get', { method: 'POST', body: {} })
 const reimbursements = computed(() => reimbData.value?.reimbursements ?? [])
 
-async function cancelRequest(req: any) {
-  await $fetch('/api/process/update', {
-    method: 'POST',
-    body: { processID: req.process.processID, status: 'CANCELLED' },
-  })
+async function cancelRequest(req: { process: { processID: number } }) {
+  await $fetch('/api/process/update', { method: 'POST', body: { processID: req.process.processID, status: 'CANCELLED' } })
   refresh()
 }
 </script>
