@@ -1,67 +1,63 @@
 import { prisma } from '~/server/utils/prisma'
 import { validateEmailAndReturnNetID } from '~/server/utils/netid'
-import { authClient } from '~/composables/useAuth'
+import type { UserRole } from '@prisma/client'
 
-/**
- * POST /api/admin/add
- * Admin adds a new user or project.
- */
+/** POST /api/admin/add — admin creates a new user or project */
 export default defineEventHandler(async event => {
-  if (event.context.role !== 1) throw createError({ statusCode: 403, message: 'Admin only' })
+  if (event.context.role !== 'ADMIN') throw createError({ statusCode: 403, message: 'Admin only' })
 
   const body = await readBody(event)
   const { type } = body
 
-  if (type === 'user') {
-    const { email, firstName, lastName, roleID, projectNum } = body
+  try {
+    if (type === 'user') {
+      const { email, firstName, lastName, role, projectNum } = body
 
-    // Validate UTD email and extract netID
-    const netID = validateEmailAndReturnNetID(email)
+      const netID = validateEmailAndReturnNetID(email)
 
-    const user = await prisma.user.create({
-      data: {
-        email: email.toLowerCase(),
-        firstName,
-        lastName,
-        netID,
-        roleID: Number(roleID),
-        active: true,
-      },
-    })
+      const user = await prisma.user.create({
+        data: {
+          email: email.toLowerCase(),
+          firstName,
+          lastName,
+          netID,
+          role: role as UserRole,
+          active: true,
+        },
+      })
 
-    // Optionally assign to a project
-    if (projectNum) {
-      const project = await prisma.project.findUnique({ where: { projectNum } })
-      if (project) {
-        await prisma.worksOn.create({
-          data: {
-            userID: user.id,
-            projectID: project.projectID,
-            startDate: new Date(),
-          },
-        })
+      if (projectNum) {
+        const project = await prisma.project.findUnique({ where: { projectNum } })
+        if (project) {
+          await prisma.worksOn.create({
+            data: { userID: user.id, projectID: project.projectID, startDate: new Date() },
+          })
+        }
       }
+
+      return user
     }
 
-    return user
+    if (type === 'project') {
+      const { projectTitle, projectNum, startingBudget, projectType, sponsorCompany, costCenter, additionalInfo } = body
+
+      return prisma.project.create({
+        data: {
+          projectTitle,
+          projectNum,
+          startingBudget: Number(startingBudget),
+          projectType,
+          sponsorCompany,
+          costCenter: costCenter ?? null,
+          additionalInfo: additionalInfo ?? null,
+          activationDate: new Date(),
+        },
+      })
+    }
+
+    throw createError({ statusCode: 400, message: 'Invalid type' })
+  } catch (err: unknown) {
+    if ((err as { statusCode?: number }).statusCode) throw err
+    throw createError({ statusCode: 500, message: 'Internal server error' })
   }
-
-  if (type === 'project') {
-    const { projectTitle, projectNum, startingBudget, projectType, sponsorCompany, costCenter, additionalInfo } = body
-
-    return prisma.project.create({
-      data: {
-        projectTitle,
-        projectNum,
-        startingBudget: Number(startingBudget),
-        projectType,
-        sponsorCompany,
-        costCenter: costCenter ?? null,
-        additionalInfo: additionalInfo ?? null,
-        activationDate: new Date(),
-      },
-    })
-  }
-
-  throw createError({ statusCode: 400, message: 'Invalid type' })
 })

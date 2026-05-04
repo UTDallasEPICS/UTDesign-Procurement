@@ -1,11 +1,6 @@
 import nodemailer from 'nodemailer'
 import type { PrismaClient } from '@prisma/client'
 
-/**
- * Track 2: Email Notification Service
- * NodeMailer with Gmail SMTP.
- */
-
 function createTransporter() {
   return nodemailer.createTransport({
     service: 'gmail',
@@ -43,7 +38,7 @@ export async function sendEmailToAdmins(
   attachmentPath?: string,
 ): Promise<void> {
   const admins = await db.user.findMany({
-    where: { roleID: 1, active: true },
+    where: { role: 'ADMIN', active: true },
     select: { email: true },
   })
 
@@ -55,7 +50,7 @@ export async function sendEmailToAdmins(
 function baseTemplate(body: string): string {
   return `
     <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">
-      <div style="background:#C75B12;padding:16px 24px;">
+      <div style="background:#154734;padding:16px 24px;">
         <h2 style="color:#fff;margin:0;">UTDesign Procurement</h2>
       </div>
       <div style="padding:24px;background:#fff;border:1px solid #D9D9D9;">
@@ -131,9 +126,3 @@ export function templateReimbursementProcessed(projectTitle: string): string {
   `)
 }
 
-export function templateDbUploadError(): string {
-  return baseTemplate(`
-    <p>A database upload encountered errors. Please see the attached error report for details.</p>
-    <p>Review the report, correct the data, and re-upload the fixed file.</p>
-  `)
-}

@@ -8,23 +8,15 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ─── Enums (SQLite uses String + manual validation) ───────────────────────────
+// ─── Enums ────────────────────────────────────────────────────────────────────
 
-// Process / RequestItem status
-// Values: UNDER_REVIEW | DRAFT | CANCELLED | APPROVED | REJECTED | ORDERED | RECEIVED | PROCESSED
-
-// Vendor status
-// Values: APPROVED | PENDING | DENIED
+enum UserRole {
+  ADMIN
+  MENTOR
+  STUDENT
+}
 
 // ─── Core Models ──────────────────────────────────────────────────────────────
-
-model Role {
-  roleID Int    @id @default(autoincrement())
-  role   String @unique // "Admin" | "Mentor" | "Student"
-
-  users          User[]
-  previousRecord PreviousRecord[]
-}
 
 model User {
   id                 Int       @id @default(autoincrement())
@@ -35,9 +27,8 @@ model User {
   active             Boolean   @default(true)
   responsibilities   String?
   deactivationDate   DateTime?
-  roleID             Int    @default(3) // 3=Student, 2=Mentor, 1=Admin
+  role               UserRole  @default(STUDENT)
 
-  role              Role              @relation(fields: [roleID], references: [roleID])
   requests          Request[]         @relation("StudentRequests")
   reimbursements    Reimbursement[]   @relation("StudentReimbursements")
   mentorProcesses   Process[]         @relation("MentorProcesses")
@@ -330,12 +321,11 @@ model ProjectDepartment {
 }
 
 model PreviousRecord {
-  recordID  Int @id @default(autoincrement())
+  recordID  Int      @id @default(autoincrement())
   projectID Int
-  roleID    Int
+  role      UserRole
   userID    Int
 
   project Project @relation(fields: [projectID], references: [projectID])
-  role    Role    @relation(fields: [roleID], references: [roleID])
   user    User    @relation(fields: [userID], references: [id])
 }

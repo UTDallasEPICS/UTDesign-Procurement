@@ -9,10 +9,11 @@
       <div v-if="pending" class="text-center py-12 text-[#5A5A5A]">Loading...</div>
       <div v-else-if="!requests?.length" class="text-center py-12 text-[#5A5A5A]">No requests pending review.</div>
       <div v-else class="space-y-4">
-        <MentorRequestCard
+        <RequestCard
           v-for="req in requests"
           :key="req.requestID"
           :request="req"
+          user-role="MENTOR"
           @approve="approveRequest(req)"
           @reject="openReject(req, 'request')"
         />
@@ -24,20 +25,18 @@
       <div v-if="reimbPending" class="text-center py-12 text-[#5A5A5A]">Loading...</div>
       <div v-else-if="!reimbursements?.length" class="text-center py-12 text-[#5A5A5A]">No reimbursements pending review.</div>
       <div v-else class="space-y-4">
-        <MentorReimbursementCard
+        <ReimbursementCard
           v-for="r in reimbursements"
           :key="r.reimbursementID"
           :reimbursement="r"
+          user-role="MENTOR"
           @approve="approveReimbursement(r)"
           @reject="openReject(r, 'reimbursement')"
         />
       </div>
     </div>
 
-    <RejectionModal
-      v-model:open="rejectOpen"
-      @confirm="submitRejection"
-    />
+    <RejectionModal v-model:open="rejectOpen" @confirm="submitRejection" />
   </div>
 </template>
 
@@ -57,36 +56,27 @@ const { data: reimbData, pending: reimbPending, refresh: reimbRefresh } = await 
 const reimbursements = computed(() => reimbData.value?.reimbursements ?? [])
 
 const rejectOpen = ref(false)
-const rejectTarget = ref<any>(null)
+const rejectTarget = ref<{ process: { processID: number } } | null>(null)
 const rejectType = ref<'request' | 'reimbursement'>('request')
 
-function openReject(item: any, type: 'request' | 'reimbursement') {
+function openReject(item: typeof rejectTarget.value, type: 'request' | 'reimbursement') {
   rejectTarget.value = item
   rejectType.value = type
   rejectOpen.value = true
 }
 
-async function approveRequest(req: any) {
-  await $fetch('/api/process/update', {
-    method: 'POST',
-    body: { processID: req.process.processID, status: 'APPROVED' },
-  })
+async function approveRequest(req: { process: { processID: number } }) {
+  await $fetch('/api/process/update', { method: 'POST', body: { processID: req.process.processID, status: 'APPROVED' } })
   refresh()
 }
 
-async function approveReimbursement(r: any) {
-  await $fetch('/api/process/update', {
-    method: 'POST',
-    body: { processID: r.process.processID, status: 'APPROVED' },
-  })
+async function approveReimbursement(r: { process: { processID: number } }) {
+  await $fetch('/api/process/update', { method: 'POST', body: { processID: r.process.processID, status: 'APPROVED' } })
   reimbRefresh()
 }
 
 async function submitRejection(comment: string) {
-  await $fetch('/api/process/update', {
-    method: 'POST',
-    body: { processID: rejectTarget.value.process.processID, status: 'REJECTED', comment },
-  })
+  await $fetch('/api/process/update', { method: 'POST', body: { processID: rejectTarget.value!.process.processID, status: 'REJECTED', comment } })
   rejectType.value === 'request' ? refresh() : reimbRefresh()
 }
 </script>

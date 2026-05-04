@@ -4,7 +4,7 @@
     <main class="flex-1 container mx-auto px-4 py-6">
       <slot />
     </main>
-    <footer class="bg-[#1A1A1A] text-white text-xs text-center py-3">
+    <footer class="bg-[#154734] text-white/60 text-xs text-center py-3 border-t-2 border-[#E87722]">
       UTDesign Procurement System &mdash; The University of Texas at Dallas
     </footer>
   </div>

@@ -1,82 +1,74 @@
 import { prisma } from '~/server/utils/prisma'
 import { recalcProjectExpenses } from '~/server/utils/budget'
 
-/**
- * POST /api/request/update
- * Admin updates request items, orders, other expenses, and process status.
- */
+/** POST /api/request/update — admin edits request items, orders, and process status */
 export default defineEventHandler(async event => {
-  const user = event.context.user
-  if (user.roleID !== 1) throw createError({ statusCode: 403, message: 'Admin only' })
+  if (event.context.role !== 'ADMIN') throw createError({ statusCode: 403, message: 'Admin only' })
 
-  const body = await readBody(event)
-  const { requestID, projectID, items, orders, processID, status, otherExpenses } = body
+  try {
+    const { requestID, projectID, items, orders, processID, status } = await readBody(event)
+    const user = event.context.user
 
-  await prisma.$transaction(async tx => {
-    // Update each item
-    if (items?.length) {
-      await Promise.all(
-        items.map((item: any) =>
-          tx.requestItem.update({
-            where: { itemID: item.itemID },
-            data: {
-              description: item.description,
-              url: item.url,
-              partNumber: item.partNumber,
-              quantity: Number(item.quantity),
-              unitPrice: Number(item.unitPrice),
-              vendorID: item.vendorID,
-            },
-          }),
-        ),
-      )
-    }
+    await prisma.$transaction(async tx => {
+      if (items?.length) {
+        await Promise.all(
+          items.map((item: { itemID: number; description: string; url: string; partNumber: string; quantity: number; unitPrice: number; vendorID: number }) =>
+            tx.requestItem.update({
+              where: { itemID: item.itemID },
+              data: {
+                description: item.description,
+                url: item.url,
+                partNumber: item.partNumber,
+                quantity: Number(item.quantity),
+                unitPrice: Number(item.unitPrice),
+                vendorID: item.vendorID,
+              },
+            }),
+          ),
+        )
+      }
 
-    // Update each order
-    if (orders?.length) {
-      await Promise.all(
-        orders.map((order: any) =>
-          order.orderID
-            ? tx.order.update({
-                where: { orderID: order.orderID },
-                data: {
-                  dateOrdered: new Date(order.dateOrdered),
-                  orderNumber: order.orderNumber,
-                  orderDetails: order.orderDetails,
-                  trackingInfo: order.trackingInfo,
-                  shippingCost: Number(order.shippingCost),
-                },
-              })
-            : tx.order.create({
-                data: {
-                  dateOrdered: new Date(order.dateOrdered),
-                  orderNumber: order.orderNumber,
-                  orderDetails: order.orderDetails,
-                  trackingInfo: order.trackingInfo,
-                  shippingCost: Number(order.shippingCost),
-                  requestID,
-                  adminID: user.id,
-                },
-              }),
-        ),
-      )
-    }
+      if (orders?.length) {
+        await Promise.all(
+          orders.map((order: { orderID?: number; dateOrdered: string; orderNumber: string; orderDetails: string; trackingInfo: string; shippingCost: number }) =>
+            order.orderID
+              ? tx.order.update({
+                  where: { orderID: order.orderID },
+                  data: {
+                    dateOrdered: new Date(order.dateOrdered),
+                    orderNumber: order.orderNumber,
+                    orderDetails: order.orderDetails,
+                    trackingInfo: order.trackingInfo,
+                    shippingCost: Number(order.shippingCost),
+                  },
+                })
+              : tx.order.create({
+                  data: {
+                    dateOrdered: new Date(order.dateOrdered),
+                    orderNumber: order.orderNumber,
+                    orderDetails: order.orderDetails,
+                    trackingInfo: order.trackingInfo,
+                    shippingCost: Number(order.shippingCost),
+                    requestID,
+                    adminID: user.id,
+                  },
+                }),
+          ),
+        )
+      }
 
-    // Update process status
-    if (processID && status) {
-      await tx.process.update({
-        where: { processID },
-        data: {
-          status,
-          adminProcessed: new Date(),
-          adminID: user.id,
-        },
-      })
-    }
-  })
+      if (processID && status) {
+        await tx.process.update({
+          where: { processID },
+          data: { status, adminProcessed: new Date(), adminID: user.id },
+        })
+      }
+    })
 
-  // Recalculate project expenses after edits
-  await recalcProjectExpenses(prisma, projectID)
-
-  return { ok: true }
+    await recalcProjectExpenses(prisma, projectID)
+    return { ok: true }
+  } catch (err: unknown) {
+    if ((err as { statusCode?: number }).statusCode) throw err
+    throw createError({ statusCode: 500, message: 'Internal server error' })
+  }
 })

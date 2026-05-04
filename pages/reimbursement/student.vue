@@ -71,7 +71,7 @@
         </div>
 
         <div class="mt-3 text-right text-sm font-semibold text-[#1A1A1A]">
-          Total: <span class="text-[#C75B12]">${{ receiptTotal.toFixed(2) }}</span>
+          Total: <span class="text-[#E87722]">${{ receiptTotal.toFixed(2) }}</span>
         </div>
       </div>
 
