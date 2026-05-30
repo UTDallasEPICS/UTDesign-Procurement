@@ -8,21 +8,36 @@ export default defineEventHandler(async (event) => {
   }
 
   const body = await readBody(event)
-  const { productName, productUrl, productImage, productPrice, notes } = body
+  const { items, notes } = body
 
-  if (!productName || !productUrl) {
-    throw createError({ statusCode: 400, message: 'productName and productUrl are required' })
+  if (!Array.isArray(items) || items.length === 0) {
+    throw createError({ statusCode: 400, message: 'items array is required and must not be empty' })
+  }
+
+  for (const item of items) {
+    if (!item.productName || !item.productUrl) {
+      throw createError({ statusCode: 400, message: 'Each item requires productName and productUrl' })
+    }
+    if (item.quantity < 1) {
+      throw createError({ statusCode: 400, message: 'Quantity must be at least 1' })
+    }
   }
 
   const order = await prisma.order.create({
     data: {
       userId: session.user.id,
-      productName,
-      productUrl,
-      productImage: productImage || null,
-      productPrice: productPrice || null,
       notes: notes || null,
+      items: {
+        create: items.map((item: any) => ({
+          productName: item.productName,
+          productUrl: item.productUrl,
+          productImage: item.productImage || null,
+          productPrice: item.productPrice || null,
+          quantity: item.quantity ?? 1,
+        })),
+      },
     },
+    include: { items: true },
   })
 
   return order

@@ -18,11 +18,63 @@ const product = ref<null | { name: string; image: string; description: string; p
 const productLoading = ref(false)
 const productError = ref('')
 
-// Order request
-const isOrderModalOpen = ref(false)
+// Cart
+type CartItem = { productName: string; productUrl: string; productImage: string; productPrice: string; quantity: number }
+const cart = ref<CartItem[]>([])
+const cartAdded = ref(false)
+
+function addToCart() {
+  if (!product.value) return
+  const existing = cart.value.find(i => i.productUrl === product.value!.url)
+  if (existing) {
+    existing.quantity++
+  } else {
+    cart.value.push({
+      productName: product.value.name,
+      productUrl: product.value.url,
+      productImage: product.value.image || '',
+      productPrice: product.value.price ? `${product.value.currency} ${product.value.price}`.trim() : '',
+      quantity: 1,
+    })
+  }
+  cartAdded.value = true
+  setTimeout(() => { cartAdded.value = false }, 1500)
+  product.value = null
+  productUrl.value = ''
+}
+
+function removeFromCart(index: number) {
+  cart.value.splice(index, 1)
+}
+
+function setQuantity(index: number, val: number) {
+  if (val < 1) return
+  cart.value[index].quantity = val
+}
+
+// Order submission
 const orderNotes = ref('')
 const orderError = ref('')
 const isSubmittingOrder = ref(false)
+
+async function submitOrder() {
+  if (cart.value.length === 0) return
+  isSubmittingOrder.value = true
+  orderError.value = ''
+  try {
+    await $fetch('/api/orders', {
+      method: 'POST',
+      body: { items: cart.value, notes: orderNotes.value || null },
+    })
+    cart.value = []
+    orderNotes.value = ''
+    await refreshOrders()
+  } catch (err: any) {
+    orderError.value = err?.data?.message || 'Failed to submit order'
+  } finally {
+    isSubmittingOrder.value = false
+  }
+}
 
 async function logout() {
   await authClient.signOut()
@@ -74,33 +126,6 @@ async function lookupProduct() {
     productError.value = err?.data?.message || 'Failed to fetch product'
   } finally {
     productLoading.value = false
-  }
-}
-
-async function submitOrder() {
-  if (!product.value) return
-  isSubmittingOrder.value = true
-  orderError.value = ''
-  try {
-    await $fetch('/api/orders', {
-      method: 'POST',
-      body: {
-        productName: product.value.name,
-        productUrl: product.value.url,
-        productImage: product.value.image || null,
-        productPrice: product.value.price ? `${product.value.currency} ${product.value.price}`.trim() : null,
-        notes: orderNotes.value || null,
-      },
-    })
-    isOrderModalOpen.value = false
-    orderNotes.value = ''
-    product.value = null
-    productUrl.value = ''
-    await refreshOrders()
-  } catch (err: any) {
-    orderError.value = err?.data?.message || 'Failed to submit order'
-  } finally {
-    isSubmittingOrder.value = false
   }
 }
 
@@ -305,12 +330,74 @@ const statusColor = (status: string) =>
                   </svg>
                 </a>
                 <button
-                  class="rounded-md bg-[#154734] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#0f3325] transition"
-                  @click="isOrderModalOpen = true"
+                  class="rounded-md bg-[#154734] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#0f3325] transition flex items-center gap-1.5"
+                  @click="addToCart"
                 >
-                  Request Order
+                  <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z"/>
+                  </svg>
+                  {{ cartAdded ? 'Added!' : 'Add to Order' }}
                 </button>
               </div>
+            </div>
+          </div>
+
+          <!-- Cart -->
+          <div v-if="cart.length > 0" class="rounded-lg border border-[#154734]/20 bg-green-50 p-4 space-y-3">
+            <div class="flex items-center justify-between">
+              <p class="text-sm font-semibold text-[#154734]">Order Cart ({{ cart.length }} item{{ cart.length > 1 ? 's' : '' }})</p>
+            </div>
+
+            <div class="space-y-2">
+              <div
+                v-for="(item, i) in cart"
+                :key="item.productUrl + i"
+                class="flex items-center gap-3 bg-white rounded-md border border-gray-200 px-3 py-2"
+              >
+                <img v-if="item.productImage" :src="item.productImage" :alt="item.productName" class="h-10 w-10 rounded object-contain flex-shrink-0" />
+                <div class="flex-1 min-w-0">
+                  <p class="text-xs font-medium text-gray-900 truncate">{{ item.productName }}</p>
+                  <p v-if="item.productPrice" class="text-xs text-[#E87722] font-semibold">{{ item.productPrice }}</p>
+                </div>
+                <!-- Quantity controls -->
+                <div class="flex items-center gap-1 flex-shrink-0">
+                  <button class="h-6 w-6 rounded border border-gray-300 text-gray-600 hover:bg-gray-100 flex items-center justify-center text-sm font-bold" @click="setQuantity(i, item.quantity - 1)">−</button>
+                  <input
+                    type="number"
+                    :value="item.quantity"
+                    min="1"
+                    class="w-10 text-center text-sm border border-gray-300 rounded py-0.5 focus:outline-none focus:border-[#E87722]"
+                    @change="setQuantity(i, Number(($event.target as HTMLInputElement).value))"
+                  />
+                  <button class="h-6 w-6 rounded border border-gray-300 text-gray-600 hover:bg-gray-100 flex items-center justify-center text-sm font-bold" @click="setQuantity(i, item.quantity + 1)">+</button>
+                </div>
+                <button class="text-red-400 hover:text-red-600 flex-shrink-0 ml-1" @click="removeFromCart(i)">
+                  <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <div class="space-y-2 pt-1 border-t border-green-200">
+              <textarea
+                v-model="orderNotes"
+                rows="2"
+                placeholder="Notes (reason for request, department, etc.)"
+                class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#E87722] focus:outline-none resize-none"
+              />
+              <div v-if="orderError" class="rounded-md bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-700">{{ orderError }}</div>
+              <button
+                :disabled="isSubmittingOrder"
+                class="w-full rounded-md bg-[#E87722] py-2 text-sm font-semibold text-white hover:bg-[#c9621a] disabled:opacity-50 transition flex items-center justify-center gap-2"
+                @click="submitOrder"
+              >
+                <svg v-if="isSubmittingOrder" class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+                </svg>
+                {{ isSubmittingOrder ? 'Submitting…' : `Submit Order (${cart.length} item${cart.length > 1 ? 's' : ''})` }}
+              </button>
             </div>
           </div>
         </div>
@@ -335,87 +422,36 @@ const statusColor = (status: string) =>
           </div>
           <div v-else class="divide-y divide-gray-100">
             <div
-              v-for="order in orders"
+              v-for="order in (orders as any[])"
               :key="order.id"
-              class="flex items-center gap-4 py-3 first:pt-0 last:pb-0"
+              class="py-4 first:pt-0 last:pb-0 space-y-2"
             >
-              <img
-                v-if="order.productImage"
-                :src="order.productImage"
-                :alt="order.productName"
-                class="h-12 w-12 rounded object-contain border border-gray-100 flex-shrink-0"
-              />
-              <div v-else class="h-12 w-12 rounded bg-gray-100 flex-shrink-0 flex items-center justify-center">
-                <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909"/>
-                </svg>
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span :class="statusColor(order.status)" class="rounded-full border px-2.5 py-0.5 text-xs font-semibold capitalize">
+                    {{ order.status }}
+                  </span>
+                  <span class="text-xs text-gray-400">{{ new Date(order.createdAt).toLocaleDateString() }}</span>
+                  <span class="text-xs text-gray-400">· {{ order.items.length }} item{{ order.items.length > 1 ? 's' : '' }}</span>
+                </div>
               </div>
-              <div class="flex-1 min-w-0">
-                <p class="text-sm font-medium text-gray-900 truncate">{{ order.productName }}</p>
-                <p v-if="order.productPrice" class="text-xs text-gray-500">{{ order.productPrice }}</p>
-                <p v-if="order.notes" class="text-xs text-gray-400 italic truncate">{{ order.notes }}</p>
+              <div class="space-y-1.5 pl-1">
+                <div v-for="item in order.items" :key="item.id" class="flex items-center gap-3">
+                  <img v-if="item.productImage" :src="item.productImage" :alt="item.productName" class="h-9 w-9 rounded object-contain border border-gray-100 flex-shrink-0" />
+                  <div v-else class="h-9 w-9 rounded bg-gray-100 flex-shrink-0" />
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm text-gray-900 truncate">{{ item.productName }}</p>
+                    <p v-if="item.productPrice" class="text-xs text-gray-500">{{ item.productPrice }}</p>
+                  </div>
+                  <span class="text-xs font-semibold text-gray-700 flex-shrink-0">× {{ item.quantity }}</span>
+                </div>
               </div>
-              <div class="flex flex-col items-end gap-1 flex-shrink-0">
-                <span :class="statusColor(order.status)" class="rounded-full border px-2.5 py-0.5 text-xs font-semibold capitalize">
-                  {{ order.status }}
-                </span>
-                <span class="text-xs text-gray-400">
-                  {{ new Date(order.createdAt).toLocaleDateString() }}
-                </span>
-              </div>
+              <p v-if="order.notes" class="text-xs text-gray-400 italic pl-1">{{ order.notes }}</p>
             </div>
           </div>
         </div>
       </div>
     </main>
-
-    <!-- Order request modal -->
-    <UModal v-model:open="isOrderModalOpen">
-      <template #content>
-        <div class="m-8 space-y-4">
-          <h3 class="text-base font-semibold text-gray-900">Request Order</h3>
-
-          <div v-if="product" class="flex gap-3 rounded-md bg-gray-50 border border-gray-200 p-3">
-            <img v-if="product.image" :src="product.image" :alt="product.name" class="h-14 w-14 rounded object-contain flex-shrink-0" />
-            <div class="min-w-0">
-              <p class="text-sm font-medium text-gray-900 line-clamp-2">{{ product.name }}</p>
-              <p v-if="product.price" class="text-sm font-bold text-[#E87722]">
-                {{ product.currency ? product.currency + ' ' : '' }}{{ product.price }}
-              </p>
-            </div>
-          </div>
-
-          <div class="space-y-1">
-            <label class="block text-sm font-semibold text-gray-700">Notes <span class="font-normal text-gray-400">(optional)</span></label>
-            <textarea
-              v-model="orderNotes"
-              rows="3"
-              placeholder="Reason for request, quantity, any additional details…"
-              class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#E87722] focus:outline-none focus:ring-2 focus:ring-[#E87722]/30 resize-none"
-            />
-          </div>
-
-          <div v-if="orderError" class="rounded-md bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-700">
-            {{ orderError }}
-          </div>
-
-          <div class="flex justify-end gap-2">
-            <UButton variant="soft" @click="isOrderModalOpen = false">Cancel</UButton>
-            <button
-              :disabled="isSubmittingOrder"
-              class="rounded-md bg-[#E87722] px-4 py-2 text-sm font-semibold text-white hover:bg-[#c9621a] disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transition"
-              @click="submitOrder"
-            >
-              <svg v-if="isSubmittingOrder" class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
-              </svg>
-              {{ isSubmittingOrder ? 'Submitting…' : 'Submit Request' }}
-            </button>
-          </div>
-        </div>
-      </template>
-    </UModal>
 
     <!-- Footer -->
     <footer class="bg-[#154734] mt-8 py-4 text-center text-xs text-gray-400">

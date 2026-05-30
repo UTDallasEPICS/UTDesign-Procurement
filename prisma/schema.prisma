@@ -60,20 +60,31 @@ model Account {
 }
 
 model Order {
-  id           String   @id @default(uuid())
-  userId       String
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id        String      @id @default(uuid())
+  userId    String
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  notes     String?
+  status    String      @default("pending")
+  items     OrderItem[]
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@index([userId])
+  @@map("order")
+}
+
+model OrderItem {
+  id           String  @id @default(uuid())
+  orderId      String
+  order        Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
   productName  String
   productUrl   String
   productImage String?
   productPrice String?
-  notes        String?
-  status       String   @default("pending")
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  quantity     Int     @default(1)
 
-  @@index([userId])
-  @@map("order")
+  @@index([orderId])
+  @@map("order_item")
 }
 
 model Verification {

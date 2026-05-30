@@ -26,15 +26,21 @@ const statusStyle = (status: string) =>
   : status === 'rejected' ? 'text-red-700 bg-red-50 border-red-200'
   : 'text-yellow-700 bg-yellow-50 border-yellow-200'
 
-type Order = {
+type OrderItem = {
   id: string
   productName: string
   productUrl: string
   productImage?: string | null
   productPrice?: string | null
+  quantity: number
+}
+
+type Order = {
+  id: string
   notes?: string | null
   status: string
   createdAt: string
+  items: OrderItem[]
   user: { name: string; email: string }
 }
 </script>
@@ -94,61 +100,45 @@ type Order = {
           <div
             v-for="order in (orders as Order[])"
             :key="order.id"
-            class="flex items-center gap-4 px-6 py-4"
+            class="px-6 py-4 space-y-3"
           >
-            <!-- Product image -->
-            <img
-              v-if="order.productImage"
-              :src="order.productImage"
-              :alt="order.productName"
-              class="h-14 w-14 rounded object-contain border border-gray-100 flex-shrink-0"
-            />
-            <div v-else class="h-14 w-14 rounded bg-gray-100 flex-shrink-0 flex items-center justify-center">
-              <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909"/>
-              </svg>
+            <!-- Order header: student + status + actions -->
+            <div class="flex items-center justify-between gap-4">
+              <div>
+                <p class="text-sm font-semibold text-gray-900">{{ order.user.name }}</p>
+                <p class="text-xs text-gray-400">{{ order.user.email }} · {{ new Date(order.createdAt).toLocaleDateString() }} · {{ order.items.length }} item{{ order.items.length > 1 ? 's' : '' }}</p>
+                <p v-if="order.notes" class="text-xs text-gray-400 italic mt-0.5">{{ order.notes }}</p>
+              </div>
+              <div class="flex flex-col items-end gap-2 flex-shrink-0">
+                <span :class="statusStyle(order.status)" class="rounded-full border px-2.5 py-0.5 text-xs font-semibold capitalize">
+                  {{ order.status }}
+                </span>
+                <div v-if="order.status === 'pending'" class="flex gap-1.5">
+                  <button
+                    :disabled="updatingId === order.id"
+                    class="rounded px-2.5 py-1 text-xs font-semibold bg-green-600 text-white hover:bg-green-700 disabled:opacity-50 transition"
+                    @click="updateStatus(order.id, 'approved')"
+                  >Approve</button>
+                  <button
+                    :disabled="updatingId === order.id"
+                    class="rounded px-2.5 py-1 text-xs font-semibold bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 transition"
+                    @click="updateStatus(order.id, 'rejected')"
+                  >Reject</button>
+                </div>
+              </div>
             </div>
 
-            <!-- Product info -->
-            <div class="flex-1 min-w-0">
-              <p class="text-sm font-semibold text-gray-900 truncate">{{ order.productName }}</p>
-              <p v-if="order.productPrice" class="text-xs font-bold text-[#E87722]">{{ order.productPrice }}</p>
-              <p v-if="order.notes" class="text-xs text-gray-400 italic truncate">{{ order.notes }}</p>
-              <a
-                :href="order.productUrl"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="text-xs text-[#154734] hover:underline"
-              >View product</a>
-            </div>
-
-            <!-- Student info -->
-            <div class="hidden md:block text-right flex-shrink-0 w-48">
-              <p class="text-xs font-medium text-gray-700">{{ order.user.name }}</p>
-              <p class="text-xs text-gray-400">{{ order.user.email }}</p>
-              <p class="text-xs text-gray-400">{{ new Date(order.createdAt).toLocaleDateString() }}</p>
-            </div>
-
-            <!-- Status + actions -->
-            <div class="flex flex-col items-end gap-2 flex-shrink-0">
-              <span :class="statusStyle(order.status)" class="rounded-full border px-2.5 py-0.5 text-xs font-semibold capitalize">
-                {{ order.status }}
-              </span>
-              <div v-if="order.status === 'pending'" class="flex gap-1.5">
-                <button
-                  :disabled="updatingId === order.id"
-                  class="rounded px-2.5 py-1 text-xs font-semibold bg-green-600 text-white hover:bg-green-700 disabled:opacity-50 transition"
-                  @click="updateStatus(order.id, 'approved')"
-                >
-                  Approve
-                </button>
-                <button
-                  :disabled="updatingId === order.id"
-                  class="rounded px-2.5 py-1 text-xs font-semibold bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 transition"
-                  @click="updateStatus(order.id, 'rejected')"
-                >
-                  Reject
-                </button>
+            <!-- Order items -->
+            <div class="space-y-1.5 pl-2 border-l-2 border-gray-100">
+              <div v-for="item in order.items" :key="item.id" class="flex items-center gap-3">
+                <img v-if="item.productImage" :src="item.productImage" :alt="item.productName" class="h-10 w-10 rounded object-contain border border-gray-100 flex-shrink-0" />
+                <div v-else class="h-10 w-10 rounded bg-gray-100 flex-shrink-0" />
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm text-gray-900 truncate">{{ item.productName }}</p>
+                  <p v-if="item.productPrice" class="text-xs font-semibold text-[#E87722]">{{ item.productPrice }}</p>
+                </div>
+                <span class="text-xs font-semibold text-gray-600 flex-shrink-0">× {{ item.quantity }}</span>
+                <a :href="item.productUrl" target="_blank" rel="noopener noreferrer" class="text-xs text-[#154734] hover:underline flex-shrink-0">View</a>
               </div>
             </div>
           </div>
