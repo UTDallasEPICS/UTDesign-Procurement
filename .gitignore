@@ -1,0 +1,30 @@
+# Dependencies
+node_modules/
+
+# Nuxt build output
+.nuxt/
+.output/
+dist/
+
+# Environment variables — never commit real secrets
+.env
+.env.local
+.env.*.local
+
+# Database
+dev.db
+dev.db-journal
+*.db
+
+# Prisma generated client
+prisma/generated/
+
+# OS
+.DS_Store
+
+# Logs
+*.log
+npm-debug.log*
+
+# Editor
+.vscode/settings.json
