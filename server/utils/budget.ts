@@ -47,13 +47,13 @@ export async function calcRequestExpense(
   return itemTotal + shippingTotal + otherTotal
 }
 
-/** Calculate a reimbursement's total expense: sum of all receiptTotal values. */
+/** Calculate a reimbursement's total expense: sum(qty * unitPrice) across items. */
 export async function calcReimbursementExpense(
   db: PrismaClient,
   reimbursementID: number,
 ): Promise<number> {
   const items = await db.reimbursementItem.findMany({ where: { reimbursementID } })
-  return items.reduce((sum, i) => sum + i.receiptTotal, 0)
+  return items.reduce((sum, i) => sum + i.quantity * i.unitPrice, 0)
 }
 
 /**
@@ -67,30 +67,27 @@ export async function recalcProjectExpenses(
   const [requests, reimbursements, otherExpenses] = await Promise.all([
     db.request.findMany({
       where: { projectID },
-      include: { items: true, orders: true },
+      include: { items: true, orders: true, process: true },
     }),
     db.reimbursement.findMany({
       where: { projectID },
-      include: { items: true },
+      include: { items: true, process: true },
     }),
     db.otherExpense.findMany({ where: { projectID } }),
   ])
 
-  const ACTIVE_STATUSES = ['UNDER_REVIEW', 'APPROVED', 'ORDERED', 'RECEIVED', 'PROCESSED']
+  // Rejected/cancelled orders don't count toward project expenses
+  const ACTIVE_STATUSES = ['UNDER_REVIEW', 'CHANGES_REQUESTED', 'APPROVED', 'ORDERED', 'RECEIVED', 'PROCESSED']
 
   const requestTotal = await Promise.all(
     requests
-      .filter(r => {
-        // Only count active requests (not rejected/cancelled)
-        return true // We'll filter by joining with process status in full implementation
-      })
+      .filter(r => ACTIVE_STATUSES.includes(r.process.status))
       .map(r => calcRequestExpense(db, r.requestID))
   ).then(amounts => amounts.reduce((sum, a) => sum + a, 0))
 
-  const reimbTotal = reimbursements.reduce(
-    (sum, r) => sum + r.items.reduce((s, i) => s + i.receiptTotal, 0),
-    0,
-  )
+  const reimbTotal = reimbursements
+    .filter(r => ACTIVE_STATUSES.includes(r.process.status))
+    .reduce((sum, r) => sum + r.items.reduce((s, i) => s + i.quantity * i.unitPrice, 0), 0)
 
   const otherTotal = otherExpenses.reduce((sum, e) => sum + e.expenseAmount, 0)
 

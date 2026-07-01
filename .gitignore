@@ -20,3 +20,4 @@ prisma/*.db
 
 # TypeScript
 *.tsbuildinfo
+uploads/

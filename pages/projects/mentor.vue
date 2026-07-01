@@ -21,8 +21,11 @@
             :used="project.totalExpenses"
           />
         </div>
-        <div class="px-6 py-4 text-sm text-[#5A5A5A]">
+        <div class="px-6 py-4 text-sm text-[#5A5A5A] flex items-center justify-between">
           <p>Budget: ${{ project.startingBudget.toLocaleString() }} starting / ${{ (project.startingBudget - project.totalExpenses).toLocaleString() }} remaining</p>
+          <NuxtLink :to="`/projects/${project.projectNum}`">
+            <UButton size="sm" variant="outline" class="border-[#154734] text-[#154734]">View Details</UButton>
+          </NuxtLink>
         </div>
       </div>
     </div>

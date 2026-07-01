@@ -53,19 +53,64 @@
               </button>
             </div>
             <div class="grid grid-cols-2 gap-3">
-              <UInput v-model="item.receiptDate" type="date" required />
-              <UInput v-model.number="item.receiptTotal" type="number" step="0.01" min="0" placeholder="Amount ($) *" required />
+              <div>
+                <label class="block text-xs text-[#5A5A5A] mb-1">Date of Purchase *</label>
+                <UInput v-model="item.receiptDate" type="date" required />
+              </div>
+              <div>
+                <label class="block text-xs text-[#5A5A5A] mb-1">Quantity *</label>
+                <UInput v-model.number="item.quantity" type="number" min="1" required />
+              </div>
+              <div>
+                <label class="block text-xs text-[#5A5A5A] mb-1">Unit Price ($) *</label>
+                <UInput v-model.number="item.unitPrice" type="number" step="0.01" min="0" required />
+              </div>
+              <div>
+                <label class="block text-xs text-[#5A5A5A] mb-1">Item URL (optional)</label>
+                <UInput v-model="item.url" placeholder="https://..." />
+              </div>
               <div class="col-span-2">
                 <UInput v-model="item.description" placeholder="Description *" required />
               </div>
             </div>
             <div>
+              <label class="block text-xs text-[#5A5A5A] mb-1">Category *</label>
+              <USelect
+                v-model="item.category"
+                :items="categoryOptions"
+                placeholder="Select category..."
+                value-key="value"
+                label-key="label"
+              />
+              <UInput
+                v-if="item.category === 'Other'"
+                v-model="item.otherCategoryDescription"
+                class="mt-2"
+                placeholder="Describe the category *"
+              />
+            </div>
+            <div v-if="justificationRequired(item)">
+              <label class="block text-xs text-[#5A5A5A] mb-1">Justification *</label>
+              <UTextarea
+                v-model="item.justification"
+                placeholder="Required for Chemicals, Software, or items with a vendor quote/URL"
+                :rows="2"
+                class="w-full"
+              />
+            </div>
+            <div>
               <label class="block text-xs text-[#5A5A5A] mb-1">Vendor *</label>
-              <VendorSelect v-model="item.vendorID" />
+              <VendorSelect
+                v-model="item.vendorID"
+                @update:new-vendor="(v: { name: string; email: string; url: string }) => item.newVendor = v"
+              />
             </div>
             <div>
               <label class="block text-xs text-[#5A5A5A] mb-1">Receipt Upload</label>
               <DragAndDrop v-model="item.file" accept=".pdf,.png,.jpg" label="Receipt scan or photo" />
+            </div>
+            <div class="text-right text-xs font-semibold text-[#5A5A5A]">
+              Line total: ${{ (Number(item.quantity) * Number(item.unitPrice) || 0).toFixed(2) }}
             </div>
           </div>
         </div>
@@ -94,6 +139,8 @@
 </template>
 
 <script setup lang="ts">
+import { ITEM_CATEGORIES, JUSTIFICATION_REQUIRED_CATEGORIES } from '~/shared/constants/categories'
+
 definePageMeta({ middleware: 'auth' })
 
 const { isStudent } = useAuth()
@@ -109,6 +156,8 @@ const projectOptions = computed(() =>
     value: p.projectNum,
   })),
 )
+
+const categoryOptions = ITEM_CATEGORIES.map(c => ({ label: c, value: c }))
 
 const selectedProject = computed(() =>
   projects.value?.find(p => p.projectNum === form.projectNum) ?? null,
@@ -127,8 +176,14 @@ function newItem() {
   return {
     receiptDate: '',
     description: '',
-    receiptTotal: 0,
-    vendorID: null as number | null,
+    unitPrice: 0,
+    quantity: 1,
+    category: '',
+    otherCategoryDescription: '',
+    justification: '',
+    url: '',
+    vendorID: undefined as number | string | undefined,
+    newVendor: null as { name: string; email: string; url: string } | null,
     file: null as File | null,
   }
 }
@@ -136,32 +191,74 @@ function newItem() {
 function addItem() { form.items.push(newItem()) }
 function removeItem(i: number) { form.items.splice(i, 1) }
 
+function justificationRequired(item: ReturnType<typeof newItem>) {
+  return (
+    (JUSTIFICATION_REQUIRED_CATEGORIES as readonly string[]).includes(item.category) ||
+    !!item.url.trim()
+  )
+}
+
 const receiptTotal = computed(() =>
-  form.items.reduce((sum, i) => sum + Number(i.receiptTotal), 0),
+  form.items.reduce((sum, i) => sum + Number(i.quantity) * Number(i.unitPrice), 0),
 )
+
+function readFileAsDataURL(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(reader.result as string)
+    reader.onerror = reject
+    reader.readAsDataURL(file)
+  })
+}
 
 async function submit() {
   error.value = ''
   if (!form.projectNum) { error.value = 'Project is required.'; return }
-  if (form.items.some(i => !i.receiptDate || !i.description || !i.vendorID)) {
-    error.value = 'All receipt fields are required.'
+  if (form.items.some(i => !i.receiptDate || !i.description || !i.vendorID || !i.category)) {
+    error.value = 'All receipt fields are required, including category and vendor.'
+    return
+  }
+  if (form.items.some(i => i.category === 'Other' && !i.otherCategoryDescription.trim())) {
+    error.value = 'Please describe the category for items marked "Other".'
+    return
+  }
+  if (form.items.some(i => justificationRequired(i) && !i.justification.trim())) {
+    error.value = 'A justification is required for Chemicals, Software, or items with a vendor quote/URL.'
+    return
+  }
+  if (!form.items.some(i => i.file)) {
+    error.value = 'At least one receipt must be uploaded.'
     return
   }
 
   submitting.value = true
   try {
+    const items = await Promise.all(
+      form.items.map(async i => ({
+        receiptDate: i.receiptDate,
+        description: i.description,
+        unitPrice: i.unitPrice,
+        quantity: i.quantity,
+        category: i.category,
+        otherCategoryDescription: i.category === 'Other' ? i.otherCategoryDescription : undefined,
+        justification: i.justification || undefined,
+        url: i.url || undefined,
+        vendorID: i.vendorID !== '__new__' ? Number(i.vendorID) : null,
+        newVendorName: i.vendorID === '__new__' ? i.newVendor?.name : undefined,
+        newVendorEmail: i.vendorID === '__new__' ? i.newVendor?.email : undefined,
+        newVendorURL: i.vendorID === '__new__' ? i.newVendor?.url : undefined,
+        fileName: i.file?.name,
+        fileData: i.file ? await readFileAsDataURL(i.file) : undefined,
+      })),
+    )
+
     await $fetch('/api/reimbursement', {
       method: 'POST',
       body: {
         projectNum: form.projectNum,
         additionalInfo: form.additionalInfo,
         totalExpenses: receiptTotal.value,
-        items: form.items.map(i => ({
-          receiptDate: i.receiptDate,
-          description: i.description,
-          receiptTotal: i.receiptTotal,
-          vendorID: i.vendorID,
-        })),
+        items,
       },
     })
     await navigateTo('/orders/student')

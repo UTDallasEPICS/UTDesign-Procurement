@@ -1,3 +1,4 @@
+import { ROLES } from '~/shared/constants/roles'
 import { prisma } from '~/server/utils/prisma'
 
 /**
@@ -19,7 +20,7 @@ export default defineEventHandler(async event => {
       student: { select: { firstName: true, lastName: true, email: true, netID: true } },
     }
 
-    if (role === 'ADMIN') {
+    if (role === ROLES.ADMIN) {
       const reimbursements = await prisma.reimbursement.findMany({
         where: { process: { status: 'APPROVED' } },
         include,
@@ -28,7 +29,7 @@ export default defineEventHandler(async event => {
       return { userRole: role, reimbursements }
     }
 
-    if (role === 'MENTOR') {
+    if (role === ROLES.MENTOR) {
       const worksOn = await prisma.worksOn.findMany({
         where: { userID: user.id, endDate: null },
         select: { projectID: true },

@@ -5,7 +5,11 @@
         <h3 class="text-lg font-bold text-[#1A1A1A]">Add User</h3>
         <UInput v-model="form.firstName" placeholder="First Name *" />
         <UInput v-model="form.lastName" placeholder="Last Name *" />
-        <UInput v-model="form.email" type="email" placeholder="UTD Email * (abc123456@utdallas.edu)" />
+        <UInput
+          v-model="form.email"
+          type="email"
+          :placeholder="form.role === 'MENTOR' ? 'Email * (any address)' : 'UTD Email * (abc123456@utdallas.edu)'"
+        />
         <USelect
           v-model="form.role"
           :items="roles"

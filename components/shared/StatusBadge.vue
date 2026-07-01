@@ -8,14 +8,14 @@
 const props = defineProps<{ status: string }>()
 
 const STATUS_MAP: Record<string, { bg: string; color: string; label: string }> = {
-  UNDER_REVIEW: { bg: '#FFF3E0', color: '#E87722', label: 'Under Review' },
-  APPROVED:     { bg: '#E8F5E9', color: '#154734', label: 'Approved' },
-  REJECTED:     { bg: '#FFEBEE', color: '#C62828', label: 'Rejected' },
-  ORDERED:      { bg: '#E3F2FD', color: '#1565C0', label: 'Ordered' },
-  RECEIVED:     { bg: '#E0F2F1', color: '#00695C', label: 'Received' },
-  PROCESSED:    { bg: '#F3E5F5', color: '#6A1B9A', label: 'Processed' },
-  DRAFT:        { bg: '#F5F5F5', color: '#5A5A5A', label: 'Draft' },
-  CANCELLED:    { bg: '#ECEFF1', color: '#455A64', label: 'Cancelled' },
+  UNDER_REVIEW:      { bg: '#FFF3E0', color: '#E87722', label: 'Under Review' },
+  CHANGES_REQUESTED: { bg: '#FFF8E1', color: '#F9A825', label: 'Changes Requested' },
+  APPROVED:          { bg: '#E8F5E9', color: '#154734', label: 'Approved' },
+  REJECTED:          { bg: '#FFEBEE', color: '#C62828', label: 'Rejected' },
+  ORDERED:           { bg: '#E3F2FD', color: '#1565C0', label: 'Ordered' },
+  RECEIVED:          { bg: '#E0F2F1', color: '#00695C', label: 'Received' },
+  PROCESSED:         { bg: '#F3E5F5', color: '#6A1B9A', label: 'Processed' },
+  CANCELLED:         { bg: '#ECEFF1', color: '#455A64', label: 'Cancelled' },
 }
 
 const config = computed(() => STATUS_MAP[props.status] ?? { bg: '#F5F5F5', color: '#5A5A5A', label: props.status })

@@ -17,6 +17,7 @@
           :request="req"
           user-role="STUDENT"
           @cancel="cancelRequest(req)"
+          @request-tracking="requestTracking(req)"
         />
       </div>
     </div>
@@ -33,6 +34,8 @@
           :key="r.reimbursementID"
           :reimbursement="r"
           user-role="STUDENT"
+          @cancel="cancelReimbursement(r)"
+          @resubmit="resubmitReimbursement(r)"
         />
       </div>
     </div>
@@ -56,6 +59,21 @@ const reimbursements = computed(() => reimbData.value?.reimbursements ?? [])
 
 async function cancelRequest(req: { process: { processID: number } }) {
   await $fetch('/api/process/update', { method: 'POST', body: { processID: req.process.processID, status: 'CANCELLED' } })
+  refresh()
+}
+
+async function cancelReimbursement(r: { process: { processID: number } }) {
+  await $fetch('/api/process/update', { method: 'POST', body: { processID: r.process.processID, status: 'CANCELLED' } })
+  reimbRefresh()
+}
+
+async function resubmitReimbursement(r: { process: { processID: number } }) {
+  await $fetch('/api/process/update', { method: 'POST', body: { processID: r.process.processID, status: 'UNDER_REVIEW' } })
+  reimbRefresh()
+}
+
+async function requestTracking(req: { requestID: number }) {
+  await $fetch('/api/request/tracking-request', { method: 'POST', body: { requestID: req.requestID } })
   refresh()
 }
 </script>

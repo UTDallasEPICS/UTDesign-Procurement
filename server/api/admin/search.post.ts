@@ -1,8 +1,9 @@
+import { ROLES } from '~/shared/constants/roles'
 import { prisma } from '~/server/utils/prisma'
 
 /** POST /api/admin/search — search users or projects */
 export default defineEventHandler(async event => {
-  if (event.context.role !== 'ADMIN') throw createError({ statusCode: 403, message: 'Admin only' })
+  if (event.context.role !== ROLES.ADMIN) throw createError({ statusCode: 403, message: 'Admin only' })
 
   try {
     const { type, query } = await readBody(event)

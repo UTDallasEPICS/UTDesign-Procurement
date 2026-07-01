@@ -18,11 +18,16 @@
             <h2 class="text-lg font-bold">{{ project.projectTitle }}</h2>
             <span class="text-xs text-white/70">{{ project.projectType }} &mdash; {{ project.sponsorCompany }}</span>
           </div>
-          <BudgetDisplay
-            class="scale-90 origin-right"
-            :starting-budget="project.startingBudget"
-            :used="project.totalExpenses"
-          />
+          <div class="flex items-center gap-3">
+            <BudgetDisplay
+              class="scale-90 origin-right"
+              :starting-budget="project.startingBudget"
+              :used="project.totalExpenses"
+            />
+            <NuxtLink :to="`/projects/${project.projectNum}`">
+              <UButton size="sm" variant="outline" class="border-white text-white">View Details</UButton>
+            </NuxtLink>
+          </div>
         </div>
 
         <!-- Team Members -->

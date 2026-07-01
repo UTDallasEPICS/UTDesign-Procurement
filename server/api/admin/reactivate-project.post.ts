@@ -1,7 +1,8 @@
+import { ROLES } from '~/shared/constants/roles'
 import { prisma } from '~/server/utils/prisma'
 
 export default defineEventHandler(async event => {
-  if (event.context.role !== 'ADMIN') throw createError({ statusCode: 403, message: 'Admin only' })
+  if (event.context.role !== ROLES.ADMIN) throw createError({ statusCode: 403, message: 'Admin only' })
   try {
     const { projectID } = await readBody(event)
     await prisma.project.update({

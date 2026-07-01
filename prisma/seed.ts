@@ -98,9 +98,10 @@ async function main() {
   console.log(`Projects: ${project1.projectNum}, ${project2.projectNum}`)
 
   // ── Vendors ────────────────────────────────────────────────────────────────
-  await prisma.vendor.upsert({ where: { vendorID: 1 }, update: {}, create: { vendorName: 'Digi-Key Electronics', vendorStatus: 'APPROVED', vendorURL: 'https://www.digikey.com' } })
-  await prisma.vendor.upsert({ where: { vendorID: 2 }, update: {}, create: { vendorName: 'McMaster-Carr',        vendorStatus: 'APPROVED', vendorURL: 'https://www.mcmaster.com' } })
-  await prisma.vendor.upsert({ where: { vendorID: 3 }, update: {}, create: { vendorName: 'Unknown Supplier',     vendorStatus: 'PENDING',  vendorURL: 'https://default.com' } })
+  await prisma.vendor.upsert({ where: { vendorID: 1 }, update: { isPreferred: true }, create: { vendorName: 'Digi-Key Electronics', vendorStatus: 'APPROVED', vendorURL: 'https://www.digikey.com', isPreferred: true } })
+  await prisma.vendor.upsert({ where: { vendorID: 2 }, update: { isPreferred: true }, create: { vendorName: 'McMaster-Carr',        vendorStatus: 'APPROVED', vendorURL: 'https://www.mcmaster.com', isPreferred: true } })
+  await prisma.vendor.upsert({ where: { vendorID: 3 }, update: {},                    create: { vendorName: 'Unknown Supplier',     vendorStatus: 'PENDING',  vendorURL: 'https://default.com' } })
+  await prisma.vendor.upsert({ where: { vendorID: 4 }, update: {},                    create: { vendorName: 'Generic Web Store',    vendorStatus: 'APPROVED', vendorURL: 'https://example.com' } })
   console.log('Vendors seeded.')
 
   // ── WorksOn ────────────────────────────────────────────────────────────────

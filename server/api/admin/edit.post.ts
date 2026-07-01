@@ -1,8 +1,9 @@
+import { ROLES } from '~/shared/constants/roles'
 import { prisma } from '~/server/utils/prisma'
 
 /** POST /api/admin/edit — edit a field on user, project, or vendor */
 export default defineEventHandler(async event => {
-  if (event.context.role !== 'ADMIN') throw createError({ statusCode: 403, message: 'Admin only' })
+  if (event.context.role !== ROLES.ADMIN) throw createError({ statusCode: 403, message: 'Admin only' })
 
   try {
     const { type, id, field, value } = await readBody(event)
