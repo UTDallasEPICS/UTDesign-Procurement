@@ -34,6 +34,14 @@
         >
           Assign to Project
         </UButton>
+        <UButton
+          v-if="selectedUser"
+          variant="outline"
+          class="border-red-700 text-red-700"
+          @click="deleteUserOpen = true"
+        >
+          Delete
+        </UButton>
       </div>
 
       <div class="bg-white border border-[#D9D9D9] rounded-xl overflow-hidden">
@@ -78,16 +86,79 @@
     </div>
 
     <!-- Vendors Tab -->
-    <div v-if="activeTab === 2">
+    <div v-if="activeTab === 2" class="space-y-3">
+      <div class="flex gap-2">
+        <UButton
+          v-if="selectedVendor"
+          variant="outline"
+          class="border-red-700 text-red-700"
+          @click="deleteVendorOpen = true"
+        >
+          Delete
+        </UButton>
+      </div>
+      <div v-if="vendorError" class="text-sm text-red-600 bg-red-50 border border-red-200 rounded px-3 py-2">
+        {{ vendorError }}
+      </div>
       <div class="bg-white border border-[#D9D9D9] rounded-xl overflow-hidden">
         <div style="height: 400px" class="ag-theme-alpine w-full">
           <AgGridVue
             :row-data="vendors"
             :column-defs="vendorColumns"
             :default-col-def="{ resizable: true, sortable: true, filter: true }"
+            row-selection="single"
+            @selection-changed="onVendorSelect"
             @cell-value-changed="onVendorEdit"
           />
         </div>
+      </div>
+    </div>
+
+    <!-- Import Tab -->
+    <div v-if="activeTab === 3" class="space-y-6 max-w-2xl">
+      <!-- Step 1: Projects -->
+      <div class="bg-white border border-[#D9D9D9] rounded-xl p-6 space-y-3">
+        <h2 class="font-bold text-[#1A1A1A]">Step 1 — Import Projects</h2>
+        <p class="text-sm text-[#5A5A5A]">
+          Columns: <code>projectNum, projectTitle, projectType, startingBudget, sponsorCompany</code>
+          (optional: <code>costCenter, additionalInfo, mentorName, mentorEmail</code>).
+          Existing project numbers are skipped.
+        </p>
+        <DragAndDrop v-model="projectFile" accept=".xlsx,.xls" label="Projects spreadsheet (.xlsx)" />
+        <UButton
+          class="bg-[#154734] text-white"
+          :disabled="!projectFile"
+          :loading="importingProjects"
+          @click="importProjects"
+        >
+          Import Projects
+        </UButton>
+        <ImportResults v-if="projectImportResult" :result="projectImportResult" />
+      </div>
+
+      <!-- Step 2: Students -->
+      <div class="bg-white border border-[#D9D9D9] rounded-xl p-6 space-y-3">
+        <h2 class="font-bold text-[#1A1A1A]">Step 2 — Import Students</h2>
+        <div
+          v-if="!projects.length"
+          class="text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded px-3 py-2"
+        >
+          ⚠ No projects exist yet. Import projects first — student rows referencing unknown project numbers will be rejected.
+        </div>
+        <p class="text-sm text-[#5A5A5A]">
+          Columns: <code>firstName, lastName, email, projectNum</code>.
+          Students must use @utdallas.edu emails and reference an existing project number.
+        </p>
+        <DragAndDrop v-model="studentFile" accept=".xlsx,.xls" label="Students spreadsheet (.xlsx)" />
+        <UButton
+          class="bg-[#154734] text-white"
+          :disabled="!studentFile"
+          :loading="importingStudents"
+          @click="importStudents"
+        >
+          Import Students
+        </UButton>
+        <ImportResults v-if="studentImportResult" :result="studentImportResult" />
       </div>
     </div>
 
@@ -104,6 +175,16 @@
       :name="selectedProject?.projectTitle ?? ''"
       @confirm="deactivateProject"
     />
+    <DeactivateModal
+      v-model:open="deleteUserOpen"
+      :name="selectedUser ? `${selectedUser.firstName} ${selectedUser.lastName} (permanent delete)` : ''"
+      @confirm="deleteUser"
+    />
+    <DeactivateModal
+      v-model:open="deleteVendorOpen"
+      :name="selectedVendor ? `${selectedVendor.vendorName} (permanent delete)` : ''"
+      @confirm="deleteVendor"
+    />
     <AssignProjectModal
       v-model:open="assignOpen"
       :user="selectedUser"
@@ -116,13 +197,14 @@
 import { AgGridVue } from 'ag-grid-vue3'
 import 'ag-grid-community/styles/ag-grid.css'
 import 'ag-grid-community/styles/ag-theme-alpine.css'
+import ImportResults from '~/components/shared/ImportResults.vue'
 
 definePageMeta({ middleware: 'auth' })
 
 const { isAdmin } = useAuth()
 if (!isAdmin.value) await navigateTo('/orders')
 
-const tabs = [{ label: 'Users' }, { label: 'Projects' }, { label: 'Vendors' }]
+const tabs = [{ label: 'Users' }, { label: 'Projects' }, { label: 'Vendors' }, { label: 'Import' }]
 const activeTab = ref(0)
 
 // ── Users ──────────────────────────────────────────────────────────────────
@@ -176,8 +258,10 @@ async function onProjectEdit(e: { data: { projectID: number }; colDef: { field: 
 }
 
 // ── Vendors ────────────────────────────────────────────────────────────────
-const { data: vendorData } = await useFetch('/api/vendor/all')
+const { data: vendorData, refresh: refreshVendors } = await useFetch('/api/vendor/all')
 const vendors = computed(() => vendorData.value ?? [])
+const selectedVendor = ref<{ vendorID: number; vendorName: string } | null>(null)
+const vendorError = ref('')
 
 const vendorColumns = [
   { field: 'vendorName', headerName: 'Vendor Name', editable: true },
@@ -186,9 +270,19 @@ const vendorColumns = [
     cellEditor: 'agSelectCellEditor',
     cellEditorParams: { values: ['APPROVED', 'PENDING', 'DENIED'] },
   },
+  {
+    field: 'isPreferred', headerName: 'Preferred', editable: true,
+    cellEditor: 'agSelectCellEditor',
+    cellEditorParams: { values: [true, false] },
+    valueFormatter: (p: { value: boolean }) => p.value ? 'Yes ★' : 'No',
+  },
   { field: 'vendorEmail', headerName: 'Email', editable: true },
   { field: 'vendorURL', headerName: 'URL', editable: true },
 ]
+
+function onVendorSelect(e: { api: { getSelectedRows: () => typeof selectedVendor.value[] } }) {
+  selectedVendor.value = e.api.getSelectedRows()[0] ?? null
+}
 
 async function onVendorEdit(e: { data: { vendorID: number }; colDef: { field: string }; newValue: unknown }) {
   if (e.colDef.field === 'vendorStatus') {
@@ -204,11 +298,27 @@ async function onVendorEdit(e: { data: { vendorID: number }; colDef: { field: st
   }
 }
 
-// ── Deactivate / Reactivate ────────────────────────────────────────────────
+async function deleteVendor() {
+  vendorError.value = ''
+  try {
+    await $fetch('/api/admin/delete', {
+      method: 'POST',
+      body: { type: 'vendor', id: selectedVendor.value!.vendorID },
+    })
+    selectedVendor.value = null
+    refreshVendors()
+  } catch (e: unknown) {
+    vendorError.value = (e as { data?: { message?: string } })?.data?.message ?? 'Failed to delete vendor.'
+  }
+}
+
+// ── Deactivate / Reactivate / Delete ───────────────────────────────────────
 const addUserOpen = ref(false)
 const addProjectOpen = ref(false)
 const deactivateOpen = ref(false)
 const deactivateProjectOpen = ref(false)
+const deleteUserOpen = ref(false)
+const deleteVendorOpen = ref(false)
 const assignOpen = ref(false)
 
 async function deactivateUser() {
@@ -229,6 +339,15 @@ async function reactivateUser() {
   refreshUsers()
 }
 
+async function deleteUser() {
+  await $fetch('/api/admin/delete', {
+    method: 'POST',
+    body: { type: 'user', id: selectedUser.value!.id },
+  })
+  selectedUser.value = null
+  refreshUsers()
+}
+
 async function deactivateProject() {
   await $fetch('/api/admin/deactivate-project', {
     method: 'POST',
@@ -236,5 +355,70 @@ async function deactivateProject() {
   })
   selectedProject.value = null
   refreshProjects()
+}
+
+// ── Excel Import ───────────────────────────────────────────────────────────
+interface ImportResult {
+  total: number
+  created: number
+  skipped: number
+  errors: number
+  results: Array<{ row: number; status: string; detail: string; projectNum?: string; email?: string }>
+}
+
+const projectFile = ref<File | null>(null)
+const studentFile = ref<File | null>(null)
+const importingProjects = ref(false)
+const importingStudents = ref(false)
+const projectImportResult = ref<ImportResult | null>(null)
+const studentImportResult = ref<ImportResult | null>(null)
+
+function readFileAsDataURL(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(reader.result as string)
+    reader.onerror = reject
+    reader.readAsDataURL(file)
+  })
+}
+
+async function importProjects() {
+  if (!projectFile.value) return
+  importingProjects.value = true
+  projectImportResult.value = null
+  try {
+    projectImportResult.value = await $fetch<ImportResult>('/api/admin/import/projects', {
+      method: 'POST',
+      body: { fileData: await readFileAsDataURL(projectFile.value) },
+    })
+    refreshProjects()
+  } catch (e: unknown) {
+    projectImportResult.value = {
+      total: 0, created: 0, skipped: 0, errors: 1,
+      results: [{ row: 0, status: 'error', detail: (e as { data?: { message?: string } })?.data?.message ?? 'Import failed' }],
+    }
+  } finally {
+    importingProjects.value = false
+  }
+}
+
+async function importStudents() {
+  if (!studentFile.value) return
+  importingStudents.value = true
+  studentImportResult.value = null
+  try {
+    studentImportResult.value = await $fetch<ImportResult>('/api/admin/import/students', {
+      method: 'POST',
+      body: { fileData: await readFileAsDataURL(studentFile.value) },
+    })
+    refreshUsers()
+  } catch (e: unknown) {
+    studentImportResult.value = {
+      total: 0, created: 0, skipped: 0, errors: 1,
+      results: [{ row: 0, status: 'error', detail: (e as { data?: { message?: string } })?.data?.message ?? 'Import failed' }],
+    }
+  } finally {
+    importingStudents.value = false
+  }
 }
 </script>

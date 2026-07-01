@@ -29,15 +29,37 @@
       <span class="font-semibold">Rejection reason:</span> {{ reimbursement.process.mentorProcessedComments }}
     </div>
 
+    <!-- Change-request note (student view) -->
+    <template v-if="userRole === 'STUDENT' && reimbursement.process?.status === 'CHANGES_REQUESTED'">
+      <div v-if="reimbursement.process?.mentorProcessedComments" class="px-5 py-3 bg-amber-50 border-b border-amber-100 text-sm text-amber-800">
+        <span class="font-semibold">Changes requested:</span> {{ reimbursement.process.mentorProcessedComments }}
+      </div>
+      <div v-if="reimbursement.process?.adminProcessedComments" class="px-5 py-3 bg-amber-50 border-b border-amber-100 text-sm text-amber-800">
+        <span class="font-semibold">Admin comment:</span> {{ reimbursement.process.adminProcessedComments }}
+      </div>
+    </template>
+
     <!-- Expanded items -->
     <div v-if="expanded" class="px-5 py-3 space-y-2 border-b border-[#F0F0F0] bg-[#FAFAFA]">
       <div
         v-for="item in reimbursement.items"
         :key="item.itemID"
-        class="flex justify-between text-sm text-[#5A5A5A]"
+        class="text-sm text-[#5A5A5A]"
       >
-        <span>{{ item.description }} ({{ item.vendor?.vendorName }})</span>
-        <span>${{ item.receiptTotal.toFixed(2) }}</span>
+        <div class="flex justify-between">
+          <span>{{ item.description }} &times; {{ item.quantity }} ({{ item.vendor?.vendorName }})</span>
+          <span>${{ (item.quantity * item.unitPrice).toFixed(2) }}</span>
+        </div>
+        <div class="text-xs">
+          <template v-if="item.category">
+            {{ item.category }}<template v-if="item.otherCategoryDescription"> ({{ item.otherCategoryDescription }})</template> &bull;
+          </template>
+          Purchased {{ formatDate(item.receiptDate) }}
+          <template v-if="item.upload"> &bull; Receipt: {{ item.upload.attachmentName }}</template>
+        </div>
+        <div v-if="item.justification" class="text-xs italic mt-0.5">
+          Justification: {{ item.justification }}
+        </div>
       </div>
       <div class="text-right font-semibold text-sm text-[#1A1A1A]">
         Total: ${{ reimbursement.expense?.toFixed(2) }}
@@ -48,20 +70,43 @@
     </div>
 
     <!-- Actions -->
-    <div class="px-5 py-3 flex gap-2 border-t border-[#F0F0F0] bg-[#FAFAFA]">
+    <div class="px-5 py-3 flex gap-2 flex-wrap border-t border-[#F0F0F0] bg-[#FAFAFA]">
       <template v-if="userRole === 'ADMIN'">
         <UButton size="sm" class="bg-[#154734] text-white" @click="$emit('process', reimbursement)">Mark as Processed</UButton>
+        <UButton size="sm" variant="outline" class="border-amber-500 text-amber-600" @click="$emit('request-changes', reimbursement)">Request Changes</UButton>
         <UButton size="sm" variant="outline" class="border-red-500 text-red-500" @click="$emit('reject', reimbursement)">Reject</UButton>
       </template>
       <template v-else-if="userRole === 'MENTOR'">
         <UButton size="sm" class="bg-[#154734] text-white" @click="$emit('approve', reimbursement)">Approve</UButton>
+        <UButton size="sm" variant="outline" class="border-amber-500 text-amber-600" @click="$emit('request-changes', reimbursement)">Request Changes</UButton>
         <UButton size="sm" variant="outline" class="border-red-500 text-red-500" @click="$emit('reject', reimbursement)">Reject</UButton>
+      </template>
+      <template v-else>
+        <UButton
+          v-if="reimbursement.process?.status === 'UNDER_REVIEW'"
+          size="sm"
+          variant="outline"
+          class="border-red-500 text-red-500"
+          @click="$emit('cancel', reimbursement)"
+        >
+          Cancel
+        </UButton>
+        <UButton
+          v-if="reimbursement.process?.status === 'REJECTED' || reimbursement.process?.status === 'CHANGES_REQUESTED'"
+          size="sm"
+          class="bg-[#E87722] text-white"
+          @click="$emit('resubmit', reimbursement)"
+        >
+          Resubmit
+        </UButton>
       </template>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import type { Role } from '~/shared/constants/roles'
+
 defineProps<{
   reimbursement: {
     reimbursementID: number
@@ -73,18 +118,25 @@ defineProps<{
     process?: {
       status: string
       mentorProcessedComments?: string | null
+      adminProcessedComments?: string | null
     }
     items?: Array<{
       itemID: number
       description: string
-      receiptTotal: number
+      receiptDate: string
+      quantity: number
+      unitPrice: number
+      category?: string
+      otherCategoryDescription?: string | null
+      justification?: string | null
       vendor?: { vendorName: string }
+      upload?: { attachmentName: string } | null
     }>
   }
-  userRole: 'ADMIN' | 'MENTOR' | 'STUDENT'
+  userRole: Role
 }>()
 
-defineEmits(['approve', 'reject', 'process'])
+defineEmits(['approve', 'reject', 'process', 'cancel', 'request-changes', 'resubmit'])
 
 const expanded = ref(false)
 

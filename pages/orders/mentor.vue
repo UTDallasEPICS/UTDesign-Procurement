@@ -15,7 +15,8 @@
           :request="req"
           user-role="MENTOR"
           @approve="approveRequest(req)"
-          @reject="openReject(req, 'request')"
+          @reject="openModal(req, 'request', 'REJECTED')"
+          @request-changes="openModal(req, 'request', 'CHANGES_REQUESTED')"
         />
       </div>
     </div>
@@ -31,12 +32,23 @@
           :reimbursement="r"
           user-role="MENTOR"
           @approve="approveReimbursement(r)"
-          @reject="openReject(r, 'reimbursement')"
+          @reject="openModal(r, 'reimbursement', 'REJECTED')"
+          @request-changes="openModal(r, 'reimbursement', 'CHANGES_REQUESTED')"
         />
       </div>
     </div>
 
-    <RejectionModal v-model:open="rejectOpen" @confirm="submitRejection" />
+    <RejectionModal
+      v-model:open="modalOpen"
+      :title="modalStatus === 'REJECTED' ? 'Reject Request' : 'Request Changes'"
+      :description="modalStatus === 'REJECTED'
+        ? 'Please provide a reason for rejection. The student will see this comment.'
+        : 'Describe the changes needed. The student will see this note and can edit and resubmit.'"
+      :placeholder="modalStatus === 'REJECTED' ? 'Enter rejection reason...' : 'Describe the requested changes...'"
+      :confirm-label="modalStatus === 'REJECTED' ? 'Reject' : 'Request Changes'"
+      :confirm-class="modalStatus === 'REJECTED' ? 'bg-red-600 hover:bg-red-700 text-white' : 'bg-amber-500 hover:bg-amber-600 text-white'"
+      @confirm="submitModal"
+    />
   </div>
 </template>
 
@@ -55,14 +67,16 @@ const requests = computed(() => reqData.value?.requests ?? [])
 const { data: reimbData, pending: reimbPending, refresh: reimbRefresh } = await useFetch('/api/reimbursement/get', { method: 'POST', body: {} })
 const reimbursements = computed(() => reimbData.value?.reimbursements ?? [])
 
-const rejectOpen = ref(false)
-const rejectTarget = ref<{ process: { processID: number } } | null>(null)
-const rejectType = ref<'request' | 'reimbursement'>('request')
+const modalOpen = ref(false)
+const modalTarget = ref<{ process: { processID: number } } | null>(null)
+const modalType = ref<'request' | 'reimbursement'>('request')
+const modalStatus = ref<'REJECTED' | 'CHANGES_REQUESTED'>('REJECTED')
 
-function openReject(item: typeof rejectTarget.value, type: 'request' | 'reimbursement') {
-  rejectTarget.value = item
-  rejectType.value = type
-  rejectOpen.value = true
+function openModal(item: typeof modalTarget.value, type: 'request' | 'reimbursement', status: 'REJECTED' | 'CHANGES_REQUESTED') {
+  modalTarget.value = item
+  modalType.value = type
+  modalStatus.value = status
+  modalOpen.value = true
 }
 
 async function approveRequest(req: { process: { processID: number } }) {
@@ -75,8 +89,11 @@ async function approveReimbursement(r: { process: { processID: number } }) {
   reimbRefresh()
 }
 
-async function submitRejection(comment: string) {
-  await $fetch('/api/process/update', { method: 'POST', body: { processID: rejectTarget.value!.process.processID, status: 'REJECTED', comment } })
-  rejectType.value === 'request' ? refresh() : reimbRefresh()
+async function submitModal(comment: string) {
+  await $fetch('/api/process/update', {
+    method: 'POST',
+    body: { processID: modalTarget.value!.process.processID, status: modalStatus.value, comment },
+  })
+  modalType.value === 'request' ? refresh() : reimbRefresh()
 }
 </script>

@@ -1,3 +1,4 @@
+import { ROLES } from '~/shared/constants/roles'
 import nodemailer from 'nodemailer'
 import type { PrismaClient } from '@prisma/client'
 
@@ -38,7 +39,7 @@ export async function sendEmailToAdmins(
   attachmentPath?: string,
 ): Promise<void> {
   const admins = await db.user.findMany({
-    where: { role: 'ADMIN', active: true },
+    where: { role: ROLES.ADMIN, active: true },
     select: { email: true },
   })
 
@@ -88,11 +89,28 @@ export function templateRequestRejected(projectTitle: string, comment?: string):
   `)
 }
 
+export function templateRequestChangesRequested(projectTitle: string, comment?: string): string {
+  return baseTemplate(`
+    <p>Changes have been requested on your procurement request for <strong>${projectTitle}</strong>.</p>
+    ${comment ? `<p><strong>Requested changes:</strong> ${comment}</p>` : ''}
+    <p>You may log in to edit and resubmit your request.</p>
+  `)
+}
+
 export function templateRequestOrdered(projectTitle: string, orderNumber?: string): string {
   return baseTemplate(`
     <p>Your procurement request for <strong>${projectTitle}</strong> has been <span style="color:#1565C0;font-weight:bold;">ordered</span>.</p>
     ${orderNumber ? `<p><strong>Order Number:</strong> ${orderNumber}</p>` : ''}
     <p>You will be notified when your items are received.</p>
+  `)
+}
+
+export function templateTrackingRequested(projectTitle: string, studentName: string, requestID: number): string {
+  return baseTemplate(`
+    <p><strong>${studentName}</strong> has requested tracking information for an ordered procurement request.</p>
+    <p><strong>Project:</strong> ${projectTitle}</p>
+    <p><strong>Request:</strong> #${requestID}</p>
+    <p>Please log in and add tracking information to the order.</p>
   `)
 }
 
@@ -115,6 +133,14 @@ export function templateReimbursementRejected(projectTitle: string, comment?: st
   return baseTemplate(`
     <p>Your reimbursement request for <strong>${projectTitle}</strong> has been <span style="color:#C62828;font-weight:bold;">rejected</span>.</p>
     ${comment ? `<p><strong>Reason:</strong> ${comment}</p>` : ''}
+    <p>You may log in to edit and resubmit your request.</p>
+  `)
+}
+
+export function templateReimbursementChangesRequested(projectTitle: string, comment?: string): string {
+  return baseTemplate(`
+    <p>Changes have been requested on your reimbursement request for <strong>${projectTitle}</strong>.</p>
+    ${comment ? `<p><strong>Requested changes:</strong> ${comment}</p>` : ''}
     <p>You may log in to edit and resubmit your request.</p>
   `)
 }

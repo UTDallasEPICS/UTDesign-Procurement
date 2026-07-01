@@ -1,16 +1,21 @@
+import type { ProcessStatus } from '@prisma/client'
 import { prisma } from '~/server/utils/prisma'
-import { removeExpenseFromProject } from '~/server/utils/budget'
+import { addExpenseToProject, removeExpenseFromProject } from '~/server/utils/budget'
+import { isTransitionAllowed, COMMENT_REQUIRED_STATUSES, type OrderKind } from '~/server/utils/statusTransitions'
+import { ROLES } from '~/shared/constants/roles'
 import {
   sendEmail,
   templateRequestApproved,
   templateRequestRejected,
+  templateRequestChangesRequested,
   templateRequestOrdered,
   templateReimbursementApproved,
   templateReimbursementRejected,
+  templateReimbursementChangesRequested,
   templateReimbursementProcessed,
 } from '~/server/utils/email'
 
-/** POST /api/process/update — role-based status updates (approve, reject, cancel, process) */
+/** POST /api/process/update — role-based status transitions (approve, reject, request changes, cancel, resubmit) */
 export default defineEventHandler(async event => {
   try {
     const { processID, status, comment } = await readBody(event)
@@ -27,35 +32,67 @@ export default defineEventHandler(async event => {
     if (!process) throw createError({ statusCode: 404, message: 'Process not found' })
 
     const isRequest = !!process.request
+    const kind: OrderKind = isRequest ? 'request' : 'reimbursement'
     const linked = process.request ?? process.reimbursement
     if (!linked) throw createError({ statusCode: 400, message: 'No linked request or reimbursement' })
+
+    const newStatus = status as ProcessStatus
+    if (!isTransitionAllowed(role, kind, process.status, newStatus)) {
+      throw createError({
+        statusCode: 403,
+        message: `Cannot transition from ${process.status} to ${status} as ${role}`,
+      })
+    }
+    if (COMMENT_REQUIRED_STATUSES.includes(newStatus) && !comment?.trim()) {
+      throw createError({ statusCode: 400, message: 'A comment is required for this action' })
+    }
+
+    // Students may only act on their own orders
+    if (role === ROLES.STUDENT && linked.studentID !== user.id) {
+      throw createError({ statusCode: 403, message: 'Not your order' })
+    }
+
+    // Mentors may only act on orders for projects they are assigned to
+    if (role === ROLES.MENTOR) {
+      const membership = await prisma.worksOn.findFirst({
+        where: { userID: user.id, projectID: linked.projectID, endDate: null },
+      })
+      if (!membership) throw createError({ statusCode: 403, message: 'Not a mentor on this project' })
+    }
 
     const project = linked.project
     const student = linked.student
 
-    if (role === 'ADMIN') {
+    if (role === ROLES.ADMIN) {
       await prisma.process.update({
         where: { processID },
-        data: { status, adminProcessed: new Date(), adminProcessedComments: comment ?? null, adminID: user.id },
+        data: { status: newStatus, adminProcessed: new Date(), adminProcessedComments: comment ?? null, adminID: user.id },
       })
 
-      if (status === 'REJECTED') {
+      if (newStatus === 'REJECTED') {
         await removeExpenseFromProject(prisma, project.projectID, linked.expense)
-        await sendEmail(student.email, `Request Rejected by Admin – ${project.projectTitle}`, templateRequestRejected(project.projectTitle, comment)).catch(() => {})
+        await sendEmail(student.email, `Request Rejected by Admin – ${project.projectTitle}`, isRequest ? templateRequestRejected(project.projectTitle, comment) : templateReimbursementRejected(project.projectTitle, comment)).catch(() => {})
       }
-      if (status === 'ORDERED' && isRequest) {
+      if (newStatus === 'CHANGES_REQUESTED') {
+        await sendEmail(student.email, `Changes Requested – ${project.projectTitle}`, isRequest ? templateRequestChangesRequested(project.projectTitle, comment) : templateReimbursementChangesRequested(project.projectTitle, comment)).catch(() => {})
+      }
+      if (newStatus === 'ORDERED' && isRequest) {
+        await prisma.request.update({ where: { requestID: process.request!.requestID }, data: { dateOrdered: new Date() } })
         await sendEmail(student.email, `Your Request Has Been Ordered – ${project.projectTitle}`, templateRequestOrdered(project.projectTitle)).catch(() => {})
       }
-      if (status === 'PROCESSED' && !isRequest) {
+      if (newStatus === 'RECEIVED' && isRequest) {
+        await prisma.request.update({ where: { requestID: process.request!.requestID }, data: { dateReceived: new Date() } })
+      }
+      if (newStatus === 'PROCESSED' && !isRequest) {
         await sendEmail(student.email, `Your Reimbursement Has Been Processed`, templateReimbursementProcessed(project.projectTitle)).catch(() => {})
       }
-    } else if (role === 'MENTOR') {
+    } else if (role === ROLES.MENTOR) {
       await prisma.process.update({
         where: { processID },
-        data: { status, mentorProcessed: new Date(), mentorProcessedComments: comment ?? null, mentorID: user.id },
+        data: { status: newStatus, mentorProcessed: new Date(), mentorProcessedComments: comment ?? null, mentorID: user.id },
       })
 
-      if (status === 'APPROVED') {
+      if (newStatus === 'APPROVED') {
         if (isRequest) {
           await prisma.request.update({ where: { requestID: process.request!.requestID }, data: { dateApproved: new Date() } })
           await sendEmail(student.email, `Your Request Was Approved – ${project.projectTitle}`, templateRequestApproved(project.projectTitle, comment)).catch(() => {})
@@ -63,7 +100,7 @@ export default defineEventHandler(async event => {
           await sendEmail(student.email, `Your Reimbursement Was Approved`, templateReimbursementApproved(project.projectTitle)).catch(() => {})
         }
       }
-      if (status === 'REJECTED') {
+      if (newStatus === 'REJECTED') {
         await removeExpenseFromProject(prisma, project.projectID, linked.expense)
         if (isRequest) {
           await sendEmail(student.email, `Your Request Was Rejected – ${project.projectTitle}`, templateRequestRejected(project.projectTitle, comment)).catch(() => {})
@@ -71,11 +108,20 @@ export default defineEventHandler(async event => {
           await sendEmail(student.email, `Your Reimbursement Was Rejected`, templateReimbursementRejected(project.projectTitle, comment)).catch(() => {})
         }
       }
-    } else if (role === 'STUDENT') {
-      if (!['CANCELLED', 'UNDER_REVIEW'].includes(status)) {
-        throw createError({ statusCode: 403, message: 'Students can only cancel or resubmit' })
+      if (newStatus === 'CHANGES_REQUESTED') {
+        await sendEmail(student.email, `Changes Requested – ${project.projectTitle}`, isRequest ? templateRequestChangesRequested(project.projectTitle, comment) : templateReimbursementChangesRequested(project.projectTitle, comment)).catch(() => {})
       }
-      await prisma.process.update({ where: { processID }, data: { status } })
+    } else {
+      // STUDENT: cancel or resubmit
+      await prisma.process.update({ where: { processID }, data: { status: newStatus } })
+
+      if (newStatus === 'CANCELLED') {
+        await removeExpenseFromProject(prisma, project.projectID, linked.expense)
+      }
+      // Resubmitting a rejected order restores its expense (rejection removed it; changes-requested did not)
+      if (newStatus === 'UNDER_REVIEW' && process.status === 'REJECTED') {
+        await addExpenseToProject(prisma, project.projectID, linked.expense)
+      }
     }
 
     return { ok: true }

@@ -20,12 +20,12 @@
         <div class="bg-white rounded-xl shadow-2xl overflow-hidden">
           <div class="px-8 py-6 border-b border-[#E8E8E8]">
             <h2 class="text-lg font-bold text-[#154734]">Sign In</h2>
-            <p class="text-sm text-[#5A5A5A] mt-0.5">Use your UTD NetID and password</p>
+            <p class="text-sm text-[#5A5A5A] mt-0.5">UTD students &amp; staff: use your UTD email. External mentors: use the email your admin registered.</p>
           </div>
 
           <form class="px-8 py-6 space-y-4" @submit.prevent="handleLogin">
             <div>
-              <label class="block text-sm font-semibold text-[#1A1A1A] mb-1.5">UTD Email</label>
+              <label class="block text-sm font-semibold text-[#1A1A1A] mb-1.5">Email</label>
               <UInput
                 v-model="email"
                 type="email"
@@ -89,10 +89,10 @@ const loading = ref(false)
 async function handleLogin() {
   error.value = ''
 
-  // Basic UTD email format check
-  const utdEmailRe = /^[a-zA-Z]{3}\d{6}@utdallas\.edu$/
-  if (!utdEmailRe.test(email.value.trim())) {
-    error.value = 'Please enter a valid UTD email (e.g. abc123456@utdallas.edu)'
+  // Students/admins use UTD emails; external mentors may use any valid email
+  const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  if (!emailRe.test(email.value.trim())) {
+    error.value = 'Please enter a valid email address'
     return
   }
 

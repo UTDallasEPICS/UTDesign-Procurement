@@ -1,9 +1,10 @@
+import { ROLES } from '~/shared/constants/roles'
 import { prisma } from '~/server/utils/prisma'
 import { recalcProjectExpenses } from '~/server/utils/budget'
 
 /** POST /api/request/update — admin edits request items, orders, and process status */
 export default defineEventHandler(async event => {
-  if (event.context.role !== 'ADMIN') throw createError({ statusCode: 403, message: 'Admin only' })
+  if (event.context.role !== ROLES.ADMIN) throw createError({ statusCode: 403, message: 'Admin only' })
 
   try {
     const { requestID, projectID, items, orders, processID, status } = await readBody(event)
@@ -12,15 +13,17 @@ export default defineEventHandler(async event => {
     await prisma.$transaction(async tx => {
       if (items?.length) {
         await Promise.all(
-          items.map((item: { itemID: number; description: string; url: string; partNumber: string; quantity: number; unitPrice: number; vendorID: number }) =>
+          items.map((item: { itemID: number; description: string; justification?: string; url: string; partNumber: string; quantity: number; unitPrice: number; category?: string; otherCategoryDescription?: string | null; vendorID: number }) =>
             tx.requestItem.update({
               where: { itemID: item.itemID },
               data: {
                 description: item.description,
+                ...(item.justification ? { justification: item.justification } : {}),
                 url: item.url,
                 partNumber: item.partNumber,
                 quantity: Number(item.quantity),
                 unitPrice: Number(item.unitPrice),
+                ...(item.category ? { category: item.category, otherCategoryDescription: item.otherCategoryDescription ?? null } : {}),
                 vendorID: item.vendorID,
               },
             }),

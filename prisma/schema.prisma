@@ -16,6 +16,17 @@ enum UserRole {
   STUDENT
 }
 
+enum ProcessStatus {
+  UNDER_REVIEW
+  CHANGES_REQUESTED
+  APPROVED
+  ORDERED
+  RECEIVED
+  PROCESSED
+  REJECTED
+  CANCELLED
+}
+
 // ─── Core Models ──────────────────────────────────────────────────────────────
 
 model User {
@@ -128,6 +139,8 @@ model Request {
   dateApproved   DateTime?
   additionalInfo String?
   expense        Int       @default(0)
+  trackingRequested   Boolean   @default(false)
+  trackingRequestedAt DateTime?
 
   projectID  Int
   studentID  Int
@@ -145,13 +158,15 @@ model Request {
 }
 
 model RequestItem {
-  itemID      Int    @id @default(autoincrement())
-  description String
-  url         String
-  partNumber  String
-  quantity    Int
-  unitPrice   Float
-  status      String @default("UNDER_REVIEW") // Status enum
+  itemID                   Int     @id @default(autoincrement())
+  description              String
+  justification            String
+  url                      String
+  partNumber               String
+  quantity                 Int
+  unitPrice                Float
+  category                 String
+  otherCategoryDescription String?
 
   requestID Int
   vendorID  Int
@@ -188,10 +203,15 @@ model Reimbursement {
 }
 
 model ReimbursementItem {
-  itemID       Int      @id @default(autoincrement())
-  receiptDate  DateTime
-  description  String
-  receiptTotal Float
+  itemID                   Int      @id @default(autoincrement())
+  receiptDate              DateTime
+  description              String
+  unitPrice                Float
+  quantity                 Int      @default(1)
+  category                 String
+  otherCategoryDescription String?
+  justification            String? // required when category is Chemicals/Software or item has a vendor quote
+  url                      String?
 
   reimbursementID Int
   vendorID        Int
@@ -213,8 +233,8 @@ model ReimbursementUpload {
 // ─── Workflow Process ─────────────────────────────────────────────────────────
 
 model Process {
-  processID              Int       @id @default(autoincrement())
-  status                 String    @default("UNDER_REVIEW") // Status enum
+  processID              Int           @id @default(autoincrement())
+  status                 ProcessStatus @default(UNDER_REVIEW)
   mentorProcessed        DateTime?
   mentorProcessedComments String?
   adminProcessed         DateTime?
@@ -264,11 +284,12 @@ model OtherExpense {
 // ─── Vendors ──────────────────────────────────────────────────────────────────
 
 model Vendor {
-  vendorID     Int    @id @default(autoincrement())
+  vendorID     Int     @id @default(autoincrement())
   vendorName   String
-  vendorStatus String @default("PENDING") // APPROVED | PENDING | DENIED
+  vendorStatus String  @default("PENDING") // APPROVED | PENDING | DENIED
   vendorEmail  String?
-  vendorURL    String @default("https://default.com")
+  vendorURL    String  @default("https://default.com")
+  isPreferred  Boolean @default(false)
 
   requestItems      RequestItem[]
   reimbursementItems ReimbursementItem[]
