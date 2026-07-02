@@ -6,7 +6,7 @@
 
 ### Testing
 
-<!-- Provide proof that your code satsified the issue -->
+<!-- Provide proof that your code satisfied the issue -->
 
 ### Acceptance Criteria
 
