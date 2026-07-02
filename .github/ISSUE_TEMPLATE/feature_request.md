@@ -1,11 +1,3 @@
----
-name: Enhancement / DX Improvement
-about: Suggest an idea for this project
-title: 'DX/Feature: '
-labels: 'enhancement'
-assignees: ''
----
-
 ### Context / Problem
 
 [Provide context. Why is this an issue specifically for local development or in the context of an EPICS project? What problem does this solve?]
