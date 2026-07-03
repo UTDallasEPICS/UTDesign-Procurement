@@ -1,11 +1,11 @@
 <template>
-  <div class="min-h-screen flex flex-col bg-[#F4F4F4]">
+  <div class="min-h-screen flex flex-col text-slate-900">
     <NavBar />
-    <main class="flex-1 container mx-auto px-4 py-6">
+    <main class="flex-1 w-full max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
       <slot />
     </main>
-    <footer class="bg-[#154734] text-white/60 text-xs text-center py-3 border-t-2 border-[#E87722]">
-      UTDesign Procurement System &mdash; The University of Texas at Dallas
+    <footer class="border-t border-white/60 bg-white/50 text-center text-xs text-slate-500 py-4 backdrop-blur-sm">
+      UTDesign Procurement System for The University of Texas at Dallas
     </footer>
   </div>
 </template>

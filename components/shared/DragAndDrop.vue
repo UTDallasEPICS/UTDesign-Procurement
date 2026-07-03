@@ -1,7 +1,7 @@
 <template>
   <div
-    class="border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors"
-    :class="isDragging ? 'border-[#E87722] bg-orange-50' : 'border-[#D9D9D9] bg-white hover:border-[#E87722]'"
+    class="group cursor-pointer rounded-3xl border-2 border-dashed p-6 text-center transition-all duration-200"
+    :class="isDragging ? 'border-[#d86e18] bg-orange-50 shadow-lg shadow-orange-100' : 'border-slate-300 bg-white/90 hover:border-[#d86e18] hover:bg-white hover:shadow-md'"
     @dragover.prevent="isDragging = true"
     @dragleave="isDragging = false"
     @drop.prevent="onDrop"
@@ -9,18 +9,23 @@
   >
     <input ref="fileInput" type="file" class="hidden" :accept="accept" @change="onFileChange" />
     <div v-if="!file">
-      <p class="text-[#5A5A5A] text-sm">
-        <span class="font-semibold text-[#E87722]">Click to upload</span> or drag and drop
+      <div class="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-2xl bg-[#0f4a37]/10 text-[#0f4a37]">
+        <UIcon name="i-lucide-upload" class="h-5 w-5" />
+      </div>
+      <p class="text-sm text-slate-600">
+        <span class="font-semibold text-[#d86e18]">Click to upload</span> or drag and drop
       </p>
-      <p v-if="label" class="text-xs text-[#5A5A5A] mt-1">{{ label }}</p>
+      <p v-if="label" class="mt-1 text-xs text-slate-500">{{ label }}</p>
     </div>
     <div v-else class="flex items-center justify-center gap-2">
-      <span class="text-sm font-medium text-[#154734]">{{ file.name }}</span>
+      <span class="rounded-full bg-[#0f4a37]/10 px-3 py-1 text-sm font-semibold text-[#0f4a37]">
+        {{ file.name }}
+      </span>
       <button
-        class="text-red-500 hover:text-red-700 text-xs ml-2"
+        class="ml-2 rounded-full border border-red-200 bg-red-50 px-2 py-1 text-xs font-semibold text-red-600 hover:bg-red-100"
         @click.stop="removeFile"
       >
-        ✕
+        Remove
       </button>
     </div>
   </div>

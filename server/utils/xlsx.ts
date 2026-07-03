@@ -1,4 +1,7 @@
-import * as XLSX from 'xlsx'
+import * as XLSX from 'xlsx/xlsx.mjs'
+import * as cptable from 'xlsx/dist/cpexcel.full.mjs'
+
+XLSX.set_cptable(cptable)
 
 /**
  * Track 1: Excel/XLSX Utilities

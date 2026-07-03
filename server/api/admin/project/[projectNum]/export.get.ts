@@ -1,4 +1,4 @@
-import * as XLSX from 'xlsx'
+import * as XLSX from 'xlsx/xlsx.mjs'
 import { ROLES } from '~/shared/constants/roles'
 import { prisma } from '~/server/utils/prisma'
 

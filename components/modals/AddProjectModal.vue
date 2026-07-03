@@ -1,18 +1,34 @@
 <template>
   <UModal v-model:open="open">
     <template #content>
-      <div class="p-6 space-y-4">
-        <h3 class="text-lg font-bold text-[#1A1A1A]">Add Project</h3>
-        <UInput v-model="form.projectNum" placeholder="Project # *" />
-        <UInput v-model="form.projectTitle" placeholder="Project Title *" />
-        <UInput v-model="form.projectType" placeholder="Type (Capstone, EPICS, etc.) *" />
-        <UInput v-model="form.sponsorCompany" placeholder="Sponsor Company *" />
-        <UInput v-model="form.startingBudget" type="number" placeholder="Starting Budget ($) *" />
-        <UInput v-model="form.costCenter" placeholder="Cost Center (optional)" />
-        <UTextarea v-model="form.additionalInfo" placeholder="Additional info (optional)" :rows="2" />
-        <div v-if="error" class="text-sm text-red-600">{{ error }}</div>
-        <div class="flex gap-3 justify-end">
-          <UButton variant="ghost" @click="open = false">Cancel</UButton>
+      <div class="p-6 space-y-5">
+        <div>
+          <h3 class="text-xl font-black tracking-tight text-slate-900">Add Project</h3>
+          <p class="mt-1 text-sm text-slate-500">
+            Create a project manually so admins can start assigning students and mentors immediately.
+          </p>
+        </div>
+
+        <div class="grid gap-3 sm:grid-cols-2">
+          <UInput v-model="form.projectNum" placeholder="Project # *" />
+          <UInput v-model="form.projectTitle" placeholder="Project title *" />
+        </div>
+        <div class="grid gap-3 sm:grid-cols-2">
+          <UInput v-model="form.projectType" placeholder="Project type *" />
+          <UInput v-model="form.sponsorCompany" placeholder="Sponsor company *" />
+        </div>
+        <div class="grid gap-3 sm:grid-cols-2">
+          <UInput v-model="form.startingBudget" type="number" min="0" placeholder="Starting budget *" />
+          <UInput v-model="form.costCenter" placeholder="Cost center (optional)" />
+        </div>
+        <UTextarea v-model="form.additionalInfo" placeholder="Additional info (optional)" :rows="3" />
+
+        <div v-if="error" class="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {{ error }}
+        </div>
+
+        <div class="flex flex-wrap justify-end gap-3">
+          <UButton variant="ghost" @click="close">Cancel</UButton>
           <UButton class="bg-[#154734] text-white" :loading="saving" @click="save">Add Project</UButton>
         </div>
       </div>
@@ -24,7 +40,16 @@
 const open = defineModel<boolean>('open', { default: false })
 const emit = defineEmits(['saved'])
 
-const form = reactive({ projectNum: '', projectTitle: '', projectType: '', sponsorCompany: '', startingBudget: '' as string | number, costCenter: '', additionalInfo: '' })
+const form = reactive({
+  projectNum: '',
+  projectTitle: '',
+  projectType: '',
+  sponsorCompany: '',
+  startingBudget: '' as string | number,
+  costCenter: '',
+  additionalInfo: '',
+})
+
 const saving = ref(false)
 const error = ref('')
 
@@ -44,5 +69,9 @@ async function save() {
   } finally {
     saving.value = false
   }
+}
+
+function close() {
+  open.value = false
 }
 </script>

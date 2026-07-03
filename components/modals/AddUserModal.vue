@@ -1,27 +1,40 @@
 <template>
   <UModal v-model:open="open">
     <template #content>
-      <div class="p-6 space-y-4">
-        <h3 class="text-lg font-bold text-[#1A1A1A]">Add User</h3>
-        <UInput v-model="form.firstName" placeholder="First Name *" />
-        <UInput v-model="form.lastName" placeholder="Last Name *" />
+      <div class="p-6 space-y-5">
+        <div>
+          <h3 class="text-xl font-black tracking-tight text-slate-900">Add User</h3>
+          <p class="mt-1 text-sm text-slate-500">Create a person manually, then assign them to a project right away if needed.</p>
+        </div>
+        <div class="grid gap-3 sm:grid-cols-2">
+          <UInput v-model="form.firstName" placeholder="First Name *" />
+          <UInput v-model="form.lastName" placeholder="Last Name *" />
+        </div>
         <UInput
           v-model="form.email"
           type="email"
           :placeholder="form.role === 'MENTOR' ? 'Email * (any address)' : 'UTD Email * (abc123456@utdallas.edu)'"
         />
-        <USelect
+        <AppSelect
           v-model="form.role"
           :items="roles"
-          value-key="value"
-          label-key="label"
-          placeholder="Role *"
+          label="Role"
+          placeholder="Choose a role"
+          required
         />
-        <UInput v-model="form.projectNum" placeholder="Project # (optional)" />
-        <div v-if="error" class="text-sm text-red-600">{{ error }}</div>
-        <div class="flex gap-3 justify-end">
-          <UButton variant="ghost" @click="open = false">Cancel</UButton>
-          <UButton class="bg-[#154734] text-white" :loading="saving" @click="save">Add User</UButton>
+        <AppSelect
+          v-model="form.projectNum"
+          :items="projectOptions"
+          label="Initial project assignment"
+          placeholder="Optional - assign to a project now"
+          hint="This creates the user and adds an active project assignment in one step."
+        />
+        <div v-if="error" class="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {{ error }}
+        </div>
+        <div class="flex flex-wrap gap-3 justify-end">
+          <UButton variant="ghost" @click="close">Cancel</UButton>
+          <UButton class="bg-[#0f4a37] text-white" :loading="saving" @click="save">Add User</UButton>
         </div>
       </div>
     </template>
@@ -38,7 +51,12 @@ const roles = [
   { label: 'Student', value: 'STUDENT' },
 ]
 
-const form = reactive({ firstName: '', lastName: '', email: '', role: undefined as string | undefined, projectNum: '' })
+const { data: projects } = await useFetch('/api/project')
+const projectOptions = computed(() =>
+  (projects.value ?? []).map((p: any) => ({ label: `${p.projectNum} - ${p.projectTitle}`, value: p.projectNum })),
+)
+
+const form = reactive({ firstName: '', lastName: '', email: '', role: '', projectNum: '' })
 const saving = ref(false)
 const error = ref('')
 
@@ -56,11 +74,15 @@ async function save() {
     })
     emit('saved')
     open.value = false
-    Object.assign(form, { firstName: '', lastName: '', email: '', role: undefined, projectNum: '' })
+    Object.assign(form, { firstName: '', lastName: '', email: '', role: '', projectNum: '' })
   } catch (e: unknown) {
     error.value = (e as { data?: { message?: string } })?.data?.message ?? 'Failed to add user.'
   } finally {
     saving.value = false
   }
+}
+
+function close() {
+  open.value = false
 }
 </script>

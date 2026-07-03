@@ -9,12 +9,12 @@
     <!-- Users Tab -->
     <div v-if="activeTab === 0" class="space-y-3">
       <div class="flex gap-2">
-        <UButton class="bg-[#154734] text-white" @click="addUserOpen = true">+ Add User</UButton>
+        <UButton class="bg-[#154734] text-white" @click="openAddUser">+ Add User</UButton>
         <UButton
           v-if="selectedUser"
           variant="outline"
           class="border-red-500 text-red-500"
-          @click="deactivateOpen = true"
+          @click="openDeactivateUser"
         >
           Deactivate
         </UButton>
@@ -30,7 +30,7 @@
           v-if="selectedUser"
           variant="outline"
           class="border-[#E87722] text-[#E87722]"
-          @click="assignOpen = true"
+          @click="openAssignProject"
         >
           Assign to Project
         </UButton>
@@ -38,7 +38,7 @@
           v-if="selectedUser"
           variant="outline"
           class="border-red-700 text-red-700"
-          @click="deleteUserOpen = true"
+          @click="openDeleteUser"
         >
           Delete
         </UButton>
@@ -61,12 +61,12 @@
     <!-- Projects Tab -->
     <div v-if="activeTab === 1" class="space-y-3">
       <div class="flex gap-2">
-        <UButton class="bg-[#154734] text-white" @click="addProjectOpen = true">+ Add Project</UButton>
+        <UButton class="bg-[#154734] text-white" @click="openAddProject">+ Add Project</UButton>
         <UButton
           v-if="selectedProject"
           variant="outline"
           class="border-red-500 text-red-500"
-          @click="deactivateProjectOpen = true"
+          @click="openDeactivateProject"
         >
           Deactivate
         </UButton>
@@ -92,7 +92,7 @@
           v-if="selectedVendor"
           variant="outline"
           class="border-red-700 text-red-700"
-          @click="deleteVendorOpen = true"
+          @click="openDeleteVendor"
         >
           Delete
         </UButton>
@@ -320,6 +320,14 @@ const deactivateProjectOpen = ref(false)
 const deleteUserOpen = ref(false)
 const deleteVendorOpen = ref(false)
 const assignOpen = ref(false)
+
+function openAddUser() { addUserOpen.value = true }
+function openAddProject() { addProjectOpen.value = true }
+function openDeactivateUser() { deactivateOpen.value = true }
+function openDeactivateProject() { deactivateProjectOpen.value = true }
+function openDeleteUser() { deleteUserOpen.value = true }
+function openDeleteVendor() { deleteVendorOpen.value = true }
+function openAssignProject() { assignOpen.value = true }
 
 async function deactivateUser() {
   await $fetch('/api/admin/deactivate-user', {

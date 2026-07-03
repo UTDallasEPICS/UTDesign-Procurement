@@ -1,3 +1,4 @@
+import { Prisma } from '@prisma/client'
 import { prisma } from '~/server/utils/prisma'
 import { addExpenseToProject, getRemainingBudget, recalcProjectExpenses } from '~/server/utils/budget'
 import { sendEmail, templateRequestSubmitted } from '~/server/utils/email'
@@ -6,6 +7,30 @@ import { ROLES } from '~/shared/constants/roles'
 
 const MAX_WORDS = 50
 
+type RequestItemInput = {
+  description: string
+  justification: string
+  url: string
+  partNumber: string
+  quantity: number
+  unitPrice: number
+  category: (typeof ITEM_CATEGORIES)[number]
+  otherCategoryDescription?: string
+  vendorID: number | null
+  newVendorName?: string
+  newVendorEmail?: string
+  newVendorURL?: string
+}
+
+type RequestBody = {
+  dateNeeded: string
+  projectNum: string
+  items: RequestItemInput[]
+  additionalInfo?: string
+  totalExpenses: number
+  resubmitRequestID?: number
+}
+
 function wordCount(s: string): number {
   return s.trim() ? s.trim().split(/\s+/).filter(Boolean).length : 0
 }
@@ -13,7 +38,8 @@ function wordCount(s: string): number {
 /** POST /api/request — student submits a new procurement request, or resubmits an edited one */
 export default defineEventHandler(async event => {
   try {
-    const { dateNeeded, projectNum, items, additionalInfo, totalExpenses, resubmitRequestID } = await readBody(event)
+    const { dateNeeded, projectNum, items, additionalInfo, totalExpenses, resubmitRequestID } =
+      await readBody<RequestBody>(event)
 
     const user = event.context.user
     if (user.role !== ROLES.STUDENT) throw createError({ statusCode: 403, message: 'Students only' })
@@ -40,7 +66,7 @@ export default defineEventHandler(async event => {
     }
 
     for (const item of items) {
-      if (!ITEM_CATEGORIES.includes(item.category)) {
+      if (!item.category || !ITEM_CATEGORIES.includes(item.category as (typeof ITEM_CATEGORIES)[number])) {
         throw createError({ statusCode: 400, message: `Invalid category: ${item.category}` })
       }
       if (item.category === OTHER_CATEGORY && !item.otherCategoryDescription?.trim()) {
@@ -74,33 +100,40 @@ export default defineEventHandler(async event => {
 
     // Create any new vendors inline
     const resolvedItems = await Promise.all(
-      items.map(async (item: { vendorID: number; newVendorName?: string; newVendorEmail?: string; newVendorURL?: string; [key: string]: unknown }) => {
+      items.map(async (item: RequestItemInput) => {
         let vendorID = item.vendorID
-        if (item.newVendorName) {
+        const shouldCreateVendor = item.vendorID == null || (item.vendorID as unknown) === '__new__'
+        if (shouldCreateVendor) {
+          const vendorName = item.newVendorName?.trim()
+          if (!vendorName) {
+            throw createError({ statusCode: 400, message: 'A vendor name is required when adding a new vendor' })
+          }
           const newVendor = await prisma.vendor.create({
             data: {
-              vendorName: item.newVendorName,
+              vendorName,
               vendorEmail: item.newVendorEmail ?? null,
               vendorURL: item.newVendorURL ?? 'https://default.com',
               vendorStatus: 'PENDING',
             },
           })
           vendorID = newVendor.vendorID
+        } else if (vendorID == null) {
+          throw createError({ statusCode: 400, message: 'A vendor is required for each item' })
         }
         return { ...item, vendorID }
       }),
     )
 
-    const itemCreates = resolvedItems.map((item) => ({
+    const itemCreates: Prisma.RequestItemUncheckedCreateWithoutRequestInput[] = resolvedItems.map((item) => ({
       description: item.description as string,
       justification: item.justification as string,
       url: item.url as string,
       partNumber: item.partNumber as string,
       quantity: Number(item.quantity),
       unitPrice: Number(item.unitPrice),
-      category: item.category as string,
+      category: item.category,
       otherCategoryDescription: (item.otherCategoryDescription as string | undefined)?.trim() || null,
-      vendorID: item.vendorID,
+      vendorID: item.vendorID as number,
     }))
 
     const result = await prisma.$transaction(async tx => {

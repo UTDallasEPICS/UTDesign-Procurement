@@ -1,18 +1,88 @@
 @import "tailwindcss";
 
 :root {
-  --utd-orange: #E87722;
-  --utd-orange-dark: #C75B12;
-  --utd-green: #154734;
-  --white: #FFFFFF;
-  --gray-light: #F4F4F4;
-  --gray-border: #D9D9D9;
-  --text-dark: #1A1A1A;
-  --text-muted: #5A5A5A;
+  --utd-orange: #d86e18;
+  --utd-orange-dark: #b85b0f;
+  --utd-green: #0f4a37;
+  --utd-green-deep: #0b3327;
+  --surface: rgba(255, 255, 255, 0.88);
+  --surface-strong: rgba(255, 255, 255, 0.96);
+  --gray-light: #f2efe8;
+  --gray-border: #d6d1c5;
+  --text-dark: #152026;
+  --text-muted: #5b6672;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body,
+button,
+input,
+textarea,
+select {
+  font-family: "Avenir Next", Avenir, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
 }
 
 body {
-  background-color: var(--gray-light);
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top left, rgba(216, 110, 24, 0.18), transparent 34%),
+    radial-gradient(circle at top right, rgba(15, 74, 55, 0.18), transparent 30%),
+    linear-gradient(180deg, #f8f6f1 0%, #f3efe7 46%, #ede7dc 100%);
   color: var(--text-dark);
-  font-family: 'Arial', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#app {
+  min-height: 100vh;
+}
+
+::selection {
+  background: rgba(216, 110, 24, 0.2);
+  color: var(--text-dark);
+}
+
+a {
+  text-decoration-thickness: 2px;
+  text-underline-offset: 2px;
+}
+
+select,
+input,
+textarea {
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    background-color 160ms ease;
+}
+
+.app-select {
+  width: 100%;
+  appearance: none;
+  border-radius: 1rem;
+  border: 1px solid rgba(21, 39, 47, 0.14);
+  background: var(--surface-strong);
+  padding: 0.9rem 2.5rem 0.9rem 1rem;
+  color: var(--text-dark);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.app-select:focus {
+  outline: none;
+  border-color: rgba(216, 110, 24, 0.55);
+  box-shadow: 0 0 0 4px rgba(216, 110, 24, 0.12);
+}
+
+.app-surface {
+  background: var(--surface);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(214, 209, 197, 0.8);
+  box-shadow: 0 20px 60px rgba(15, 23, 42, 0.08);
+}
+
+.app-heading {
+  letter-spacing: -0.03em;
 }
