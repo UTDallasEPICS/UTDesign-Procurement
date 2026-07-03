@@ -1,16 +1,20 @@
 <template>
   <UModal v-model:open="open">
     <template #content>
-      <div class="p-6 space-y-4">
-        <h3 class="text-lg font-bold text-[#1A1A1A]">{{ title }}</h3>
-        <p class="text-sm text-[#5A5A5A]">{{ description }}</p>
+      <div class="p-6 space-y-5">
+        <div>
+          <h3 class="text-xl font-black tracking-tight text-slate-900">{{ title }}</h3>
+          <p class="mt-1 text-sm text-slate-500">{{ description }}</p>
+        </div>
+
         <UTextarea
           v-model="comment"
           :placeholder="placeholder"
           :rows="4"
           class="w-full"
         />
-        <div class="flex gap-3 justify-end">
+
+        <div class="flex flex-wrap justify-end gap-3">
           <UButton variant="ghost" @click="cancel">Cancel</UButton>
           <UButton
             :class="confirmClass"

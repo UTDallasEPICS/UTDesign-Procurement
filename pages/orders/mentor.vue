@@ -1,42 +1,50 @@
 <template>
-  <div class="space-y-6">
-    <h1 class="text-2xl font-bold text-[#1A1A1A]">Pending Review</h1>
-
-    <UTabs :items="tabs" v-model="activeTab" />
-
-    <!-- Requests -->
-    <div v-if="activeTab === 0">
-      <div v-if="pending" class="text-center py-12 text-[#5A5A5A]">Loading...</div>
-      <div v-else-if="!requests?.length" class="text-center py-12 text-[#5A5A5A]">No requests pending review.</div>
-      <div v-else class="space-y-4">
-        <RequestCard
-          v-for="req in requests"
-          :key="req.requestID"
-          :request="req"
-          user-role="MENTOR"
-          @approve="approveRequest(req)"
-          @reject="openModal(req, 'request', 'REJECTED')"
-          @request-changes="openModal(req, 'request', 'CHANGES_REQUESTED')"
-        />
+  <div class="mx-auto max-w-5xl space-y-6">
+    <section class="app-surface overflow-hidden p-0">
+      <div class="border-b border-white/70 bg-gradient-to-r from-[#154734] to-[#0f3326] px-6 py-6 text-white sm:px-8">
+        <p class="text-xs font-bold uppercase tracking-[0.3em] text-white/60">Mentor dashboard</p>
+        <h1 class="mt-2 text-3xl font-black tracking-tight">Pending Review</h1>
+        <p class="mt-2 max-w-2xl text-sm text-white/75">
+          Review submitted requests and reimbursements, then approve, reject, or send them back with clear comments.
+        </p>
       </div>
-    </div>
 
-    <!-- Reimbursements -->
-    <div v-if="activeTab === 1">
-      <div v-if="reimbPending" class="text-center py-12 text-[#5A5A5A]">Loading...</div>
-      <div v-else-if="!reimbursements?.length" class="text-center py-12 text-[#5A5A5A]">No reimbursements pending review.</div>
-      <div v-else class="space-y-4">
-        <ReimbursementCard
-          v-for="r in reimbursements"
-          :key="r.reimbursementID"
-          :reimbursement="r"
-          user-role="MENTOR"
-          @approve="approveReimbursement(r)"
-          @reject="openModal(r, 'reimbursement', 'REJECTED')"
-          @request-changes="openModal(r, 'reimbursement', 'CHANGES_REQUESTED')"
-        />
+      <div class="space-y-6 p-6 sm:p-8">
+        <UTabs :items="tabs" v-model="activeTab" />
+
+        <div v-if="activeTab === 0" class="space-y-4">
+          <div v-if="pending" class="rounded-2xl border border-slate-200 bg-white px-6 py-12 text-center text-slate-500">Loading...</div>
+          <div v-else-if="!requests?.length" class="rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-12 text-center text-slate-500">No requests pending review.</div>
+          <div v-else class="space-y-4">
+            <RequestCard
+              v-for="req in requests"
+              :key="req.requestID"
+              :request="req"
+              user-role="MENTOR"
+              @approve="approveRequest(req)"
+              @reject="openModal(req, 'request', 'REJECTED')"
+              @request-changes="openModal(req, 'request', 'CHANGES_REQUESTED')"
+            />
+          </div>
+        </div>
+
+        <div v-if="activeTab === 1" class="space-y-4">
+          <div v-if="reimbPending" class="rounded-2xl border border-slate-200 bg-white px-6 py-12 text-center text-slate-500">Loading...</div>
+          <div v-else-if="!reimbursements?.length" class="rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-12 text-center text-slate-500">No reimbursements pending review.</div>
+          <div v-else class="space-y-4">
+            <ReimbursementCard
+              v-for="r in reimbursements"
+              :key="r.reimbursementID"
+              :reimbursement="r"
+              user-role="MENTOR"
+              @approve="approveReimbursement(r)"
+              @reject="openModal(r, 'reimbursement', 'REJECTED')"
+              @request-changes="openModal(r, 'reimbursement', 'CHANGES_REQUESTED')"
+            />
+          </div>
+        </div>
       </div>
-    </div>
+    </section>
 
     <RejectionModal
       v-model:open="modalOpen"

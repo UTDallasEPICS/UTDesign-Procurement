@@ -68,16 +68,23 @@ export default defineEventHandler(async event => {
     const resolvedItems = await Promise.all(
       (items as ReimbursementItemInput[]).map(async item => {
         let vendorID = item.vendorID
-        if (item.newVendorName) {
+        const shouldCreateVendor = item.vendorID == null || (item.vendorID as unknown) === '__new__'
+        if (shouldCreateVendor) {
+          const vendorName = item.newVendorName?.trim()
+          if (!vendorName) {
+            throw createError({ statusCode: 400, message: 'A vendor name is required when adding a new vendor' })
+          }
           const newVendor = await prisma.vendor.create({
             data: {
-              vendorName: item.newVendorName,
+              vendorName,
               vendorEmail: item.newVendorEmail ?? null,
               vendorURL: item.newVendorURL ?? 'https://default.com',
               vendorStatus: 'PENDING',
             },
           })
           vendorID = newVendor.vendorID
+        } else if (vendorID == null) {
+          throw createError({ statusCode: 400, message: 'A vendor is required for each item' })
         }
 
         let uploadID: number | null = null

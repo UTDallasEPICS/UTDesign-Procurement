@@ -1,5 +1,9 @@
 <template>
-  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold" :style="style">
+  <span
+    class="inline-flex items-center gap-1 rounded-full border px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] shadow-sm"
+    :style="style"
+  >
+    <span class="h-1.5 w-1.5 rounded-full bg-current/80" />
     {{ label }}
   </span>
 </template>
@@ -19,6 +23,10 @@ const STATUS_MAP: Record<string, { bg: string; color: string; label: string }> =
 }
 
 const config = computed(() => STATUS_MAP[props.status] ?? { bg: '#F5F5F5', color: '#5A5A5A', label: props.status })
-const style = computed(() => ({ backgroundColor: config.value.bg, color: config.value.color }))
+const style = computed(() => ({
+  backgroundColor: config.value.bg,
+  borderColor: config.value.color,
+  color: config.value.color,
+}))
 const label = computed(() => config.value.label)
 </script>
