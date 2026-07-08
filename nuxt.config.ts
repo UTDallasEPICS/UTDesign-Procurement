@@ -17,6 +17,13 @@ export default defineNuxtConfig({
     strict: true,
   },
 
+  components: [
+    {
+      path: "~/components",
+      pathPrefix: false,
+    },
+  ],
+
   // Fix for Windows: Prisma engine uses absolute C:\ paths that break ESM loader
   nitro: {
     externals: {
