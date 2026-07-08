@@ -35,5 +35,14 @@
     "prisma": "^6.6.0",
     "tsx": "^4.19.3",
     "typescript": "^5.8.3"
+  },
+  "allowScripts": {
+    "vue-demi@0.14.10": true,
+    "esbuild@0.25.12": true,
+    "esbuild@0.27.7": true,
+    "@parcel/watcher@2.5.6": true,
+    "@prisma/client@6.19.3": true,
+    "@prisma/engines@6.19.3": true,
+    "prisma@6.19.3": true
   }
 }
