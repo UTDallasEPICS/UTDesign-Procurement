@@ -7,7 +7,6 @@ node_modules/
 # Environment
 .env.*
 !.env.example
-!.env
 
 # Database (dev only)
 prisma/dev.db
