@@ -4,10 +4,6 @@
 
 <!-- Describe what you did, any challenges you faced, any potential concerns -->
 
-### Testing
-
-<!-- Provide proof that your code satisfied the issue -->
-
 ### Acceptance Criteria
 
 <!-- Copy the acceptance criteria from the issue this PR is for and check them off -->
