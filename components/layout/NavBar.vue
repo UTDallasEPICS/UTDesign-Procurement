@@ -18,7 +18,7 @@
             v-if="isStudent"
             to="/request-form"
             class="rounded-full px-4 py-2 text-sm font-semibold text-white/80 transition hover:bg-white/10 hover:text-white"
-            active-class="bg-white text-[#0f3d2f] shadow-sm"
+            active-class="bg-[#d86e18] text-white shadow-sm"
           >
             New Request
           </NuxtLink>
@@ -26,21 +26,21 @@
             v-if="isStudent"
             to="/reimbursement/student"
             class="rounded-full px-4 py-2 text-sm font-semibold text-white/80 transition hover:bg-white/10 hover:text-white"
-            active-class="bg-white text-[#0f3d2f] shadow-sm"
+            active-class="bg-[#d86e18] text-white shadow-sm"
           >
             Reimbursement
           </NuxtLink>
           <NuxtLink
             to="/orders"
             class="rounded-full px-4 py-2 text-sm font-semibold text-white/80 transition hover:bg-white/10 hover:text-white"
-            active-class="bg-white text-[#0f3d2f] shadow-sm"
+            active-class="bg-[#d86e18] text-white shadow-sm"
           >
             Orders
           </NuxtLink>
           <NuxtLink
             to="/projects"
             class="rounded-full px-4 py-2 text-sm font-semibold text-white/80 transition hover:bg-white/10 hover:text-white"
-            active-class="bg-white text-[#0f3d2f] shadow-sm"
+            active-class="bg-[#d86e18] text-white shadow-sm"
           >
             Projects
           </NuxtLink>

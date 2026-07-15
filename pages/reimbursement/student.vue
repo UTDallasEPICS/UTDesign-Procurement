@@ -76,45 +76,74 @@
                   </button>
                 </div>
 
-                <div class="mt-4 grid gap-4 md:grid-cols-2">
-                  <UInput v-model="item.receiptDate" type="date" label="Date of purchase *" />
-                  <UInput v-model.number="item.quantity" type="number" min="1" label="Quantity *" />
-                  <UInput v-model.number="item.unitPrice" type="number" step="0.01" min="0" label="Unit price ($) *" />
-                  <UInput v-model="item.url" label="Item URL" placeholder="Optional vendor or product URL" />
-                  <div class="md:col-span-2">
-                    <UInput v-model="item.description" label="Description *" placeholder="What is on the receipt?" />
+                <!-- Date and Description -->
+                <div class="mt-6 space-y-4">
+                  <div class="rounded-2xl border-2 border-slate-300 bg-slate-50 p-5">
+                    <label class="mb-3 block text-sm font-bold text-slate-900">Date of purchase *</label>
+                    <UInput v-model="item.receiptDate" type="date" />
+                  </div>
+                  <div class="rounded-2xl border-2 border-slate-300 bg-slate-50 p-5 space-y-3">
+                    <label class="block text-sm font-bold text-slate-900">What is on the receipt? *</label>
+                    <UTextarea v-model="item.description" placeholder="Be specific about the items purchased" :rows="7" class="text-base resize-none" />
                   </div>
                 </div>
 
-                <div class="mt-4 grid gap-4 md:grid-cols-2">
-                  <AppSelect
-                    v-model="item.category"
-                    :items="categoryOptions"
-                    label="Category"
-                    placeholder="Choose a category"
-                    required
-                  />
-                  <div v-if="justificationRequired(item)" class="space-y-2">
-                    <label class="block text-sm font-semibold text-slate-800">Justification *</label>
-                    <UTextarea v-model="item.justification" placeholder="Why is this reimbursement needed?" :rows="4" />
+                <!-- Item Quantity and Unit Price -->
+                <div class="mt-6 grid gap-4 md:grid-cols-2">
+                  <div class="rounded-xl border-2 border-slate-300 bg-slate-50 p-5">
+                    <label class="mb-3 block text-sm font-bold text-slate-900">Item quantity *</label>
+                    <UInput v-model.number="item.quantity" type="number" min="1" placeholder="How many?" />
+                  </div>
+                  <div class="rounded-xl border-2 border-slate-300 bg-slate-50 p-5">
+                    <label class="mb-3 block text-sm font-bold text-slate-900">Item unit price ($) *</label>
+                    <UInput v-model.number="item.unitPrice" type="number" step="0.01" min="0" placeholder="Cost per item" />
+                  </div>
+                </div>
+
+                <!-- Optional Product URL -->
+                <div class="mt-6">
+                  <div class="rounded-2xl border-2 border-slate-300 bg-slate-50 p-5">
+                    <label class="mb-3 block text-sm font-bold text-slate-900">Product URL (optional)</label>
+                    <UInput v-model="item.url" placeholder="Link to vendor or product page" />
+                  </div>
+                </div>
+
+                <!-- Category and Justification -->
+                <div class="mt-6 space-y-4">
+                  <div class="rounded-2xl border-2 border-slate-300 bg-slate-50 p-5">
+                    <label class="mb-3 block text-sm font-bold text-slate-900">Category *</label>
+                    <AppSelect
+                      v-model="item.category"
+                      :items="categoryOptions"
+                      placeholder="Choose a category"
+                      required
+                    />
+                  </div>
+                  <div v-if="justificationRequired(item)" class="rounded-2xl border-2 border-slate-300 bg-slate-50 p-5 space-y-3">
+                    <label class="block text-sm font-bold text-slate-900">Justification *</label>
+                    <UTextarea v-model="item.justification" placeholder="Why is this reimbursement needed?" :rows="7" class="text-base resize-none" />
                   </div>
                 </div>
 
                 <div v-if="item.category === 'Other'" class="mt-4">
-                  <UInput v-model="item.otherCategoryDescription" label="Other category description *" placeholder="Describe the category" />
+                  <div class="rounded-2xl border-2 border-slate-300 bg-slate-50 p-5">
+                    <label class="mb-3 block text-sm font-bold text-slate-900">Other category description *</label>
+                    <UInput v-model="item.otherCategoryDescription" placeholder="Describe the category" />
+                  </div>
                 </div>
 
-                <div class="mt-4">
-                  <label class="mb-2 block text-sm font-semibold text-slate-800">Vendor *</label>
+                <!-- Vendor Selection -->
+                <div class="mt-6">
                   <VendorSelect
                     v-model="item.vendorID"
                     @update:new-vendor="setItemNewVendor(item, $event)"
                   />
                 </div>
 
-                <div class="mt-4">
-                  <label class="mb-2 block text-sm font-semibold text-slate-800">Receipt upload</label>
-                  <DragAndDrop v-model="item.file" accept=".pdf,.png,.jpg" label="Receipt scan or photo" />
+                <!-- Receipt Upload -->
+                <div class="mt-6">
+                  <label class="mb-3 block text-sm font-semibold text-slate-900">Receipt upload</label>
+                  <DragAndDrop v-model="item.file" accept=".pdf,.png,.jpg" label="Drag and drop receipt scan or photo" />
                 </div>
 
                 <div class="mt-4 text-right text-sm font-semibold text-slate-700">

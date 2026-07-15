@@ -52,7 +52,15 @@
               <UInput v-model="form.dateNeeded" type="date" label="Date needed *" />
             </div>
 
-            <UTextarea v-model="form.additionalInfo" label="Additional information" placeholder="Any extra context or constraints..." :rows="4" />
+            <div class="rounded-2xl border-2 border-slate-300 bg-slate-50 p-5 space-y-3">
+              <label class="block text-sm font-bold text-slate-900">Additional information</label>
+              <textarea
+                v-model="form.additionalInfo"
+                rows="4"
+                placeholder="Any extra context or constraints..."
+                class="block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-base text-slate-900 shadow-sm outline-none transition focus:border-[#d86e18] focus:ring-4 focus:ring-[#d86e18]/10 resize-none"
+              ></textarea>
+            </div>
           </section>
 
           <section class="app-surface space-y-4 p-5">
@@ -87,30 +95,68 @@
                   </button>
                 </div>
 
-                <div class="mt-4 grid gap-4 md:grid-cols-2">
-                  <div class="md:col-span-2">
-                    <UInput v-model="item.description" label="Description *" placeholder="What are you ordering?" />
-                    <p class="mt-1 text-xs" :class="wordCount(item.description) > 50 ? 'text-red-500' : 'text-slate-500'">
+                <!-- What are you ordering? -->
+                <div class="mt-6">
+                  <div class="rounded-2xl border-2 border-slate-300 bg-slate-50 p-5 space-y-3">
+                    <label class="block text-sm font-bold text-slate-900">What are you ordering? *</label>
+                    <textarea
+                      v-model="item.description"
+                      rows="7"
+                      placeholder="Be specific so reviewers understand what you're buying"
+                      class="block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-base text-slate-900 shadow-sm outline-none transition focus:border-[#d86e18] focus:ring-4 focus:ring-[#d86e18]/10 resize-none"
+                    ></textarea>
+                    <p class="text-xs" :class="wordCount(item.description) > 50 ? 'text-red-500' : 'text-slate-500'">
                       {{ wordCount(item.description) }}/50 words
                     </p>
                   </div>
-                  <UInput v-model="item.url" label="URL *" placeholder="Product link" />
-                  <UInput v-model="item.partNumber" label="Part number *" placeholder="Part or SKU" />
-                  <UInput v-model.number="item.quantity" type="number" min="1" label="Quantity *" />
-                  <UInput v-model.number="item.unitPrice" type="number" step="0.01" min="0" label="Unit price ($) *" />
                 </div>
 
-                <div class="mt-4 grid gap-4 md:grid-cols-2">
-                  <AppSelect
-                    v-model="item.category"
-                    :items="categoryOptions"
-                    label="Category"
-                    placeholder="Choose a category"
-                    required
-                  />
-                  <div class="space-y-2">
-                    <label class="block text-sm font-semibold text-slate-800">Justification *</label>
-                    <UTextarea v-model="item.justification" placeholder="Why is this item needed?" :rows="4" />
+                <!-- Fill out product details sections -->
+                <div class="mt-6">
+                  <p class="mb-4 text-xs font-semibold uppercase tracking-[0.1em] text-slate-600">Fill out product details</p>
+                  <div class="grid gap-4 md:grid-cols-2">
+                    <div class="rounded-2xl border-2 border-slate-300 bg-slate-50 p-5">
+                      <label class="mb-3 block text-sm font-bold text-slate-900">Product link *</label>
+                      <UInput v-model="item.url" placeholder="Full URL to product page" />
+                    </div>
+                    <div class="rounded-2xl border-2 border-slate-300 bg-slate-50 p-5">
+                      <label class="mb-3 block text-sm font-bold text-slate-900">Part or SKU *</label>
+                      <UInput v-model="item.partNumber" placeholder="Model number or SKU" />
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Quantity and Unit Price -->
+                <div class="mt-6 grid gap-4 md:grid-cols-2">
+                  <div class="rounded-xl border-2 border-slate-300 bg-slate-50 p-5">
+                    <label class="mb-3 block text-sm font-bold text-slate-900">Item quantity *</label>
+                    <UInput v-model.number="item.quantity" type="number" min="1" placeholder="How many?" />
+                  </div>
+                  <div class="rounded-xl border-2 border-slate-300 bg-slate-50 p-5">
+                    <label class="mb-3 block text-sm font-bold text-slate-900">Item unit price ($) *</label>
+                    <UInput v-model.number="item.unitPrice" type="number" step="0.01" min="0" placeholder="Cost per item" />
+                  </div>
+                </div>
+
+                <!-- Category and Justification -->
+                <div class="mt-6 space-y-4">
+                  <div class="rounded-2xl border-2 border-slate-300 bg-slate-50 p-5">
+                    <label class="mb-3 block text-sm font-bold text-slate-900">Category *</label>
+                    <AppSelect
+                      v-model="item.category"
+                      :items="categoryOptions"
+                      placeholder="Choose a category"
+                      required
+                    />
+                  </div>
+                  <div class="rounded-2xl border-2 border-slate-300 bg-slate-50 p-5 space-y-3">
+                    <label class="block text-sm font-bold text-slate-900">Justification *</label>
+                    <textarea
+                      v-model="item.justification"
+                      rows="7"
+                      placeholder="Why is this item needed?"
+                      class="block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-base text-slate-900 shadow-sm outline-none transition focus:border-[#d86e18] focus:ring-4 focus:ring-[#d86e18]/10 resize-none"
+                    ></textarea>
                     <p class="text-xs" :class="wordCount(item.justification) > 50 ? 'text-red-500' : 'text-slate-500'">
                       {{ wordCount(item.justification) }}/50 words
                     </p>
@@ -121,8 +167,8 @@
                   <UInput v-model="item.otherCategoryDescription" label="Other category description *" placeholder="Describe the category" />
                 </div>
 
-                <div class="mt-4">
-                  <label class="mb-2 block text-sm font-semibold text-slate-800">Vendor *</label>
+                <!-- Vendor Selection -->
+                <div class="mt-6">
                   <VendorSelect
                     v-model="item.vendorID"
                     @update:new-vendor="setItemNewVendor(item, $event)"
@@ -306,6 +352,16 @@ function vendorWarning(item: RequestItem) {
   return item.category === 'Software' || item.category === 'Chemicals' || Number(item.unitPrice) > 1000
 }
 
+function missingRequestItemFields(item: RequestItem) {
+  const missing: string[] = []
+  if (!item.description.trim()) missing.push('what are you ordering')
+  if (!item.url.trim()) missing.push('product link')
+  if (!item.partNumber.trim()) missing.push('part or SKU')
+  if (!item.category) missing.push('category')
+  if (!item.vendorID) missing.push('vendor')
+  return missing
+}
+
 const itemsTotal = computed(() =>
   form.items.reduce((sum, i) => sum + i.quantity * i.unitPrice, 0),
 )
@@ -321,8 +377,10 @@ async function submit() {
     error.value = 'Project and date needed are required.'
     return
   }
-  if (form.items.some(i => !i.description || !i.url || !i.partNumber || !i.vendorID || !i.category)) {
-    error.value = 'All item fields are required, including category and vendor.'
+  const firstIncompleteItem = form.items.findIndex(i => missingRequestItemFields(i).length > 0)
+  if (firstIncompleteItem !== -1) {
+    const missing = missingRequestItemFields(form.items[firstIncompleteItem])
+    error.value = `Item ${firstIncompleteItem + 1} is missing: ${missing.join(', ')}.`
     return
   }
   if (form.items.some(i => i.category === 'Other' && !i.otherCategoryDescription.trim())) {
