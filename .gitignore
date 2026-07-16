@@ -5,13 +5,14 @@ node_modules/
 .cache/
 
 # Environment
-.env.*
+.env*
 !.env.example
 
 # Database (dev only)
 prisma/dev.db
 prisma/dev.db-journal
 prisma/*.db
+efs/
 
 # OS
 .DS_Store
