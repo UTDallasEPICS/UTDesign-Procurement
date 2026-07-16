@@ -7,42 +7,33 @@
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "postinstall": "prisma generate && nuxt prepare",
+    "postinstall": "nuxt prepare",
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
-    "db:seed": "tsx prisma/seed.ts",
     "db:studio": "prisma studio"
   },
   "dependencies": {
-    "@nuxt/ui": "^3.0.2",
-    "@prisma/client": "^6.6.0",
+    "@nuxt/ui": "^4.9.0",
+    "@prisma/adapter-better-sqlite3": "^7.8.0",
+    "@prisma/client": "^7.8.0",
     "ag-grid-community": "^33.3.0",
     "ag-grid-vue3": "^33.3.0",
     "bcryptjs": "^3.0.3",
     "better-auth": "^1.2.7",
+    "dotenv": "^17.4.2",
     "nodemailer": "^6.9.16",
-    "nuxt": "^3.17.1",
+    "nuxt": "^4.4.8",
     "vue": "^3.5.13",
     "vue-router": "^4.5.0",
     "xlsx": "^0.18.5"
   },
-  "prisma": {
-    "seed": "tsx prisma/seed.ts"
-  },
   "devDependencies": {
     "@nuxt/devtools": "latest",
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/node": "^26.1.1",
     "@types/nodemailer": "^6.4.17",
-    "prisma": "^6.6.0",
+    "prisma": "^7.8.0",
     "tsx": "^4.19.3",
     "typescript": "^5.8.3"
-  },
-  "allowScripts": {
-    "vue-demi@0.14.10": true,
-    "esbuild@0.25.12": true,
-    "esbuild@0.27.7": true,
-    "@parcel/watcher@2.5.6": true,
-    "@prisma/client@6.19.3": true,
-    "@prisma/engines@6.19.3": true,
-    "prisma@6.19.3": true
   }
 }

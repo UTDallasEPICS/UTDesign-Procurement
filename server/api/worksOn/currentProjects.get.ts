@@ -1,4 +1,4 @@
-import { prisma } from '~/server/utils/prisma'
+import prisma from '~~/server/utils/prisma'
 
 /** GET /api/worksOn/currentProjects — active projects for the current user */
 export default defineEventHandler(async event => {

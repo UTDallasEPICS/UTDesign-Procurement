@@ -1,5 +1,5 @@
-import { auth } from '~/server/lib/auth'
-import { prisma } from '~/server/utils/prisma'
+import { auth } from '~~/server/lib/auth'
+import prisma from '~~/server/utils/prisma'
 
 export default defineEventHandler(async event => {
   const url = getRequestURL(event)

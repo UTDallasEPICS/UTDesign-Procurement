@@ -1,5 +1,5 @@
-import { auth } from '~/server/lib/auth'
-import { prisma } from '~/server/utils/prisma'
+import { auth } from '~~/server/lib/auth'
+import prisma from '~~/server/utils/prisma'
 
 /** GET /api/auth/me — returns session user with their role enum value */
 export default defineEventHandler(async event => {

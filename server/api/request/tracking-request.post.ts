@@ -1,6 +1,6 @@
-import { prisma } from '~/server/utils/prisma'
-import { sendEmailToAdmins, templateTrackingRequested } from '~/server/utils/email'
-import { ROLES } from '~/shared/constants/roles'
+import prisma from '~~/server/utils/prisma'
+import { sendEmailToAdmins, templateTrackingRequested } from '~~/server/utils/email'
+import { ROLES } from '~~/shared/constants/roles'
 
 /** POST /api/request/tracking-request — student asks admins for tracking info on an ordered request */
 export default defineEventHandler(async event => {

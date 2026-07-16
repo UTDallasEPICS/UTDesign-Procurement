@@ -1,4 +1,4 @@
-import { ROLES } from '~/shared/constants/roles'
+import { ROLES } from '~~/shared/constants/roles'
 import nodemailer from 'nodemailer'
 import type { PrismaClient } from '@prisma/client'
 

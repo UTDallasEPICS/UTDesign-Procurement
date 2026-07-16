@@ -1,6 +1,6 @@
-import { ROLES } from '~/shared/constants/roles'
-import { prisma } from '~/server/utils/prisma'
-import { recalcProjectExpenses } from '~/server/utils/budget'
+import { ROLES } from '~~/shared/constants/roles'
+import prisma from '~~/server/utils/prisma'
+import { recalcProjectExpenses } from '~~/server/utils/budget'
 
 /** POST /api/request/update — admin edits request items, orders, and process status */
 export default defineEventHandler(async event => {

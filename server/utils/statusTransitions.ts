@@ -1,5 +1,5 @@
 import type { ProcessStatus } from '@prisma/client'
-import type { Role } from '~/shared/constants/roles'
+import type { Role } from '~~/shared/constants/roles'
 
 export type OrderKind = 'request' | 'reimbursement'
 

@@ -1,4 +1,5 @@
-import { PrismaClient, UserRole } from '@prisma/client'
+import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3"
+import { PrismaClient, UserRole } from "./generated/client"
 import { scrypt, randomBytes } from 'node:crypto'
 import { promisify } from 'node:util'
 
@@ -17,7 +18,8 @@ import { promisify } from 'node:util'
  * Do NOT expose import logic as an HTTP endpoint.
  */
 
-const prisma = new PrismaClient()
+const adapter = new PrismaBetterSqlite3({url: process.env.DATABASE_URL || "file:./dev.db"})
+const prisma = new PrismaClient({adapter})
 const scryptAsync = promisify(scrypt) as unknown as (
   password: string,
   salt: string,

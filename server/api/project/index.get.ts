@@ -1,5 +1,5 @@
-import { prisma } from '~/server/utils/prisma'
-import { ROLES } from '~/shared/constants/roles'
+import prisma from '~~/server/utils/prisma'
+import { ROLES } from '~~/shared/constants/roles'
 
 /**
  * GET /api/project — projects with team members and request history.

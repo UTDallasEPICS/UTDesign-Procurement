@@ -1,4 +1,4 @@
-import { auth } from '~/server/lib/auth'
+import { auth } from '~~/server/lib/auth'
 
 /**
  * Track 3: BetterAuth HTTP handler

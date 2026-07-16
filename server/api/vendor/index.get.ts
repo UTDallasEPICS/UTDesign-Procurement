@@ -1,4 +1,4 @@
-import { prisma } from '~/server/utils/prisma'
+import prisma from '~~/server/utils/prisma'
 
 /** GET /api/vendor — returns all APPROVED vendors */
 export default defineEventHandler(async () => {

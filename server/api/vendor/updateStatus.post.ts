@@ -1,5 +1,5 @@
-import { ROLES } from '~/shared/constants/roles'
-import { prisma } from '~/server/utils/prisma'
+import { ROLES } from '~~/shared/constants/roles'
+import prisma from '~~/server/utils/prisma'
 
 /** POST /api/vendor/updateStatus — admin changes vendor approval status */
 export default defineEventHandler(async event => {

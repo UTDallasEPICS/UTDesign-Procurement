@@ -1,5 +1,5 @@
-import { ROLES } from '~/shared/constants/roles'
-import { prisma } from '~/server/utils/prisma'
+import { ROLES } from '~~/shared/constants/roles'
+import prisma from '~~/server/utils/prisma'
 
 export default defineEventHandler(async event => {
   if (event.context.role !== ROLES.ADMIN) throw createError({ statusCode: 403, message: 'Admin only' })

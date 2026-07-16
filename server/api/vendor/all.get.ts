@@ -1,5 +1,5 @@
-import { ROLES } from '~/shared/constants/roles'
-import { prisma } from '~/server/utils/prisma'
+import { ROLES } from '~~/shared/constants/roles'
+import prisma from '~~/server/utils/prisma'
 
 /** GET /api/vendor/all — returns all vendors (admin only) */
 export default defineEventHandler(async event => {

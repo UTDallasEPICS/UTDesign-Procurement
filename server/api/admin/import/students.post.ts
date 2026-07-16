@@ -1,6 +1,6 @@
-import { ROLES } from '~/shared/constants/roles'
-import { prisma } from '~/server/utils/prisma'
-import { parseSheet, validateStudentRow, emailToNetID, type StudentRow } from '~/server/utils/xlsx'
+import { ROLES } from '~~/shared/constants/roles'
+import prisma from '~~/server/utils/prisma'
+import { parseSheet, validateStudentRow, emailToNetID, type StudentRow } from '~~/server/utils/xlsx'
 
 interface RowResult {
   row: number

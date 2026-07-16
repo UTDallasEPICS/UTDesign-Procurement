@@ -1,5 +1,5 @@
 import { createAuthClient } from 'better-auth/vue'
-import { ROLES, type Role } from '~/shared/constants/roles'
+import { ROLES, type Role } from '~~/shared/constants/roles'
 
 let _authClient: ReturnType<typeof createAuthClient> | null = null
 

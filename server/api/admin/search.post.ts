@@ -1,5 +1,5 @@
-import { ROLES } from '~/shared/constants/roles'
-import { prisma } from '~/server/utils/prisma'
+import { ROLES } from '~~/shared/constants/roles'
+import prisma from '~~/server/utils/prisma'
 
 /** POST /api/admin/search — search users or projects */
 export default defineEventHandler(async event => {

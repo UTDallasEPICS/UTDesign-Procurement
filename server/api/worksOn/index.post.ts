@@ -1,5 +1,5 @@
-import { ROLES } from '~/shared/constants/roles'
-import { prisma } from '~/server/utils/prisma'
+import { ROLES } from '~~/shared/constants/roles'
+import prisma from '~~/server/utils/prisma'
 
 /** POST /api/worksOn — assign a user to a project (admin only) */
 export default defineEventHandler(async event => {

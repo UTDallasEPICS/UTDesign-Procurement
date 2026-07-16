@@ -1,8 +1,8 @@
 import type { ProcessStatus } from '@prisma/client'
-import { prisma } from '~/server/utils/prisma'
-import { addExpenseToProject, removeExpenseFromProject } from '~/server/utils/budget'
-import { isTransitionAllowed, COMMENT_REQUIRED_STATUSES, type OrderKind } from '~/server/utils/statusTransitions'
-import { ROLES } from '~/shared/constants/roles'
+import prisma from '~~/server/utils/prisma'
+import { addExpenseToProject, removeExpenseFromProject } from '~~/server/utils/budget'
+import { isTransitionAllowed, COMMENT_REQUIRED_STATUSES, type OrderKind } from '~~/server/utils/statusTransitions'
+import { ROLES } from '~~/shared/constants/roles'
 import {
   sendEmail,
   templateRequestApproved,
@@ -13,7 +13,7 @@ import {
   templateReimbursementRejected,
   templateReimbursementChangesRequested,
   templateReimbursementProcessed,
-} from '~/server/utils/email'
+} from '~~/server/utils/email'
 
 /** POST /api/process/update — role-based status transitions (approve, reject, request changes, cancel, resubmit) */
 export default defineEventHandler(async event => {

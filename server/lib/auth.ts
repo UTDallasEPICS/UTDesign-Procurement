@@ -1,6 +1,6 @@
 import { betterAuth } from 'better-auth'
 import { prismaAdapter } from 'better-auth/adapters/prisma'
-import { prisma } from '~/server/utils/prisma'
+import prisma from '~~/server/utils/prisma'
 
 /**
  * Track 3: BetterAuth Instance

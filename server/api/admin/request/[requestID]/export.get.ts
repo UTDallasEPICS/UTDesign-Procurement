@@ -1,6 +1,6 @@
 import * as XLSX from 'xlsx/xlsx.mjs'
-import { ROLES } from '~/shared/constants/roles'
-import { prisma } from '~/server/utils/prisma'
+import { ROLES } from '~~/shared/constants/roles'
+import prisma from '~~/server/utils/prisma'
 
 /** GET /api/admin/request/:requestID/export — downloadable XLSX of a single procurement request */
 export default defineEventHandler(async event => {

@@ -1,6 +1,6 @@
-import { ROLES } from '~/shared/constants/roles'
-import { prisma } from '~/server/utils/prisma'
-import { validateEmailForRole } from '~/server/utils/netid'
+import { ROLES } from '~~/shared/constants/roles'
+import prisma from '~~/server/utils/prisma'
+import { validateEmailForRole } from '~~/server/utils/netid'
 import type { UserRole } from '@prisma/client'
 
 /** POST /api/admin/add — admin creates a new user or project */

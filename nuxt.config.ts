@@ -1,7 +1,7 @@
 export default defineNuxtConfig({
   devtools: { enabled: true },
   modules: ['@nuxt/ui'],
-  css: ['~/assets/css/main.css'],
+  css: ['./app/assets/css/main.css'],
   compatibilityDate: '2025-04-23',
   fonts: {
     providers: {

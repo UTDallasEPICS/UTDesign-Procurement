@@ -1,9 +1,9 @@
 import { Prisma } from '@prisma/client'
-import { prisma } from '~/server/utils/prisma'
-import { addExpenseToProject, getRemainingBudget, recalcProjectExpenses } from '~/server/utils/budget'
-import { sendEmail, templateRequestSubmitted } from '~/server/utils/email'
-import { ITEM_CATEGORIES, OTHER_CATEGORY } from '~/shared/constants/categories'
-import { ROLES } from '~/shared/constants/roles'
+import prisma from '~~/server/utils/prisma'
+import { addExpenseToProject, getRemainingBudget, recalcProjectExpenses } from '~~/server/utils/budget'
+import { sendEmail, templateRequestSubmitted } from '~~/server/utils/email'
+import { ITEM_CATEGORIES, OTHER_CATEGORY } from '~~/shared/constants/categories'
+import { ROLES } from '~~/shared/constants/roles'
 
 const MAX_WORDS = 50
 

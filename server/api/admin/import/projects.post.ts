@@ -1,6 +1,6 @@
-import { ROLES } from '~/shared/constants/roles'
-import { prisma } from '~/server/utils/prisma'
-import { parseSheet, validateProjectRow, emailToNetID, type ProjectRow } from '~/server/utils/xlsx'
+import { ROLES } from '~~/shared/constants/roles'
+import prisma from '~~/server/utils/prisma'
+import { parseSheet, validateProjectRow, emailToNetID, type ProjectRow } from '~~/server/utils/xlsx'
 
 interface ProjectImportRow extends ProjectRow {
   mentorFirstName?: string
