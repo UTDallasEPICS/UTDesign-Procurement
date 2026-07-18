@@ -171,7 +171,7 @@
 </template>
 
 <script setup lang="ts">
-import { ITEM_CATEGORIES } from '~/shared/constants/categories'
+import { ITEM_CATEGORIES } from '~~/shared/constants/categories'
 
 definePageMeta({ middleware: 'auth' })
 
