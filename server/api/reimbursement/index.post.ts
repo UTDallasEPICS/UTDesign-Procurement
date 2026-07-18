@@ -6,7 +6,7 @@ import { sendEmail, templateReimbursementSubmitted } from '~~/server/utils/email
 import { ITEM_CATEGORIES, OTHER_CATEGORY, JUSTIFICATION_REQUIRED_CATEGORIES } from '~~/shared/constants/categories'
 import { ROLES } from '~~/shared/constants/roles'
 
-const UPLOAD_DIR = join(process.cwd(), 'uploads', 'receipts')
+const UPLOAD_DIR = join(process.cwd(), 'efs', 'uploads', 'receipts')
 
 interface ReimbursementItemInput {
   receiptDate: string
