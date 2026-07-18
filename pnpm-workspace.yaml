@@ -1,8 +1,0 @@
-onlyBuiltDependencies:
-  - '@parcel/watcher'
-  - '@prisma/engines'
-  - better-sqlite3
-  - esbuild
-  - prisma
-  - sharp
-  - vue-demi
