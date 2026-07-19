@@ -10,11 +10,11 @@ Three user roles: **Student**, **Mentor**, **Admin**.
 
 | Layer | Technology |
 |---|---|
-| Framework | [Nuxt 3](https://nuxt.com) (Vue 3, TypeScript) |
+| Framework | [Nuxt 4](https://nuxt.com) (Vue 3, TypeScript) |
 | UI | [Nuxt UI](https://ui.nuxt.com) + Tailwind CSS |
 | Data grids | AG Grid Vue 3 |
 | Auth | [BetterAuth](https://www.better-auth.com) (email/password; Microsoft SSO stubbed) |
-| ORM | [Prisma 6](https://www.prisma.io) |
+| ORM | [Prisma 7](https://www.prisma.io) |
 | Database | SQLite (`prisma/dev.db`) |
 | Email | Nodemailer |
 
