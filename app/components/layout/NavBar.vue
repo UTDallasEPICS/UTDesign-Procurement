@@ -17,38 +17,38 @@
           <NuxtLink
             v-if="isStudent"
             to="/request-form"
-            class="rounded-full px-4 py-2 text-sm font-semibold text-white/80 transition hover:bg-white/10 hover:text-white"
-            active-class="bg-white text-[#0f3d2f] shadow-sm"
+            class="rounded-full px-4 py-2 text-sm font-semibold transition hover:bg-white/10 hover:text-white"
+            :class="isActive('/request-form') ? 'bg-[#d86e18] text-white shadow-sm' : 'text-white/80'"
           >
             New Request
           </NuxtLink>
           <NuxtLink
             v-if="isStudent"
             to="/reimbursement/student"
-            class="rounded-full px-4 py-2 text-sm font-semibold text-white/80 transition hover:bg-white/10 hover:text-white"
-            active-class="bg-white text-[#0f3d2f] shadow-sm"
+            class="rounded-full px-4 py-2 text-sm font-semibold transition hover:bg-white/10 hover:text-white"
+            :class="isActive('/reimbursement') ? 'bg-[#d86e18] text-white shadow-sm' : 'text-white/80'"
           >
             Reimbursement
           </NuxtLink>
           <NuxtLink
             to="/orders"
-            class="rounded-full px-4 py-2 text-sm font-semibold text-white/80 transition hover:bg-white/10 hover:text-white"
-            active-class="bg-white text-[#0f3d2f] shadow-sm"
+            class="rounded-full px-4 py-2 text-sm font-semibold transition hover:bg-white/10 hover:text-white"
+            :class="isActive('/orders') ? 'bg-[#d86e18] text-white shadow-sm' : 'text-white/80'"
           >
             Orders
           </NuxtLink>
           <NuxtLink
             to="/projects"
-            class="rounded-full px-4 py-2 text-sm font-semibold text-white/80 transition hover:bg-white/10 hover:text-white"
-            active-class="bg-white text-[#0f3d2f] shadow-sm"
+            class="rounded-full px-4 py-2 text-sm font-semibold transition hover:bg-white/10 hover:text-white"
+            :class="isActive('/projects') ? 'bg-[#d86e18] text-white shadow-sm' : 'text-white/80'"
           >
             Projects
           </NuxtLink>
           <NuxtLink
             v-if="isAdmin"
             to="/database-updates"
-            class="rounded-full px-4 py-2 text-sm font-semibold text-white/80 transition hover:bg-white/10 hover:text-white"
-            active-class="bg-[#d86e18] text-white shadow-sm"
+            class="rounded-full px-4 py-2 text-sm font-semibold transition hover:bg-white/10 hover:text-white"
+            :class="isActive('/database-updates') ? 'bg-[#d86e18] text-white shadow-sm' : 'text-white/80'"
           >
             Database
           </NuxtLink>
@@ -79,7 +79,12 @@
 </template>
 
 <script setup lang="ts">
+const route = useRoute()
 const { user, isAdmin, isStudent, signOut } = useAuth()
+
+const isActive = (path: string) => {
+  return route.path.startsWith(path)
+}
 
 const roleLabel = computed(() => {
   if (isAdmin.value) return 'Admin'
