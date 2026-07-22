@@ -14,6 +14,7 @@ prisma/dev.db-journal
 prisma/*.db
 efs/
 prisma/generated
+dev.db
 
 # OS
 .DS_Store
