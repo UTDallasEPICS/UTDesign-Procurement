@@ -18,7 +18,7 @@
     "ag-grid-vue3": "^33.3.0",
     "bcryptjs": "^3.0.3",
     "better-auth": "^1.2.7",
-    "better-sqlite3": "^12.11.1",
+    
     "nodemailer": "^6.9.16",
     "nuxt": "^4.4.8",
     "vue": "^3.5.13",
@@ -27,9 +27,8 @@
   },
   "devDependencies": {
     "@nuxt/devtools": "latest",
-    "@prisma/adapter-better-sqlite3": "^7.9.0",
     "@prisma/client": "^7.8.0",
-    "@types/better-sqlite3": "^7.6.13",
+    
     "@types/node": "^26.1.1",
     "@types/nodemailer": "^6.4.17",
     "prisma": "^7.8.0",
