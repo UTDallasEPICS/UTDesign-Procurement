@@ -41,7 +41,15 @@
               required
             />
 
-            <UTextarea v-model="form.additionalInfo" label="Additional information" placeholder="Notes about this reimbursement..." :rows="4" />
+            <div class="rounded-2xl border-2 border-slate-300 bg-slate-50 p-5 space-y-3">
+              <label class="block text-sm font-bold text-slate-900">Additional information</label>
+              <textarea
+                v-model="form.additionalInfo"
+                rows="4"
+                placeholder="Notes about this reimbursement..."
+                class="block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-base text-slate-900 shadow-sm outline-none transition focus:border-[#d86e18] focus:ring-4 focus:ring-[#d86e18]/10 resize-none"
+              ></textarea>
+            </div>
           </section>
 
           <section class="app-surface space-y-4 p-5">
@@ -76,45 +84,90 @@
                   </button>
                 </div>
 
-                <div class="mt-4 grid gap-4 md:grid-cols-2">
-                  <UInput v-model="item.receiptDate" type="date" label="Date of purchase *" />
-                  <UInput v-model.number="item.quantity" type="number" min="1" label="Quantity *" />
-                  <UInput v-model.number="item.unitPrice" type="number" step="0.01" min="0" label="Unit price ($) *" />
-                  <UInput v-model="item.url" label="Item URL" placeholder="Optional vendor or product URL" />
-                  <div class="md:col-span-2">
-                    <UInput v-model="item.description" label="Description *" placeholder="What is on the receipt?" />
+                <!-- Date and Description -->
+                <div class="mt-6 space-y-4">
+                  <div class="rounded-2xl border-2 border-slate-300 bg-slate-50 p-5">
+                    <label class="mb-3 block text-sm font-bold text-slate-900">Date of purchase *</label>
+                    <UInput v-model="item.receiptDate" type="date" />
+                  </div>
+                  <div class="rounded-2xl border-2 border-slate-300 bg-slate-50 p-5 space-y-3">
+                    <label class="block text-sm font-bold text-slate-900">What is on the receipt? *</label>
+                    <textarea
+                      v-model="item.description"
+                      rows="7"
+                      placeholder="Be specific about the items purchased"
+                      class="block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-base text-slate-900 shadow-sm outline-none transition focus:border-[#d86e18] focus:ring-4 focus:ring-[#d86e18]/10 resize-none"
+                    ></textarea>
+                    <p class="text-xs" :class="wordCount(item.description) > 50 ? 'text-red-500' : 'text-slate-500'">
+                      {{ wordCount(item.description) }}/50 words
+                    </p>
                   </div>
                 </div>
 
-                <div class="mt-4 grid gap-4 md:grid-cols-2">
-                  <AppSelect
-                    v-model="item.category"
-                    :items="categoryOptions"
-                    label="Category"
-                    placeholder="Choose a category"
-                    required
-                  />
-                  <div v-if="justificationRequired(item)" class="space-y-2">
-                    <label class="block text-sm font-semibold text-slate-800">Justification *</label>
-                    <UTextarea v-model="item.justification" placeholder="Why is this reimbursement needed?" :rows="4" />
+                <!-- Item Quantity and Unit Price -->
+                <div class="mt-6 grid gap-4 md:grid-cols-2">
+                  <div class="rounded-xl border-2 border-slate-300 bg-slate-50 p-5">
+                    <label class="mb-3 block text-sm font-bold text-slate-900">Item quantity *</label>
+                    <UInput v-model.number="item.quantity" type="number" min="1" placeholder="How many?" />
+                  </div>
+                  <div class="rounded-xl border-2 border-slate-300 bg-slate-50 p-5">
+                    <label class="mb-3 block text-sm font-bold text-slate-900">Item unit price ($) *</label>
+                    <UInput v-model.number="item.unitPrice" type="number" step="0.01" min="0" placeholder="Cost per item" />
+                  </div>
+                </div>
+
+                <!-- Optional Product URL -->
+                <div class="mt-6">
+                  <div class="rounded-2xl border-2 border-slate-300 bg-slate-50 p-5">
+                    <label class="mb-3 block text-sm font-bold text-slate-900">Product URL (optional)</label>
+                    <UInput v-model="item.url" placeholder="Link to vendor or product page" />
+                  </div>
+                </div>
+
+                <!-- Category and Justification -->
+                <div class="mt-6 space-y-4">
+                  <div class="rounded-2xl border-2 border-slate-300 bg-slate-50 p-5">
+                    <label class="mb-3 block text-sm font-bold text-slate-900">Category *</label>
+                    <AppSelect
+                      v-model="item.category"
+                      :items="categoryOptions"
+                      placeholder="Choose a category"
+                      required
+                    />
+                  </div>
+                  <div v-if="justificationRequired(item)" class="rounded-2xl border-2 border-slate-300 bg-slate-50 p-5 space-y-3">
+                    <label class="block text-sm font-bold text-slate-900">Justification *</label>
+                    <textarea
+                      v-model="item.justification"
+                      rows="7"
+                      placeholder="Why is this reimbursement needed?"
+                      class="block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-base text-slate-900 shadow-sm outline-none transition focus:border-[#d86e18] focus:ring-4 focus:ring-[#d86e18]/10 resize-none"
+                    ></textarea>
+                    <p class="text-xs" :class="wordCount(item.justification) > 50 ? 'text-red-500' : 'text-slate-500'">
+                      {{ wordCount(item.justification) }}/50 words
+                    </p>
                   </div>
                 </div>
 
                 <div v-if="item.category === 'Other'" class="mt-4">
-                  <UInput v-model="item.otherCategoryDescription" label="Other category description *" placeholder="Describe the category" />
+                  <div class="rounded-2xl border-2 border-slate-300 bg-slate-50 p-5">
+                    <label class="mb-3 block text-sm font-bold text-slate-900">Other category description *</label>
+                    <UInput v-model="item.otherCategoryDescription" placeholder="Describe the category" />
+                  </div>
                 </div>
 
-                <div class="mt-4">
-                  <label class="mb-2 block text-sm font-semibold text-slate-800">Vendor *</label>
+                <!-- Vendor Selection -->
+                <div class="mt-6">
                   <VendorSelect
                     v-model="item.vendorID"
                     @update:new-vendor="setItemNewVendor(item, $event)"
                   />
                 </div>
 
-                <div class="mt-4">
-                  <label class="mb-2 block text-sm font-semibold text-slate-800">Receipt upload</label>
-                  <DragAndDrop v-model="item.file" accept=".pdf,.png,.jpg" label="Receipt scan or photo" />
+                <!-- Receipt Upload -->
+                <div class="mt-6">
+                  <label class="mb-3 block text-sm font-semibold text-slate-900">Receipt upload</label>
+                  <DragAndDrop v-model="item.file" accept=".pdf,.png,.jpg" label="Drag and drop receipt scan or photo" />
                 </div>
 
                 <div class="mt-4 text-right text-sm font-semibold text-slate-700">
@@ -226,6 +279,10 @@ function setItemNewVendor(item: ReimbursementItem, vendor: { name: string; email
   item.newVendor = vendor
 }
 
+function wordCount(s: string) {
+  return s.trim() ? s.trim().split(/\s+/).length : 0
+}
+
 function justificationRequired(item: ReimbursementItem) {
   return (
     (!!item.category && (JUSTIFICATION_REQUIRED_CATEGORIES as readonly string[]).includes(item.category)) ||
@@ -289,8 +346,8 @@ async function submit() {
         newVendorName: i.vendorID === '__new__' ? i.newVendor?.name : undefined,
         newVendorEmail: i.vendorID === '__new__' ? i.newVendor?.email : undefined,
         newVendorURL: i.vendorID === '__new__' ? i.newVendor?.url : undefined,
-        fileName: i.file?.name,
-        fileData: i.file ? await readFileAsDataURL(i.file) : undefined,
+        fileData: i.file ? await readFileAsDataURL(i.file) : null,
+        fileName: i.file?.name ?? null,
       })),
     )
 
