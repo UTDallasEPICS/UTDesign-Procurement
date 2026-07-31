@@ -36,7 +36,7 @@
 
         <UTabs :items="tabs" v-model="activeTab" />
 
-        <div v-if="activeTab === 0" class="space-y-4">
+        <div v-if="activeTab == 0" class="space-y-4">
           <div v-if="pending" class="rounded-2xl border border-slate-200 bg-white px-6 py-12 text-center text-slate-500">Loading...</div>
           <div v-else-if="!requests?.length" class="rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-12 text-center text-slate-500">No approved requests to process.</div>
           <div v-else class="space-y-4">

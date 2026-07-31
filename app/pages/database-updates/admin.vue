@@ -7,7 +7,7 @@
     <UTabs :items="tabs" v-model="activeTab" />
 
     <!-- Users Tab -->
-    <div v-if="activeTab === 0" class="space-y-3">
+    <div v-if="activeTab == 0" class="space-y-3">
       <div class="flex gap-2">
         <UButton class="bg-[#154734] text-white" @click="openAddUser">+ Add User</UButton>
         <UButton
