@@ -19,20 +19,6 @@ export default defineNuxtRouteMiddleware(async (to) => {
     return navigateTo('/login')
   }
 
-  // Role-based redirect for /orders index
-  if (to.path === '/orders') {
-    if (isAdmin.value) return navigateTo('/orders/admin')
-    if (isMentor.value) return navigateTo('/orders/mentor')
-    if (isStudent.value) return navigateTo('/orders/student')
-  }
-
-  // Role-based redirect for /projects index
-  if (to.path === '/projects') {
-    if (isAdmin.value) return navigateTo('/projects/admin')
-    if (isMentor.value) return navigateTo('/projects/mentor')
-    if (isStudent.value) return navigateTo('/projects/student')
-  }
-
   // Database updates: admin only
   if (to.path.startsWith('/database-updates') && !isAdmin.value) {
     return navigateTo('/orders')
