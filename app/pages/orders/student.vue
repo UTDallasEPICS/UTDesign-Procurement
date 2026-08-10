@@ -31,7 +31,7 @@
             </div>
           </div>
 
-          <div v-if="activeTab === 1" class="space-y-4">
+          <div v-if="activeTab == 1" class="space-y-4">
             <div v-if="reimbPending" class="rounded-2xl border border-slate-200 bg-white px-6 py-12 text-center text-slate-500">Loading...</div>
             <div v-else-if="!reimbursements?.length" class="rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-12 text-center text-slate-500">
               No reimbursements yet.
