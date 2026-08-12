@@ -5,7 +5,7 @@ import dotenv from 'dotenv'
 dotenv.config()
 
 export default {
-  schema: path.join('prisma', 'schema'),
+  schema: "prisma/schema.prisma",
   migrations: {
     path: path.join('prisma', 'migrations'),
     seed: 'tsx ./prisma/seed.ts',
