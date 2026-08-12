@@ -1,9 +1,9 @@
-name: Build and Publish Docker Image (Stage)
+name: Build and Publish Docker Image
 
 on:
   push:
     branches:
-      - stage
+      - main
 
 jobs:
   deploy:
@@ -30,7 +30,7 @@ jobs:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           REPOSITORY: ${{ vars.REPOSITORY }}
         run: |
-          docker build --platform linux/arm64 -t $ECR_REGISTRY/$REPOSITORY:stage .
+          docker build --platform linux/arm64 -t $ECR_REGISTRY/$REPOSITORY:prod .
 
       - name: Detect ORM and package migration bundle
         env:
@@ -64,11 +64,11 @@ jobs:
       - name: Run migration via Lambda
         run: |
           aws lambda invoke \
-            --function-name npts-migration-${{ vars.REPOSITORY }}-stage \
+            --function-name npts-migration-${{ vars.REPOSITORY }}-prod \
             --invocation-type RequestResponse \
             --cli-read-timeout 900 \
             --cli-binary-format raw-in-base64-out \
-            --payload '{"project":"${{ vars.REPOSITORY }}","environment":"stage","orm":"${{ env.ORM }}","migration_bucket":"npts-env-bucket","migration_key":"${{ vars.REPOSITORY }}/migrations/${{ github.sha }}.zip"}' \
+            --payload '{"project":"${{ vars.REPOSITORY }}","environment":"prod","orm":"${{ env.ORM }}","migration_bucket":"npts-env-bucket","migration_key":"${{ vars.REPOSITORY }}/migrations/${{ github.sha }}.zip"}' \
             /tmp/lambda-response.json
 
           STATUS=$(jq -r '.status' /tmp/lambda-response.json)
@@ -84,9 +84,9 @@ jobs:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           REPOSITORY: ${{ vars.REPOSITORY }}
           CLUSTER_NAME: ${{ secrets.CLUSTER_NAME }}
-          SERVICE_NAME: ${{ vars.REPOSITORY }}-stage-service
+          SERVICE_NAME: ${{ vars.REPOSITORY }}-prod-service
         run: |
-          docker push $ECR_REGISTRY/$REPOSITORY:stage
+          docker push $ECR_REGISTRY/$REPOSITORY:prod
           aws ecs update-service \
             --cluster $CLUSTER_NAME \
             --service $SERVICE_NAME \
