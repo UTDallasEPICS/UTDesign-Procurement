@@ -98,8 +98,8 @@
                       placeholder="Be specific about the items purchased"
                       class="block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-base text-slate-900 shadow-sm outline-none transition focus:border-[#d86e18] focus:ring-4 focus:ring-[#d86e18]/10 resize-none"
                     ></textarea>
-                    <p class="text-xs" :class="wordCount(item.description) > 50 ? 'text-red-500' : 'text-slate-500'">
-                      {{ wordCount(item.description) }}/50 words
+                    <p class="text-xs" :class="charCount(item.description) > 300 ? 'text-red-500' : 'text-slate-500'">
+                      {{ charCount(item.description) }}/300 characters
                     </p>
                   </div>
                 </div>
@@ -143,8 +143,8 @@
                       placeholder="Why is this reimbursement needed?"
                       class="block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-base text-slate-900 shadow-sm outline-none transition focus:border-[#d86e18] focus:ring-4 focus:ring-[#d86e18]/10 resize-none"
                     ></textarea>
-                    <p class="text-xs" :class="wordCount(item.justification) > 50 ? 'text-red-500' : 'text-slate-500'">
-                      {{ wordCount(item.justification) }}/50 words
+                    <p class="text-xs" :class="charCount(item.justification) > 300 ? 'text-red-500' : 'text-slate-500'">
+                      {{ charCount(item.justification) }}/300 characters
                     </p>
                   </div>
                 </div>
@@ -279,8 +279,8 @@ function setItemNewVendor(item: ReimbursementItem, vendor: { name: string; email
   item.newVendor = vendor
 }
 
-function wordCount(s: string) {
-  return s.trim() ? s.trim().split(/\s+/).length : 0
+function charCount(s: string) {
+  return s.length
 }
 
 function justificationRequired(item: ReimbursementItem) {
@@ -329,7 +329,10 @@ async function submit() {
     error.value = 'Enter a vendor name for each new vendor.'
     return
   }
-
+  if (form.items.some(i => charCount(i.justification) > 300 || charCount(i.description) > 300)) {
+    error.value = 'Justification and description must each be 300 characters or fewer.'
+    return
+  }
   submitting.value = true
   try {
     const items = await Promise.all(

@@ -105,8 +105,8 @@
                       placeholder="Be specific so reviewers understand what you're buying"
                       class="block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-base text-slate-900 shadow-sm outline-none transition focus:border-[#d86e18] focus:ring-4 focus:ring-[#d86e18]/10 resize-none"
                     ></textarea>
-                    <p class="text-xs" :class="wordCount(item.description) > 50 ? 'text-red-500' : 'text-slate-500'">
-                      {{ wordCount(item.description) }}/50 words
+                    <p class="text-xs" :class="charCount(item.description) > 300 ? 'text-red-500' : 'text-slate-500'">
+                      {{ charCount(item.description) }}/300 characters
                     </p>
                   </div>
                 </div>
@@ -134,7 +134,7 @@
                   </div>
                   <div class="rounded-xl border-2 border-slate-300 bg-slate-50 p-5">
                     <label class="mb-3 block text-sm font-bold text-slate-900">Item unit price ($) *</label>
-                    <UInput v-model.number="item.unitPrice" type="number" step="0.01" min="0" placeholder="Cost per item" />
+                      <UInput v-model.number="item.unitPrice" type="number" step="0.01" min="0" placeholder="Cost per item" />
                   </div>
                 </div>
 
@@ -157,8 +157,8 @@
                       placeholder="Why is this item needed?"
                       class="block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-base text-slate-900 shadow-sm outline-none transition focus:border-[#d86e18] focus:ring-4 focus:ring-[#d86e18]/10 resize-none"
                     ></textarea>
-                    <p class="text-xs" :class="wordCount(item.justification) > 50 ? 'text-red-500' : 'text-slate-500'">
-                      {{ wordCount(item.justification) }}/50 words
+                    <p class="text-xs" :class="charCount(item.justification) > 300 ? 'text-red-500' : 'text-slate-500'">
+                      {{ charCount(item.justification) }}/300 characters
                     </p>
                   </div>
                 </div>
@@ -192,7 +192,7 @@
             <div class="flex items-center justify-between rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm">
               <span class="font-semibold text-slate-700">Items total</span>
               <span class="font-black text-[#d86e18]">${{ itemsTotal.toFixed(2) }}</span>
-            </div>
+            </div>  
           </section>
 
           <div v-if="error" class="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
@@ -205,8 +205,7 @@
               type="submit"
               class="bg-[#154734] text-white hover:bg-[#0f3326]"
               :loading="submitting"
-              :disabled="balanceAfter < 0 && !editRequestID"
-            >
+              >
               {{ editRequestID ? 'Resubmit Request' : 'Submit Request' }}
             </UButton>
           </div>
@@ -341,8 +340,8 @@ function setItemSelectedVendor(item: RequestItem, vendor: { vendorID: number; ve
   item.selectedVendor = vendor
 }
 
-function wordCount(s: string) {
-  return s.trim() ? s.trim().split(/\s+/).length : 0
+function charCount(s: string) {
+  return s.length
 }
 
 function vendorWarning(item: RequestItem) {
@@ -391,19 +390,18 @@ async function submit() {
     error.value = 'A justification is required for every item.'
     return
   }
-  if (form.items.some(i => wordCount(i.justification) > 50 || wordCount(i.description) > 50)) {
-    error.value = 'Justification and description must each be 50 words or fewer.'
+  if (form.items.some(i => charCount(i.justification) > 300 || charCount(i.description) > 300)) {
+    error.value = 'Justification and description must each be 300 characters or fewer.'
     return
   }
   if (form.items.some(i => (i.vendorID == null || i.vendorID === '__new__') && !i.newVendor?.name.trim())) {
     error.value = 'Enter a vendor name for each new vendor.'
     return
   }
-  if (balanceAfter.value < 0 && !editRequestID) {
+  if (balanceAfter.value < 0 ) {
     error.value = 'This order exceeds the project balance.'
     return
   }
-
   submitting.value = true
   try {
     await $fetch('/api/request', {
