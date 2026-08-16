@@ -430,7 +430,7 @@ async function submit() {
         })),
       },
     })
-    await navigateTo('/orders/student')
+    await navigateTo('/orders')
   } catch (e: any) {
     error.value = e?.data?.message ?? 'Submission failed. Please try again.'
   } finally {
