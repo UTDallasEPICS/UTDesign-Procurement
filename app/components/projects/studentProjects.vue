@@ -37,7 +37,7 @@
                 Budget: ${{ project.startingBudget.toLocaleString() }} starting / ${{ (project.startingBudget - project.totalExpenses).toLocaleString() }} remaining
               </p>
               <NuxtLink :to="`/projects/${project.projectNum}`">
-                <UButton size="sm" class="bg-[#154734] text-white">View Details</UButton>
+                <UButton size="sm" class="bg-[#154734] text-white cursor-pointer">View Details</UButton>
               </NuxtLink>
             </div>
           </div>

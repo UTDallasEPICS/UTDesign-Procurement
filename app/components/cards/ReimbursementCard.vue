@@ -72,21 +72,21 @@
     <!-- Actions -->
     <div class="px-5 py-3 flex gap-2 flex-wrap border-t border-[#F0F0F0] bg-[#FAFAFA]">
       <template v-if="userRole === 'ADMIN'">
-        <UButton size="sm" class="bg-[#154734] text-white" @click="$emit('process', reimbursement)">Mark as Processed</UButton>
-        <UButton size="sm" variant="outline" class="border-amber-500 text-amber-600" @click="$emit('request-changes', reimbursement)">Request Changes</UButton>
-        <UButton size="sm" variant="outline" class="border-red-500 text-red-500" @click="$emit('reject', reimbursement)">Reject</UButton>
+        <UButton size="sm" class="bg-[#154734] text-white cursor-pointer" @click="$emit('process', reimbursement)">Mark as Processed</UButton>
+        <UButton size="sm" variant="outline" class="border-amber-500 text-amber-600 cursor-pointer" @click="$emit('request-changes', reimbursement)">Request Changes</UButton>
+        <UButton size="sm" variant="outline" class="border-red-500 text-red-500 cursor-pointer" @click="$emit('reject', reimbursement)">Reject</UButton>
       </template>
       <template v-else-if="userRole === 'MENTOR'">
-        <UButton size="sm" class="bg-[#154734] text-white" @click="$emit('approve', reimbursement)">Approve</UButton>
-        <UButton size="sm" variant="outline" class="border-amber-500 text-amber-600" @click="$emit('request-changes', reimbursement)">Request Changes</UButton>
-        <UButton size="sm" variant="outline" class="border-red-500 text-red-500" @click="$emit('reject', reimbursement)">Reject</UButton>
+        <UButton size="sm" class="bg-[#154734] text-white cursor-pointer" @click="$emit('approve', reimbursement)">Approve</UButton>
+        <UButton size="sm" variant="outline" class="border-amber-500 text-amber-600 cursor-pointer" @click="$emit('request-changes', reimbursement)">Request Changes</UButton>
+        <UButton size="sm" variant="outline" class="border-red-500 text-red-500 cursor-pointer" @click="$emit('reject', reimbursement)">Reject</UButton>
       </template>
       <template v-else>
         <UButton
           v-if="reimbursement.process?.status === 'UNDER_REVIEW'"
           size="sm"
           variant="outline"
-          class="border-red-500 text-red-500"
+          class="border-red-500 text-red-500 cursor-pointer"
           @click="$emit('cancel', reimbursement)"
         >
           Cancel
@@ -94,7 +94,7 @@
         <UButton
           v-if="reimbursement.process?.status === 'REJECTED' || reimbursement.process?.status === 'CHANGES_REQUESTED'"
           size="sm"
-          class="bg-[#E87722] text-white"
+          class="bg-[#E87722] text-white cursor-pointer"
           @click="$emit('resubmit', reimbursement)"
         >
           Resubmit

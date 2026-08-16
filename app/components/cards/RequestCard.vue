@@ -15,7 +15,7 @@
       </div>
       <div class="flex items-center gap-3">
         <StatusBadge :status="request.process?.status ?? ''" />
-        <button class="text-xs text-[#E87722]" @click="expanded = !expanded">
+        <button class="text-xs text-[#E87722] cursor-pointer" @click="expanded = !expanded">
           {{ expanded ? 'Collapse' : 'Expand' }}
         </button>
       </div>
@@ -145,13 +145,13 @@
           v-if="request.process?.status === 'REJECTED' || request.process?.status === 'CHANGES_REQUESTED'"
           :to="`/request-form?edit=${request.requestID}`"
         >
-          <UButton size="sm" class="bg-[#E87722] text-white">Edit &amp; Resubmit</UButton>
+          <UButton size="sm" class="bg-[#E87722] text-white cursor-pointer">Edit &amp; Resubmit</UButton>
         </NuxtLink>
         <UButton
           v-if="request.process?.status === 'ORDERED' && !request.trackingRequested && !request.orders?.some(o => o.trackingInfo)"
           size="sm"
           variant="outline"
-          class="border-[#1565C0] text-[#1565C0]"
+          class="border-[#1565C0] text-[#1565C0] cursor-pointer"
           @click="$emit('request-tracking', request)"
         >
           Request Tracking Info
