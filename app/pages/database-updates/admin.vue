@@ -4,12 +4,12 @@
       <h1 class="text-2xl font-bold text-[#1A1A1A]">Database Management</h1>
     </div>
 
-    <UTabs :items="tabs" v-model="activeTab" />
+    <UTabs :items="tabs" v-model="activeTab" class="[&_[role=tab]]:cursor-pointer" />
 
     <!-- Users Tab -->
     <div v-if="activeTab == 0" class="space-y-3">
       <div class="flex gap-2">
-        <UButton class="bg-[#154734] text-white" @click="openAddUser">+ Add User</UButton>
+        <UButton class="bg-[#154734] text-white cursor-pointer" @click="openAddUser">+ Add User</UButton>
         <UButton
           v-if="selectedUser"
           variant="outline"
@@ -126,7 +126,7 @@
         </p>
         <DragAndDrop v-model="projectFile" accept=".xlsx,.xls" label="Projects spreadsheet (.xlsx)" />
         <UButton
-          class="bg-[#154734] text-white"
+          class="bg-[#154734] text-white cursor-pointer"
           :disabled="!projectFile"
           :loading="importingProjects"
           @click="importProjects"
