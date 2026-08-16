@@ -68,7 +68,7 @@
         <UButton
           size="sm"
           variant="solid"
-          class="bg-white text-[#0f3d2f] hover:bg-white/90 font-semibold shadow-sm"
+          class="bg-white text-[#0f3d2f] hover:bg-white/90 font-semibold shadow-sm cursor-pointer"
           @click="signOut"
         >
           Sign Out

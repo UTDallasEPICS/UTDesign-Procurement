@@ -10,7 +10,7 @@
       </div>
 
       <div class="space-y-6 p-6 sm:p-8">
-        <UTabs :items="tabs" v-model="activeTab" />
+        <UTabs :items="tabs" v-model="activeTab" class="[&_[role=tab]]:cursor-pointer" />
 
         <section class="space-y-4">
           <div v-if="activeTab == 0" class="space-y-4">

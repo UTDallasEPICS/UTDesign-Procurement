@@ -15,7 +15,7 @@
       </div>
       <div class="flex items-center gap-3">
         <StatusBadge :status="request.process?.status ?? ''" />
-        <button class="text-xs text-[#E87722]" @click="expanded = !expanded">
+        <button class="text-xs text-[#E87722] cursor-pointer" @click="expanded = !expanded">
           {{ expanded ? 'Collapse' : 'Expand' }}
         </button>
       </div>
@@ -91,7 +91,7 @@
         <UButton
           v-if="request.process?.status === 'APPROVED'"
           size="sm"
-          class="bg-[#154734] text-white"
+          class="bg-[#154734] text-white cursor-pointer"
           @click="$emit('process', request)"
         >
           Mark as Ordered
@@ -99,7 +99,7 @@
         <UButton
           v-if="request.process?.status === 'ORDERED'"
           size="sm"
-          class="bg-[#00695C] text-white"
+          class="bg-[#00695C] text-white  cursor-pointer"
           @click="$emit('receive', request)"
         >
           Mark as Received
@@ -108,7 +108,7 @@
           v-if="request.process?.status === 'APPROVED'"
           size="sm"
           variant="outline"
-          class="border-amber-500 text-amber-600"
+          class="border-amber-500 text-amber-600 cursor-pointer"
           @click="$emit('request-changes', request)"
         >
           Request Changes
@@ -117,19 +117,19 @@
           v-if="request.process?.status === 'APPROVED'"
           size="sm"
           variant="outline"
-          class="border-red-500 text-red-500"
+          class="border-red-500 text-red-500 cursor-pointer"
           @click="$emit('reject', request)"
         >
           Reject
         </UButton>
         <a :href="`/api/admin/request/${request.requestID}/export`" download>
-          <UButton size="sm" variant="outline" class="border-[#154734] text-[#154734]">Export</UButton>
+          <UButton size="sm" variant="outline" class="border-[#154734] text-[#154734] cursor-pointer">Export</UButton>
         </a>
       </template>
       <template v-else-if="userRole === 'MENTOR'">
-        <UButton size="sm" class="bg-[#154734] text-white" @click="$emit('approve', request)">Approve</UButton>
-        <UButton size="sm" variant="outline" class="border-amber-500 text-amber-600" @click="$emit('request-changes', request)">Request Changes</UButton>
-        <UButton size="sm" variant="outline" class="border-red-500 text-red-500" @click="$emit('reject', request)">Reject</UButton>
+        <UButton size="sm" class="bg-[#154734] text-white cursor-pointer" @click="$emit('approve', request)">Approve</UButton>
+        <UButton size="sm" variant="outline" class="border-amber-500 text-amber-600 cursor-pointer" @click="$emit('request-changes', request)">Request Changes</UButton>
+        <UButton size="sm" variant="outline" class="border-red-500 text-red-500 cursor-pointer" @click="$emit('reject', request)">Reject</UButton>
       </template>
       <template v-else>
         <UButton
@@ -145,20 +145,20 @@
           v-if="request.process?.status === 'REJECTED' || request.process?.status === 'CHANGES_REQUESTED'"
           :to="`/request-form?edit=${request.requestID}`"
         >
-          <UButton size="sm" class="bg-[#E87722] text-white">Edit &amp; Resubmit</UButton>
+          <UButton size="sm" class="bg-[#E87722] text-white cursor-pointer">Edit &amp; Resubmit</UButton>
         </NuxtLink>
         <UButton
           v-if="request.process?.status === 'ORDERED' && !request.trackingRequested && !request.orders?.some(o => o.trackingInfo)"
           size="sm"
           variant="outline"
-          class="border-[#1565C0] text-[#1565C0]"
+          class="border-[#1565C0] text-[#1565C0] cursor-pointer"
           @click="$emit('request-tracking', request)"
         >
           Request Tracking Info
         </UButton>
         <span
           v-if="request.process?.status === 'ORDERED' && request.trackingRequested && !request.orders?.some(o => o.trackingInfo)"
-          class="text-xs text-[#5A5A5A] self-center"
+          class="text-xs text-[#5A5A5A] self-center cursor-pointer "
         >
           Tracking info requested
         </span>

@@ -187,8 +187,8 @@
           </div>
 
           <div class="flex flex-wrap justify-end gap-3">
-            <UButton variant="ghost" @click="$router.back()">Cancel</UButton>
-            <UButton type="submit" class="bg-[#154734] text-white hover:bg-[#0f3326]" :loading="submitting">
+            <UButton variant="ghost" class="cursor-pointer" @click="$router.back()">Cancel</UButton>
+            <UButton type="submit" class="bg-[#154734] text-white hover:bg-[#0f3326] cursor-pointer" :loading="submitting">
               Submit Reimbursement
             </UButton>
           </div>
