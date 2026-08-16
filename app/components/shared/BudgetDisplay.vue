@@ -29,7 +29,6 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
 
 const props = defineProps<{
   startingBudget: number
@@ -38,7 +37,7 @@ const props = defineProps<{
 
 const remaining = computed(() => props.startingBudget - props.used)
 const progressWidth = computed(() => {
-  const percentage = (remaining.value / Math.max(props.startingBudget, 1)) * 100
+const percentage = (remaining.value / Math.max(props.startingBudget, 1)) * 100
   return `${Math.min(100, Math.max(0, percentage))}%`
 })
 
