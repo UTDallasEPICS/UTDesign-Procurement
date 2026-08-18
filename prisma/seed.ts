@@ -18,7 +18,7 @@ import { promisify } from 'node:util'
  * Do NOT expose import logic as an HTTP endpoint.
  */
 
-const adapter = new PrismaBetterSqlite3({url: process.env.DATABASE_URL || "file:./dev.db"})
+const adapter = new PrismaBetterSqlite3({url: process.env.DATABASE_URL})
 const prisma = new PrismaClient({adapter})
 const scryptAsync = promisify(scrypt) as unknown as (
   password: string,
