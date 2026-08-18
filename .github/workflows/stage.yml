@@ -68,7 +68,7 @@ jobs:
             --invocation-type RequestResponse \
             --cli-read-timeout 900 \
             --cli-binary-format raw-in-base64-out \
-            --payload '{"project":"${{ vars.REPOSITORY }}","environment":"stage","orm":"${{ env.ORM }}","migration_bucket":"npts-env-bucket","migration_key":"${{ vars.REPOSITORY }}/migrations/${{ github.sha }}.zip"}' \
+          --payload '{"project":"${{ vars.REPOSITORY }}","environment":"stage","orm":"${{ env.ORM }}","migration_bucket":"npts-env-bucket","migration_key":"${{ vars.REPOSITORY }}/migrations/${{ github.sha }}.zip","seed":"true"}' \
             /tmp/lambda-response.json
 
           STATUS=$(jq -r '.status' /tmp/lambda-response.json)
