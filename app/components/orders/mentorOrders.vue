@@ -22,7 +22,7 @@
               :request="req"
               user-role="MENTOR"
               @approve="approveRequest(req)"
-              @reject="openModal(req, 'request', 'REJECTED')"
+              @reject="handleReject(req)"
               @request-changes="openModal(req, 'request', 'CHANGES_REQUESTED')"
             />
           </div>
@@ -38,7 +38,7 @@
               :reimbursement="r"
               user-role="MENTOR"
               @approve="approveReimbursement(r)"
-              @reject="openModal(r, 'reimbursement', 'REJECTED')"
+              @reject="handleReject"
               @request-changes="openModal(r, 'reimbursement', 'CHANGES_REQUESTED')"
             />
           </div>
@@ -56,13 +56,20 @@
       :confirm-label="modalStatus === 'REJECTED' ? 'Reject' : 'Request Changes'"
       :confirm-class="modalStatus === 'REJECTED' ? 'bg-red-600 hover:bg-red-700 text-white' : 'bg-amber-500 hover:bg-amber-600 text-white'"
       @confirm="submitModal"
+      @cancel="closeModal"
     />
   </div>
 </template>
 
 <script setup lang="ts">
 definePageMeta({ middleware: 'auth' })
+const selectedRequest = ref(null)
 
+const handleReject = (req) => { 
+ selectedRequest.value = req 
+ modalStatus.value = 'REJECTED' 
+ modalOpen.value = true 
+}
 const { isMentor } = useAuth()
 if (!isMentor.value) await navigateTo('/orders')
 
@@ -85,6 +92,9 @@ function openModal(item: typeof modalTarget.value, type: 'request' | 'reimbursem
   modalType.value = type
   modalStatus.value = status
   modalOpen.value = true
+}
+function closeModal() {
+  modalOpen.value = false
 }
 
 async function approveRequest(req: { process: { processID: number } }) {

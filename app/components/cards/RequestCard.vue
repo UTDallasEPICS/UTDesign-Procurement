@@ -127,16 +127,16 @@
         </a>
       </template>
       <template v-else-if="userRole === 'MENTOR'">
-        <UButton size="sm" class="bg-[#154734] text-white cursor-pointer" @click="$emit('approve', request)">Approve</UButton>
-        <UButton size="sm" variant="outline" class="border-amber-500 text-amber-600 cursor-pointer" @click="$emit('request-changes', request)">Request Changes</UButton>
-        <UButton size="sm" variant="outline" class="border-red-500 text-red-500 cursor-pointer" @click="$emit('reject', request)">Reject</UButton>
+        <UButton size="sm" class="bg-[#154734] text-white" @click="$emit('approve', request)">Approve</UButton>
+        <UButton size="sm" variant="outline" class="border-amber-500 text-amber-600" @click="$emit('request-changes', request)">Request Changes</UButton>
+        <UButton size="sm" variant="outline" class="border-red-500 text-red-500" @click="$emit('reject', request)">Reject</UButton>
       </template>
       <template v-else>
         <UButton
           v-if="request.process?.status === 'UNDER_REVIEW'"
           size="sm"
           variant="outline"
-          class="border-red-500 text-red-500"
+          class="border-red-500 text-red-500 cursor-pointer"
           @click="$emit('cancel', request)"
         >
           Cancel
