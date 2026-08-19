@@ -2,17 +2,17 @@
   <div class="mx-auto max-w-5xl space-y-6">
     <section class="app-surface overflow-hidden p-0">
       <div class="border-b border-white/70 bg-gradient-to-r from-[#154734] to-[#0f3326] px-6 py-6 text-white sm:px-8">
-        <p class="text-xs font-bold uppercase tracking-[0.3em] text-white/60">Mentor dashboard</p>
-        <h1 class="mt-2 text-3xl font-black tracking-tight">Project Overview</h1>
+        <p class="text-xs font-bold uppercase tracking-[0.3em] text-white/60">Student dashboard</p>
+        <h1 class="mt-2 text-3xl font-black tracking-tight">My Projects</h1>
         <p class="mt-2 max-w-2xl text-sm text-white/75">
-          Review the projects you are assigned to, inspect budgets, and open the detailed project timeline when needed.
+          See your active projects, budget status, and the detailed project timeline in one place.
         </p>
       </div>
 
       <div class="space-y-6 p-6 sm:p-8">
         <div v-if="pending" class="rounded-2xl border border-slate-200 bg-white px-6 py-12 text-center text-slate-500">Loading...</div>
         <div v-else-if="!projects?.length" class="rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-12 text-center text-slate-500">
-          You are not assigned to any projects.
+          You are not assigned to any projects yet.
         </div>
         <div v-else class="space-y-6">
           <div
@@ -37,7 +37,7 @@
                 Budget: ${{ project.startingBudget.toLocaleString() }} starting / ${{ (project.startingBudget - project.totalExpenses).toLocaleString() }} remaining
               </p>
               <NuxtLink :to="`/projects/${project.projectNum}`">
-                <UButton size="sm" class="bg-[#154734] text-white">View Details</UButton>
+                <UButton size="sm" class="bg-[#154734] text-white cursor-pointer">View Details</UButton>
               </NuxtLink>
             </div>
           </div>
@@ -50,8 +50,8 @@
 <script setup lang="ts">
 definePageMeta({ middleware: 'auth' })
 
-const { isMentor } = useAuth()
-if (!isMentor.value) await navigateTo('/orders')
+const { isStudent } = useAuth()
+if (!isStudent.value) await navigateTo('/orders')
 
 const { data, pending } = await useFetch('/api/worksOn/currentProjects')
 const projects = computed(() => data.value ?? [])

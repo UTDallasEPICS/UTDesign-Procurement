@@ -4,12 +4,12 @@
       <h1 class="text-2xl font-bold text-[#1A1A1A]">Database Management</h1>
     </div>
 
-    <UTabs :items="tabs" v-model="activeTab" />
+    <UTabs :items="tabs" v-model="activeTab" class="[&_[role=tab]]:cursor-pointer" />
 
     <!-- Users Tab -->
-    <div v-if="activeTab === 0" class="space-y-3">
+    <div v-if="activeTab == 0" class="space-y-3">
       <div class="flex gap-2">
-        <UButton class="bg-[#154734] text-white" @click="openAddUser">+ Add User</UButton>
+        <UButton class="bg-[#154734] text-white cursor-pointer" @click="openAddUser">+ Add User</UButton>
         <UButton
           v-if="selectedUser"
           variant="outline"
@@ -59,7 +59,7 @@
     </div>
 
     <!-- Projects Tab -->
-    <div v-if="activeTab === 1" class="space-y-3">
+    <div v-if="activeTab == 1" class="space-y-3">
       <div class="flex gap-2">
         <UButton class="bg-[#154734] text-white" @click="openAddProject">+ Add Project</UButton>
         <UButton
@@ -86,7 +86,7 @@
     </div>
 
     <!-- Vendors Tab -->
-    <div v-if="activeTab === 2" class="space-y-3">
+    <div v-if="activeTab == 2" class="space-y-3">
       <div class="flex gap-2">
         <UButton
           v-if="selectedVendor"
@@ -115,7 +115,7 @@
     </div>
 
     <!-- Import Tab -->
-    <div v-if="activeTab === 3" class="space-y-6 max-w-2xl">
+    <div v-if="activeTab == 3" class="space-y-6 max-w-2xl">
       <!-- Step 1: Projects -->
       <div class="bg-white border border-[#D9D9D9] rounded-xl p-6 space-y-3">
         <h2 class="font-bold text-[#1A1A1A]">Step 1 — Import Projects</h2>
@@ -126,7 +126,7 @@
         </p>
         <DragAndDrop v-model="projectFile" accept=".xlsx,.xls" label="Projects spreadsheet (.xlsx)" />
         <UButton
-          class="bg-[#154734] text-white"
+          class="bg-[#154734] text-white cursor-pointer"
           :disabled="!projectFile"
           :loading="importingProjects"
           @click="importProjects"
