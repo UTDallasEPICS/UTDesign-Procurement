@@ -9,35 +9,37 @@
     <!-- Users Tab -->
     <div v-if="activeTab == 0" class="space-y-3">
       <div class="flex gap-2">
-        <UButton class="bg-[#154734] text-white cursor-pointer" @click="openAddUser">+ Add User</UButton>
+        <UButton class="bg-[#154734] text-white cursor-pointer" @click="openAddUser">
+          + Add User
+      </UButton>
+
         <UButton
           v-if="selectedUser"
-          variant="outline"
-          class="border-red-500 text-red-500"
+          class="bg-red-500 text-white cursor-pointer"
           @click="openDeactivateUser"
         >
           Deactivate
         </UButton>
+
         <UButton
           v-if="selectedUser && !selectedUser.active"
-          variant="outline"
-          class="border-[#154734] text-[#154734]"
+          class="bg-[#154734] text-white cursor-pointer"
           @click="reactivateUser"
         >
           Reactivate
         </UButton>
+
         <UButton
           v-if="selectedUser"
-          variant="outline"
-          class="border-[#E87722] text-[#E87722]"
+          class="bg-[#E87722] text-white cursor-pointer"
           @click="openAssignProject"
         >
           Assign to Project
         </UButton>
+
         <UButton
           v-if="selectedUser"
-          variant="outline"
-          class="border-red-700 text-red-700"
+          class="bg-red-700 text-white cursor-pointer"
           @click="openDeleteUser"
         >
           Delete
@@ -45,27 +47,35 @@
       </div>
 
       <div class="bg-white border border-[#D9D9D9] rounded-xl overflow-hidden">
-        <div style="height: 500px" class="ag-theme-alpine w-full">
-          <AgGridVue
-            :row-data="users"
-            :column-defs="userColumns"
-            :default-col-def="{ resizable: true, sortable: true, filter: true }"
-            row-selection="single"
-            @selection-changed="onUserSelect"
-            @cell-value-changed="onUserEdit"
-          />
-        </div>
-      </div>
+  <div
+    class="ag-theme-alpine"
+    style="height: 500px; width: 100%; min-width: 800px;"
+  >
+    <AgGridVue
+      style="width: 100%; height: 100%;"
+      :row-data="users"
+      :column-defs="userColumns"
+      :default-col-def="{
+        resizable: true,
+        sortable: true,
+        filter: true
+      }"
+      row-selection="single"
+      @selection-changed="onUserSelect"
+      @cell-value-changed="onUserEdit"
+    />
+  </div>
+</div>
     </div>
 
     <!-- Projects Tab -->
     <div v-if="activeTab == 1" class="space-y-3">
       <div class="flex gap-2">
-        <UButton class="bg-[#154734] text-white" @click="openAddProject">+ Add Project</UButton>
+        <UButton class="bg-[#154734] text-white cursor-pointer" @click="openAddProject">+ Add Project</UButton>
         <UButton
           v-if="selectedProject"
           variant="outline"
-          class="border-red-500 text-red-500"
+          class="border-red-500 text-red-500 cursor-pointer"
           @click="openDeactivateProject"
         >
           Deactivate
@@ -74,6 +84,7 @@
       <div class="bg-white border border-[#D9D9D9] rounded-xl overflow-hidden">
         <div style="height: 500px" class="ag-theme-alpine w-full">
           <AgGridVue
+           style="width: 100%; height: 100%;"
             :row-data="projects"
             :column-defs="projectColumns"
             :default-col-def="{ resizable: true, sortable: true, filter: true }"
@@ -88,10 +99,11 @@
     <!-- Vendors Tab -->
     <div v-if="activeTab == 2" class="space-y-3">
       <div class="flex gap-2">
+        <UButton class="bg-[#154734] text-white cursor-pointer" @click="openAddVendor">+ Add Vendor</UButton>
         <UButton
           v-if="selectedVendor"
           variant="outline"
-          class="border-red-700 text-red-700"
+          class="border-red-700 text-red-700 cursor-pointer"
           @click="openDeleteVendor"
         >
           Delete
@@ -103,6 +115,7 @@
       <div class="bg-white border border-[#D9D9D9] rounded-xl overflow-hidden">
         <div style="height: 400px" class="ag-theme-alpine w-full">
           <AgGridVue
+           style="width: 100%; height: 100%;"
             :row-data="vendors"
             :column-defs="vendorColumns"
             :default-col-def="{ resizable: true, sortable: true, filter: true }"
@@ -198,6 +211,12 @@ import { AgGridVue } from 'ag-grid-vue3'
 import 'ag-grid-community/styles/ag-grid.css'
 import 'ag-grid-community/styles/ag-theme-alpine.css'
 import ImportResults from '~/components/shared/ImportResults.vue'
+import { ModuleRegistry, AllCommunityModule,} from 'ag-grid-community'
+
+import 'ag-grid-community/styles/ag-grid.css'
+import 'ag-grid-community/styles/ag-theme-alpine.css'
+
+ModuleRegistry.registerModules([AllCommunityModule])
 
 definePageMeta({ middleware: 'auth' })
 
@@ -320,7 +339,9 @@ const deactivateProjectOpen = ref(false)
 const deleteUserOpen = ref(false)
 const deleteVendorOpen = ref(false)
 const assignOpen = ref(false)
+const addVendorOpen = ref(false)
 
+function openAddVendor() { addVendorOpen.value = true }
 function openAddUser() { addUserOpen.value = true }
 function openAddProject() { addProjectOpen.value = true }
 function openDeactivateUser() { deactivateOpen.value = true }
