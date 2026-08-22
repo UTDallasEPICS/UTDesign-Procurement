@@ -2,28 +2,26 @@
 @import "@nuxt/ui";
 
 
-@theme {
-  --color-utd-orange-50: #d86e18;
-  --color-utd-orange-100: #d86e18;
-  --color-utd-orange-200: #d86e18;
-  --color-utd-orange-300: #d86e18;
-  --color-utd-orange-400: #d86e18;
-  --color-utd-orange-500: #d86e18;
-  --color-utd-orange-600: #d86e18;
-  --color-utd-orange-700: #d86e18;
-  --color-utd-orange-800: #d86e18;
-  --color-utd-orange-900: #d86e18;
-  --color-utd-orange-950: #d86e18;
+@theme static {
+  /* UTD Orange */
+  --color-utd-orange-500: #E87722;
+  --color-utd-orange-700: #b85b0f;
 
-  --utd-orange-dark: #b85b0f;
-  --utd-green: #0f4a37;
-  --utd-green-deep: #0b3327;
-  --surface: rgba(255, 255, 255, 0.88);
-  --surface-strong: rgba(255, 255, 255, 0.96);
-  --gray-light: #f2efe8;
-  --gray-border: #d6d1c5;
-  --text-dark: #152026;
-  --text-muted: #5b6672;
+  /* UTD Green */
+  --color-utd-green-500: #0f4a37;
+  --color-utd-green-700: #0b3327;
+
+  /* Surfaces */
+  --color-surface: rgba(255, 255, 255, 0.88);
+  --color-surface-strong: rgba(255, 255, 255, 0.96);
+
+  /* Grays */
+  --color-gray-light: #f2efe8;
+  --color-gray-border: #5b6672;
+
+  /* Text */
+  --color-text-dark: #152026;
+  --color-text-muted: #5b6672;
 }
 
 html {
@@ -60,15 +58,6 @@ body {
 a {
   text-decoration-thickness: 2px;
   text-underline-offset: 2px;
-}
-
-select,
-input,
-textarea {
-  transition:
-    border-color 160ms ease,
-    box-shadow 160ms ease,
-    background-color 160ms ease;
 }
 
 .app-select {

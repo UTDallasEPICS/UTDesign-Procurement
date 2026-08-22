@@ -1,5 +1,5 @@
 <template>
-  <div class="app-surface rounded-3xl px-4 py-4 sm:px-5 sm:py-5">
+  <div class="bg-white rounded-3xl  px-4 py-4 sm:px-5 sm:py-5">
     <div class="flex flex-wrap items-center gap-4">
       <div class="min-w-[120px]">
         <p class="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-500">Starting</p>
