@@ -17,7 +17,7 @@
         </p>
       </div>
 
-      <div class="mt-5 space-y-4">
+      <div class="mt-5 space-y-4 p-4">
         <UInput
           v-model="form.vendorName"
           placeholder="Vendor name *"
@@ -35,19 +35,10 @@
           placeholder="Vendor website (optional)"
         />
 
-        <label class="flex items-center gap-3 cursor-pointer">
-          <UCheckbox v-model="form.isPreferred" />
-
-          <div>
-            <p class="text-sm font-medium text-gray-900">
-              Preferred vendor
-            </p>
-
-            <p class="text-xs text-gray-500">
-              Mark this vendor as a preferred vendor.
-            </p>
-          </div>
-        </label>
+          <UCheckbox 
+            v-model="form.isPreferred"
+            label="Preferred vendor" description=" Mark this vendor as a preferred vendor."
+          />
       </div>
 
       <div

@@ -178,6 +178,7 @@
     <!-- Modals -->
     <AddUserModal v-model:open="addUserOpen" @saved="refreshUsers" />
     <AddProjectModal v-model:open="addProjectOpen" @saved="refreshProjects" />
+    <AddVendorModal v-model:open="addVendorOpen" @saved="refreshVendors" />
     <DeactivateModal
       v-model:open="deactivateOpen"
       :name="selectedUser ? `${selectedUser.firstName} ${selectedUser.lastName}` : ''"

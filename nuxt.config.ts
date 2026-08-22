@@ -13,8 +13,13 @@ export default defineNuxtConfig({
       googleicons: false,
     },
   },
+  
   typescript: {
     strict: true,
+  },
+
+  ui:{
+    colorMode: false
   },
 
   components: [
