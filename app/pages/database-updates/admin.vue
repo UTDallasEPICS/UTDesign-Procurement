@@ -58,10 +58,8 @@
           title="User management"
           :rows="users"
           :columns="userColumns"
- @select="user => {
-    selectedUser = user
-    console.log('user selected:', user)
-  }"        />
+          @select="user => { selectedUser = user }"        
+        />
       </div>
     </div>
 
