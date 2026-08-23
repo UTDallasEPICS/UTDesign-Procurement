@@ -1,5 +1,7 @@
 <script setup lang="ts" generic="T">
 import type { TableColumn } from '@nuxt/ui'
+import type { Column, SortingState } from '@tanstack/vue-table'
+import { h, ref } from 'vue'
 
 interface Props {
   title: string
@@ -16,9 +18,74 @@ const emit = defineEmits<{
   select: [row: T]
 }>()
 
-function onSelect(row: T) {
-  emit('select', row)
+const sorting = ref<SortingState>([])
+
+function getHeader(column: Column<T, unknown>, label: string) {
+  const isSorted = column.getIsSorted()
+
+  return h(
+    UDropdownMenu,
+    {
+      content: {
+        align: 'start'
+      },
+      'aria-label': 'Sort column',
+      items: [
+        {
+          label: 'Asc',
+          type: 'checkbox',
+          icon: 'i-lucide-arrow-up-narrow-wide',
+          checked: isSorted === 'asc',
+          onSelect: () => {
+            if (isSorted === 'asc') {
+              column.clearSorting()
+            } else {
+              column.toggleSorting(false)
+            }
+          }
+        },
+        {
+          label: 'Desc',
+          type: 'checkbox',
+          icon: 'i-lucide-arrow-down-wide-narrow',
+          checked: isSorted === 'desc',
+          onSelect: () => {
+            if (isSorted === 'desc') {
+              column.clearSorting()
+            } else {
+              column.toggleSorting(true)
+            }
+          }
+        }
+      ]
+    },
+    () =>
+      h(UButton, {
+        color: 'neutral',
+        variant: 'ghost',
+        label,
+        icon: isSorted
+          ? isSorted === 'asc'
+            ? 'i-lucide-arrow-up-narrow-wide'
+            : 'i-lucide-arrow-down-wide-narrow'
+          : 'i-lucide-arrow-up-down',
+        class: '-mx-2.5 data-[state=open]:bg-elevated',
+        'aria-label': `Sort by ${isSorted === 'asc' ? 'descending' : 'ascending'}`
+      })
+  )
 }
+
+const selectedRow = ref<any>(null)
+
+function onSelect(e: Event, row: any) {
+  if (selectedRow.value && selectedRow.value !== row) {
+    selectedRow.value.toggleSelected(false)
+  }
+
+  row.toggleSelected(!row.getIsSelected())
+  selectedRow.value = row.getIsSelected() ? row : null
+}
+
 </script>
 
 <template>
@@ -72,7 +139,19 @@ function onSelect(row: T) {
           :row="row.original"
           :value="row.original[column.accessorKey]"
         >
-          {{ row.original[column.accessorKey] }}
+          <template v-if="typeof row.original[column.accessorKey] === 'boolean'">
+            <div class="flex items-center justify-center">
+              <UIcon
+                :name="row.original[column.accessorKey] ? 'i-lucide-check' : 'i-lucide-x'"
+                :class="row.original[column.accessorKey] ? 'text-green-600' : 'text-red-600'"
+                class="size-5"
+              />
+            </div>
+          </template>
+
+          <template v-else>
+            {{ row.original[column.accessorKey] }}
+          </template>
         </slot>
       </template>
     </UTable>
