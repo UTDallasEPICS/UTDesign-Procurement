@@ -17,7 +17,7 @@
         </p>
       </div>
 
-      <div class="mt-5 space-y-4 p-4">
+      <div class="mt-5 flex flex-col gap-5 p-4">
         <UInput
           v-model="form.vendorName"
           placeholder="Vendor name *"
@@ -34,7 +34,6 @@
           type="url"
           placeholder="Vendor website (optional)"
         />
-
           <UCheckbox 
             v-model="form.isPreferred"
             label="Preferred vendor" description=" Mark this vendor as a preferred vendor."

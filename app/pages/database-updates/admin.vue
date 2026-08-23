@@ -45,27 +45,24 @@
           Delete
         </UButton>
       </div>
-
+        
+      
+     
       <div class="bg-white border border-[#D9D9D9] rounded-xl overflow-hidden">
-  <div
-    class="ag-theme-alpine"
-    style="height: 500px; width: 100%; min-width: 800px;"
-  >
-    <AgGridVue
-      style="width: 100%; height: 100%;"
-      :row-data="users"
-      :column-defs="userColumns"
-      :default-col-def="{
-        resizable: true,
-        sortable: true,
-        filter: true
-      }"
-      row-selection="single"
-      @selection-changed="onUserSelect"
-      @cell-value-changed="onUserEdit"
-    />
-  </div>
-</div>
+    
+      <div
+        class="ag-theme-alpine"
+        style="height: 500px; width: 100%; min-width: 800px;"
+      >
+        <TestGrid
+          title="User management"
+          :rows="users"
+          :columns="userColumns"
+          @select="user => selectedUser = user"
+        />
+      </div>
+    </div>
+
     </div>
 
     <!-- Projects Tab -->
@@ -83,14 +80,11 @@
       </div>
       <div class="bg-white border border-[#D9D9D9] rounded-xl overflow-hidden">
         <div style="height: 500px" class="ag-theme-alpine w-full">
-          <AgGridVue
-           style="width: 100%; height: 100%;"
-            :row-data="projects"
-            :column-defs="projectColumns"
-            :default-col-def="{ resizable: true, sortable: true, filter: true }"
-            row-selection="single"
-            @selection-changed="onProjectSelect"
-            @cell-value-changed="onProjectEdit"
+          <TestGrid
+            title="Project management"
+            :rows="projects"
+            :columns="projectColumns"
+            @select="project => selectedProject = project"
           />
         </div>
       </div>
@@ -102,8 +96,8 @@
         <UButton class="bg-[#154734] text-white cursor-pointer" @click="openAddVendor">+ Add Vendor</UButton>
         <UButton
           v-if="selectedVendor"
-          variant="outline"
-          class="border-red-700 text-red-700 cursor-pointer"
+          variant="ghost"
+          class="text-red-700 cursor-pointer"
           @click="openDeleteVendor"
         >
           Delete
@@ -114,14 +108,11 @@
       </div>
       <div class="bg-white border border-[#D9D9D9] rounded-xl overflow-hidden">
         <div style="height: 400px" class="ag-theme-alpine w-full">
-          <AgGridVue
-           style="width: 100%; height: 100%;"
-            :row-data="vendors"
-            :column-defs="vendorColumns"
-            :default-col-def="{ resizable: true, sortable: true, filter: true }"
-            row-selection="single"
-            @selection-changed="onVendorSelect"
-            @cell-value-changed="onVendorEdit"
+          <TestGrid
+            title="Vendor management"
+            :rows="vendors"
+            :columns="vendorColumns"
+            @select="vendor => selectedVendor = vendor"
           />
         </div>
       </div>
@@ -233,12 +224,12 @@ const users = computed(() => userData.value ?? [])
 const selectedUser = ref<{ id: number; firstName: string; lastName: string; active: boolean } | null>(null)
 
 const userColumns = [
-  { field: 'netID', headerName: 'NetID' },
-  { field: 'firstName', headerName: 'First Name', editable: true },
-  { field: 'lastName', headerName: 'Last Name', editable: true },
-  { field: 'email', headerName: 'Email' },
-  { field: 'role', headerName: 'Role' },
-  { field: 'active', headerName: 'Active', valueFormatter: (p: { value: boolean }) => p.value ? 'Yes' : 'No' },
+  { accessorKey: 'netID', header: 'NetID' },
+  { accessorKey: 'firstName', header: 'First Name' },
+  { accessorKey: 'lastName', header: 'Last Name' },
+  { accessorKey: 'email', header: 'Email' },
+  { accessorKey: 'role', header: 'Role' },
+  { accessorKey: 'active', header: 'Active' },
 ]
 
 function onUserSelect(e: { api: { getSelectedRows: () => typeof selectedUser.value[] } }) {
@@ -258,12 +249,12 @@ const projects = computed(() => projectData.value ?? [])
 const selectedProject = ref<{ projectID: number; projectTitle: string } | null>(null)
 
 const projectColumns = [
-  { field: 'projectNum', headerName: 'Project #' },
-  { field: 'projectTitle', headerName: 'Title', editable: true },
-  { field: 'projectType', headerName: 'Type', editable: true },
-  { field: 'startingBudget', headerName: 'Budget ($)', editable: true },
-  { field: 'sponsorCompany', headerName: 'Sponsor', editable: true },
-  { field: 'totalExpenses', headerName: 'Expenses ($)' },
+  { accessorKey: 'projectNum', header: 'Project #' },
+  { accessorKey: 'projectTitle', header: 'Title' },
+  { accessorKey: 'projectType', header: 'Type' },
+  { accessorKey: 'startingBudget', header: 'Budget ($)' },
+  { accessorKey: 'sponsorCompany', header: 'Sponsor' },
+  { accessorKey: 'totalExpenses', header: 'Expenses ($)' },
 ]
 
 function onProjectSelect(e: { api: { getSelectedRows: () => typeof selectedProject.value[] } }) {
@@ -284,20 +275,11 @@ const selectedVendor = ref<{ vendorID: number; vendorName: string } | null>(null
 const vendorError = ref('')
 
 const vendorColumns = [
-  { field: 'vendorName', headerName: 'Vendor Name', editable: true },
-  {
-    field: 'vendorStatus', headerName: 'Status', editable: true,
-    cellEditor: 'agSelectCellEditor',
-    cellEditorParams: { values: ['APPROVED', 'PENDING', 'DENIED'] },
-  },
-  {
-    field: 'isPreferred', headerName: 'Preferred', editable: true,
-    cellEditor: 'agSelectCellEditor',
-    cellEditorParams: { values: [true, false] },
-    valueFormatter: (p: { value: boolean }) => p.value ? 'Yes ★' : 'No',
-  },
-  { field: 'vendorEmail', headerName: 'Email', editable: true },
-  { field: 'vendorURL', headerName: 'URL', editable: true },
+  { accessorKey: 'vendorName', header: 'Vendor Name' },
+  { accessorKey: 'vendorStatus', header: 'Status' },
+  { accessorKey: 'isPreferred', header: 'Preferred' },
+  { accessorKey: 'vendorEmail', header: 'Email' },
+  { accessorKey: 'vendorURL', header: 'URL' },
 ]
 
 function onVendorSelect(e: { api: { getSelectedRows: () => typeof selectedVendor.value[] } }) {

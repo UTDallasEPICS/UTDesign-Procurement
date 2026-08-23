@@ -24,37 +24,37 @@
             placeholder="Project # *"
           />
 
-  <UInput
-    v-model="form.projectTitle"
-    placeholder="Project title *"
-  />
-</div>
+          <UInput
+            v-model="form.projectTitle"
+            placeholder="Project title *"
+          />
+        </div>
 
-<div class="grid gap-3 sm:grid-cols-2">
-  <UInput
-    v-model="form.projectType"
-    placeholder="Project type *"
-  />
+        <div class="grid gap-3 sm:grid-cols-2">
+          <UInput
+            v-model="form.projectType"
+            placeholder="Project type *"
+          />
 
-  <UInput
-    v-model="form.sponsorCompany"
-    placeholder="Sponsor company *"
-  />
-</div>
+          <UInput
+            v-model="form.sponsorCompany"
+            placeholder="Sponsor company *"
+          />
+        </div>
 
-<div class="grid gap-3 sm:grid-cols-2">
-  <UInput
-    v-model="form.startingBudget"
-    type="number"
-    min="0"
-    placeholder="Starting budget *"
-  />
+        <div class="grid gap-3 sm:grid-cols-2">
+          <UInput
+            v-model="form.startingBudget"
+            type="number"
+            min="0"
+            placeholder="Starting budget *"
+          />
 
-  <UInput
-    v-model="form.costCenter"
-    placeholder="Cost center (optional)"
+        <UInput
+          v-model="form.costCenter"
+          placeholder="Cost center (optional)"
 
-  /> 
+        /> 
         </div>
 
         <UTextarea
