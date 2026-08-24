@@ -69,6 +69,8 @@ function getHeader(column: Column<T, unknown>, label: string) {
     ]
   )
 }
+
+
 </script>
 
 <template>

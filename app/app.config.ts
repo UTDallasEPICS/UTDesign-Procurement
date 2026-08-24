@@ -3,7 +3,7 @@ export default defineAppConfig({
     colors: {
       primary: 'utd-green',
       secondary: 'utd-orange',
-      nuetral: 'white'
+      neutral: 'white'
     },
 
     input: {

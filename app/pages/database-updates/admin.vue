@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-6">
+  <div class="space-y-6"  @click="selectedUser = false">
     <div class="flex items-center justify-between">
       <h1 class="text-2xl font-bold text-[#1A1A1A]">Database Management</h1>
     </div>
@@ -8,59 +8,60 @@
 
     <!-- Users Tab -->
     <div v-if="activeTab == 0" class="space-y-3">
-      <div class="flex gap-2">
-        <UButton class="bg-[#154734] text-white cursor-pointer" @click="openAddUser">
-          + Add User
-      </UButton>
-
+      <div class="flex gap-2 justify-end">
         <UButton
-          v-if="selectedUser"
-          class="bg-red-500 text-white cursor-pointer"
-          @click="openDeactivateUser"
-        >
-          Deactivate
-        </UButton>
-
-        <UButton
-          v-if="selectedUser && !selectedUser.active"
-          class="bg-[#154734] text-white cursor-pointer"
-          @click="reactivateUser"
-        >
-          Reactivate
-        </UButton>
-
-        <UButton
-          v-if="selectedUser"
-          class="bg-[#E87722] text-white cursor-pointer"
-          @click="openAssignProject"
-        >
-          Assign to Project
-        </UButton>
-
-        <UButton
-          v-if="selectedUser"
-          class="bg-red-700 text-white cursor-pointer"
-          @click="openDeleteUser"
-        >
-          Delete
-        </UButton>
-      </div>
-        
-      
-     
-      <div class="bg-white border border-[#D9D9D9] rounded-xl overflow-hidden">
+          label="+ add User"
+          class="bg-[#154734] text-white cursor-pointer justify-end" 
+          @click="openAddUser" 
+        />
+        </div>
     
-      <div
-        class="ag-theme-alpine"
-        style="height: 500px; width: 100%; min-width: 800px;"
-      >
+      <div v-if="selectedUser" class="flex gap-2 ml-auto justify-end bg-white border border-[#D9D9D9] rounded-xl p-2 w-100">
+        
+          <UButton
+            label="Deactivate"
+            class="bg-red-500 text-white cursor-pointer"
+            @click="openDeactivateUser"
+          />
+
+          <UButton
+            v-if="!selectedUser.active"
+            label="Reactivate"
+            class="bg-[#154734] text-white cursor-pointer"
+            @click="reactivateUser"
+          />
+
+          <UButton
+            label="Assign to Project"
+            class="bg-[#E87722] text-white cursor-pointer"
+            @click="openAssignProject"
+          />
+          <UButton
+            label="Edit"
+            class="bg-[#154734] text-white cursor-pointer"
+            @click=""
+          />
+          <UButton
+            label="Delete"
+            class="bg-red-700 text-white cursor-pointer"
+            @click="openDeleteUser"
+          />
+          <UButton
+            icon="lucide:x"
+            class="bg-white text-slate-400 hover:bg-slate-200 active:bg-slate-300 cursor-pointer"
+            @click="selectedUser = false"
+          />
+        
+      </div>
+
+      <div class="bg-white border border-[#D9D9D9] rounded-xl overflow-hidden">
         <TestGrid
           title="User management"
           :rows="users"
           :columns="userColumns"
-          @select="user => { selectedUser = user }"        
+          @select="user => { selectedUser = user }"   
+          @deselect="handleDeselect" 
         />
-      </div>
     </div>
 
     </div>
@@ -199,14 +200,14 @@
 </template>
 
 <script setup lang="ts">
-import { AgGridVue } from 'ag-grid-vue3'
+import { h } from 'vue'
+import { UBadge } from '#components'
 import 'ag-grid-community/styles/ag-grid.css'
 import 'ag-grid-community/styles/ag-theme-alpine.css'
 import ImportResults from '~/components/shared/ImportResults.vue'
 import { ModuleRegistry, AllCommunityModule,} from 'ag-grid-community'
 
-import 'ag-grid-community/styles/ag-grid.css'
-import 'ag-grid-community/styles/ag-theme-alpine.css'
+
 
 ModuleRegistry.registerModules([AllCommunityModule])
 
@@ -228,10 +229,29 @@ const userColumns = [
   { accessorKey: 'firstName', header: 'First Name' },
   { accessorKey: 'lastName', header: 'Last Name' },
   { accessorKey: 'email', header: 'Email' },
-  { accessorKey: 'role', header: 'Role' },
+  {
+    accessorKey: 'role',
+    header: 'Role',
+    cell: ({ row }) => {
+      const color = {
+        admin: 'utd-green',
+        mentor: 'utd-orange',
+        student: 'neutral',
+      }[row.getValue('role') as string]
+
+      return h(
+        UBadge,
+        {
+          class: 'capitalize',
+          variant: 'subtle',
+          color,
+        },
+        () => row.getValue('role')
+      )
+    },
+  },
   { accessorKey: 'active', header: 'Active' },
 ]
-
 function onUserSelect(e: { api: { getSelectedRows: () => typeof selectedUser.value[] } }) {
   selectedUser.value = e.api.getSelectedRows()[0] ?? null
 }
@@ -256,6 +276,10 @@ const projectColumns = [
   { accessorKey: 'sponsorCompany', header: 'Sponsor' },
   { accessorKey: 'totalExpenses', header: 'Expenses ($)' },
 ]
+
+function handleDeselect(row) {
+  emit('deselect', row)
+}
 
 function onProjectSelect(e: { api: { getSelectedRows: () => typeof selectedProject.value[] } }) {
   selectedProject.value = e.api.getSelectedRows()[0] ?? null
