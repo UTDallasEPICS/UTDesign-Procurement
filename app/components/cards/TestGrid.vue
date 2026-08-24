@@ -19,8 +19,19 @@ const emit = defineEmits<{
 }>()
 
 const sorting = ref<SortingState>([])
-
 const selectedRow = ref<any>(null)
+
+function onSelect(e: Event, row: any) {
+  if (selectedRow.value && selectedRow.value !== row) {
+    selectedRow.value.toggleSelected(false)
+  }
+
+  row.toggleSelected(!row.getIsSelected())
+
+  selectedRow.value = row.getIsSelected() ? row : null
+
+  emit('select', selectedRow.value?.original ?? null)
+}
 
 function getHeader(column: Column<T, unknown>, label: string) {
   const isSorted = column.getIsSorted()
@@ -43,7 +54,7 @@ function getHeader(column: Column<T, unknown>, label: string) {
       class: '-mx-2.5',
       'aria-label': `Sort ${label}`,
       onClick: toggleSort
- },
+    },
     () => [
       h('span', label),
       h(UIcon, {
