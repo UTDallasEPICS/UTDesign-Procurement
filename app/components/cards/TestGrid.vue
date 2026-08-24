@@ -108,9 +108,9 @@ function getHeader(column: Column<T, unknown>, label: string) {
         base: 'text-[13px]',
         thead: 'bg-white',
         tbody: 'divide-y divide-slate-100',
-        tr: 'cursor-pointer transition-colors odd:bg-white even:bg-slate-50 data-[selected=true]:bg-slate-200',
+        tr: 'group cursor-pointer transition-colors odd:bg-white even:bg-slate-100 data-[selected=true]:bg-slate-200',
         th: 'h-[45px] border-b border-slate-200 px-5 py-0 text-[15px] font-medium tracking-[0.08em] text-slate-500',
-        td: 'h-[57px] px-5 py-0 text-[13px] text-slate-800'
+        td: 'h-[57px] px-5 py-0 text-[13px] text-slate-800 group-hover:bg-slate-300'
       }"
       @select="onSelect"
     >
