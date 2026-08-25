@@ -68,7 +68,7 @@
           title="User management"
           :rows="users"
           :columns="userColumns"
-          @select="user => { selectedUser = user }"   
+          @select="user => { selectedUser = user; console.log(user) }"   
         />
       </div>
 
@@ -345,7 +345,7 @@ const userColumns = [
   { accessorKey: 'firstName', header: 'First Name' },
   { accessorKey: 'lastName', header: 'Last Name' },
   { accessorKey: 'email', header: 'Email' },
-  { accessorKey: 'responsibilities', header: 'Project' },
+  { accessorKey: '', header: 'Project' },
   { accessorKey: 'role', header: 'Role'},
   { accessorKey: 'active', header: 'Active' },
 ]

@@ -82,11 +82,16 @@ async function save() {
   saving.value = true
   error.value = ''
 
+  console.log('USER OBJECT:', props.user)
+  console.log('USER ID:', props.user?.userID)
+  
+  console.log('User ID being sent:', props.user.userID)
+  
   try {
     await $fetch('/api/worksOn', {
       method: 'POST',
       body: {
-        userID: props.user.userID,
+        userID: props.user.id,
         projectNum: projectNum.value,
       },
     })
