@@ -2,18 +2,18 @@
   <div
     v-if="open"
     class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 p-4"
+    @click.self="close"
   >
     <div
       class="w-full max-w-lg rounded-xl bg-white p-6 shadow-2xl ring-1 ring-black/10"
     >
       <div class="space-y-2">
         <h3 class="text-xl font-bold text-gray-900">
-          Add Vendor
+          Edit Vendor
         </h3>
 
         <p class="text-sm leading-6 text-gray-600">
-          Create a vendor manually so admins can manage vendors and associate
-          them with requests and reimbursements.
+          Update the vendor's information and preferences.
         </p>
       </div>
 
@@ -34,10 +34,12 @@
           type="url"
           placeholder="Vendor website (optional)"
         />
-          <UCheckbox 
-            v-model="form.isPreferred"
-            label="Preferred vendor" description=" Mark this vendor as a preferred vendor."
-          />
+
+        <UCheckbox
+          v-model="form.isPreferred"
+          label="Preferred vendor"
+          description="Mark this vendor as a preferred vendor."
+        />
       </div>
 
       <div
@@ -62,7 +64,7 @@
           :disabled="!form.vendorName.trim()"
           @click="save"
         >
-          Add Vendor
+          Save Changes
         </UButton>
       </div>
     </div>
@@ -70,11 +72,23 @@
 </template>
 
 <script setup lang="ts">
+const open = defineModel<boolean>('open', {
+  default: false,
+})
 
+const props = defineProps<{
+  vendor: {
+    vendorID: number
+    vendorName: string
+    vendorEmail?: string | null
+    vendorURL?: string | null
+    isPreferred?: boolean
+  } | null
+}>()
 
-const open = defineModel<boolean>('open', { default: false })
-
-const emit = defineEmits(['saved'])
+const emit = defineEmits<{
+  saved: []
+}>()
 
 const form = reactive({
   vendorName: '',
@@ -85,6 +99,20 @@ const form = reactive({
 
 const saving = ref(false)
 const error = ref('')
+
+function populateForm() {
+  if (!props.vendor) {
+    resetForm()
+    return
+  }
+
+  form.vendorName = props.vendor.vendorName ?? ''
+  form.vendorEmail = props.vendor.vendorEmail ?? ''
+  form.vendorURL = props.vendor.vendorURL ?? ''
+  form.isPreferred = props.vendor.isPreferred ?? false
+
+  error.value = ''
+}
 
 function resetForm() {
   form.vendorName = ''
@@ -102,13 +130,19 @@ async function save() {
     return
   }
 
+  if (!props.vendor?.vendorID) {
+    error.value = 'Vendor ID is missing.'
+    return
+  }
+
   saving.value = true
 
   try {
-    await $fetch('/api/admin/add', {
-      method: 'POST',
+    await $fetch('/api/admin/edit', {
+      method: 'PATCH',
       body: {
         type: 'vendor',
+        id: props.vendor.vendorID,
         vendorName: form.vendorName.trim(),
         vendorEmail: form.vendorEmail.trim() || null,
         vendorURL: form.vendorURL.trim() || null,
@@ -117,30 +151,41 @@ async function save() {
     })
 
     emit('saved')
-    resetForm()
-    open.value = false
-  } catch (e: any) {
-  console.error('ADD VENDOR ERROR:', e)
-  console.error('ERROR DATA:', e?.data)
 
-  error.value =
-    e?.data?.message ||
-    e?.data?.statusMessage ||
-    e?.message ||
-    'Failed to add vendor.'
-} finally {
+    open.value = false
+    resetForm()
+  } catch (e: any) {
+    console.error('EDIT VENDOR ERROR:', e)
+    console.error('ERROR DATA:', e?.data)
+
+    error.value =
+      e?.data?.message ||
+      e?.data?.statusMessage ||
+      e?.message ||
+      'Failed to update vendor.'
+  } finally {
     saving.value = false
   }
 }
 
 function close() {
-  resetForm()
   open.value = false
+  resetForm()
 }
 
 watch(open, (isOpen) => {
-  if (!isOpen) {
-    resetForm()
+  if (isOpen) {
+    populateForm()
   }
 })
+
+watch(
+  () => props.vendor,
+  () => {
+    if (open.value) {
+      populateForm()
+    }
+  },
+  { deep: true }
+)
 </script>
