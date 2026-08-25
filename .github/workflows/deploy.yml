@@ -1,0 +1,114 @@
+name: Deploy Project Environment
+
+# Reusable deploy pipeline shared by main.yml (prod) and stage.yml (stage).
+# Pipeline order is deliberate: build -> migrate -> push -> deploy,
+# so a failed migration never publishes an image.
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: "Target environment (prod or stage)"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    permissions:
+      id-token: write
+      contents: read
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ secrets.ACTIONS_ROLE_ARN }}
+          role-session-name: GitHub_to_AWS_via_FederatedOIDC
+          aws-region: us-east-2
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Build Docker image (no push)
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          platforms: linux/arm64
+          load: true
+          tags: ${{ steps.login-ecr.outputs.registry }}/${{ vars.REPOSITORY }}:${{ inputs.environment }}
+          cache-from: type=gha,scope=${{ inputs.environment }}
+          cache-to: type=gha,mode=max,scope=${{ inputs.environment }},ignore-error=true
+
+      - name: Detect ORM and package migration bundle
+        env:
+          REPOSITORY: ${{ vars.REPOSITORY }}
+        run: |
+          rm -f /tmp/migration.zip
+          if [ -f "prisma/schema.prisma" ] || [ -d "prisma/schema" ] || [ -f "prisma.config.ts" ]; then
+            echo "ORM=prisma" >> $GITHUB_ENV
+            FILES="package.json pnpm-lock.yaml tsconfig.json prisma/"
+            [ -f pnpm-workspace.yaml ] && FILES="$FILES pnpm-workspace.yaml"
+            [ -f prisma.config.ts ] && FILES="$FILES prisma.config.ts"
+            zip -ry /tmp/migration.zip $FILES
+          elif [ -f "drizzle.config.ts" ]; then
+            echo "ORM=drizzle" >> $GITHUB_ENV
+            FILES="package.json pnpm-lock.yaml tsconfig.json drizzle.config.ts"
+            [ -f pnpm-workspace.yaml ] && FILES="$FILES pnpm-workspace.yaml"
+            [ -d drizzle ] && FILES="$FILES drizzle/"
+            [ -d server/db ] && FILES="$FILES server/db/"
+            if [ ! -d drizzle ] && [ ! -d server/db ]; then
+              echo "drizzle.config.ts present but neither drizzle/ nor server/db/ found"
+              exit 1
+            fi
+            zip -ry /tmp/migration.zip $FILES
+          else
+            echo "No supported ORM detected (expected prisma/ or drizzle/)"
+            exit 1
+          fi
+          aws s3 cp /tmp/migration.zip \
+            s3://npts-env-bucket/$REPOSITORY/migrations/${{ github.sha }}.zip
+
+      - name: Run migration via Lambda
+        run: |
+          aws lambda invoke \
+            --function-name npts-migration-${{ vars.REPOSITORY }}-${{ inputs.environment }} \
+            --invocation-type RequestResponse \
+            --cli-read-timeout 900 \
+            --cli-binary-format raw-in-base64-out \
+            --payload '{"project":"${{ vars.REPOSITORY }}","environment":"${{ inputs.environment }}","orm":"${{ env.ORM }}","migration_bucket":"npts-env-bucket","migration_key":"${{ vars.REPOSITORY }}/migrations/${{ github.sha }}.zip","seed":${{ vars.SEED_MIGRATION == 'true' }}}' \
+            /tmp/lambda-response.json
+
+          STATUS=$(jq -r '.status' /tmp/lambda-response.json)
+          if [ "$STATUS" != "success" ]; then
+            MESSAGE=$(jq -r '.message // "Unknown error"' /tmp/lambda-response.json)
+            echo "Migration failed: $MESSAGE"
+            exit 1
+          fi
+          echo "Migration succeeded"
+
+      - name: Push image and deploy
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          REPOSITORY: ${{ vars.REPOSITORY }}
+          IMAGE_TAG: ${{ inputs.environment }}
+          CLUSTER_NAME: ${{ secrets.CLUSTER_NAME }}
+          SERVICE_NAME: ${{ vars.REPOSITORY }}-${{ inputs.environment }}-service
+        run: |
+          docker push $ECR_REGISTRY/$REPOSITORY:$IMAGE_TAG
+          aws ecs update-service \
+            --cluster $CLUSTER_NAME \
+            --service $SERVICE_NAME \
+            --desired-count 1 \
+            --force-new-deployment \
+            --output text \
+            --query "service.serviceName" >/dev/null
+          echo "Deployed $SERVICE_NAME"
