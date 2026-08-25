@@ -5,93 +5,15 @@ on:
     branches:
       - main
 
+# id-token must also be granted here: a called workflow can never elevate
+# GITHUB_TOKEN permissions beyond what the calling workflow allows.
+permissions:
+  contents: read
+  id-token: write
+
 jobs:
   deploy:
-    permissions:
-      id-token: write
-    runs-on: ubuntu-24.04-arm
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ secrets.ACTIONS_ROLE_ARN }}
-          role-session-name: GitHub_to_AWS_via_FederatedOIDC
-          aws-region: us-east-2
-
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
-
-      - name: Build Docker image (no push)
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          REPOSITORY: ${{ vars.REPOSITORY }}
-        run: |
-          docker build --platform linux/arm64 -t $ECR_REGISTRY/$REPOSITORY:prod .
-
-      - name: Detect ORM and package migration bundle
-        env:
-          REPOSITORY: ${{ vars.REPOSITORY }}
-        run: |
-          rm -f /tmp/migration.zip
-          if [ -f "prisma/schema.prisma" ] || [ -d "prisma/schema" ] || [ -f "prisma.config.ts" ]; then
-            echo "ORM=prisma" >> $GITHUB_ENV
-            FILES="package.json pnpm-lock.yaml tsconfig.json prisma/"
-            [ -f pnpm-workspace.yaml ] && FILES="$FILES pnpm-workspace.yaml"
-            [ -f prisma.config.ts ] && FILES="$FILES prisma.config.ts"
-            zip -ry /tmp/migration.zip $FILES
-          elif [ -f "drizzle.config.ts" ]; then
-            echo "ORM=drizzle" >> $GITHUB_ENV
-            FILES="package.json pnpm-lock.yaml tsconfig.json drizzle.config.ts"
-            [ -f pnpm-workspace.yaml ] && FILES="$FILES pnpm-workspace.yaml"
-            [ -d drizzle ] && FILES="$FILES drizzle/"
-            [ -d server/db ] && FILES="$FILES server/db/"
-            if [ ! -d drizzle ] && [ ! -d server/db ]; then
-              echo "drizzle.config.ts present but neither drizzle/ nor server/db/ found"
-              exit 1
-            fi
-            zip -ry /tmp/migration.zip $FILES
-          else
-            echo "No supported ORM detected (expected prisma/ or drizzle/)"
-            exit 1
-          fi
-          aws s3 cp /tmp/migration.zip \
-            s3://npts-env-bucket/$REPOSITORY/migrations/${{ github.sha }}.zip
-
-      - name: Run migration via Lambda
-        run: |
-          aws lambda invoke \
-            --function-name npts-migration-${{ vars.REPOSITORY }}-prod \
-            --invocation-type RequestResponse \
-            --cli-read-timeout 900 \
-            --cli-binary-format raw-in-base64-out \
-            --payload '{"project":"${{ vars.REPOSITORY }}","environment":"prod","orm":"${{ env.ORM }}","migration_bucket":"npts-env-bucket","migration_key":"${{ vars.REPOSITORY }}/migrations/${{ github.sha }}.zip"}' \
-            /tmp/lambda-response.json
-
-          STATUS=$(jq -r '.status' /tmp/lambda-response.json)
-          if [ "$STATUS" != "success" ]; then
-            MESSAGE=$(jq -r '.message // "Unknown error"' /tmp/lambda-response.json)
-            echo "Migration failed: $MESSAGE"
-            exit 1
-          fi
-          echo "Migration succeeded"
-
-      - name: Push image and deploy
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          REPOSITORY: ${{ vars.REPOSITORY }}
-          CLUSTER_NAME: ${{ secrets.CLUSTER_NAME }}
-          SERVICE_NAME: ${{ vars.REPOSITORY }}-prod-service
-        run: |
-          docker push $ECR_REGISTRY/$REPOSITORY:prod
-          aws ecs update-service \
-            --cluster $CLUSTER_NAME \
-            --service $SERVICE_NAME \
-            --desired-count 1 \
-            --force-new-deployment \
-            --output text \
-            --query "service.serviceName" >/dev/null
-          echo "Deployed $SERVICE_NAME"
+    uses: ./.github/workflows/deploy.yml
+    with:
+      environment: prod
+    secrets: inherit
