@@ -52,11 +52,6 @@
         />
 
         <UButton
-          label="Delete"
-          class="cursor-pointer rounded-lg border border-[#FFB5B5] bg-[#FFF1F1] text-[#E53935] hover:bg-[#FFE5E5]"
-          @click.stop="openDeleteUser"
-        />
-        <UButton
           icon="lucide:x"
           class="bg-white text-slate-400 hover:bg-slate-200 active:bg-slate-300 cursor-pointer"
           @click.stop="selectedUser = false"
@@ -65,7 +60,7 @@
       </div>
 
       <div class="bg-white border border-[#D9D9D9] rounded-xl overflow-hidden">
-        <TestGrid
+        <AdminTable
           title="User management"
           :rows="users"
           :columns="userColumns"
@@ -93,12 +88,6 @@
         />
 
         <UButton
-          label="Delete"
-          class="cursor-pointer rounded-lg border border-[#FFB5B5] bg-[#FFF1F1] text-[#C62828] hover:bg-[#FFE5E5]"
-          @click.stop="openDeactivateProject"
-        />
-
-        <UButton
           label="Deactivate"
           class="cursor-pointer rounded-lg border border-[#F6C94D] bg-[#FFF9E6] text-[#D88900] hover:bg-[#FFF3CC]"
           @click.stop="openDeactivateProject"
@@ -111,7 +100,7 @@
       </div>
       
       <div class="bg-white border border-[#D9D9D9] rounded-xl overflow-hidden">
-          <TestGrid
+          <AdminTable
             title="Project management"
             :rows="projects"
             :columns="projectColumns"
@@ -155,7 +144,7 @@
       </div>
 
       <div class="bg-white border border-[#D9D9D9] rounded-xl overflow-hidden">
-        <TestGrid
+        <AdminTable
           title="Vendor management"
           :rows="vendors"
           :columns="vendorColumns"
@@ -277,18 +266,6 @@
   @confirm="deactivateProject"
 />
 
-<DeactivateModal
-  v-model:open="deleteUserOpen"
-  :name="selectedUser ? `${selectedUser.firstName} ${selectedUser.lastName} (permanent delete)` : ''"
-  @confirm="deleteUser"
-/>
-
-<DeactivateModal
-  v-model:open="deleteVendorOpen"
-  :name="selectedVendor ? `${selectedVendor.vendorName} (permanent delete)` : ''"
-  @confirm="deleteVendor"
-/>
-
 <AssignProjectModal
   v-model:open="assignOpen"
   :user="selectedUser"
@@ -311,6 +288,15 @@
   :vendor="selectedVendor"
   @saved="refreshVendors"
   />
+
+<DeleteModal
+  v-model:open="deleteVendorOpen"
+  title="Delete Vendor"
+  :name="selectedVendor?.vendorName ?? ''"
+  type="vendor"
+  :id="selectedVendor?.vendorID ?? ''"
+  @confirm="handleVendorDeleted"
+/>
   
 </template>
 
@@ -430,29 +416,14 @@ async function onVendorEdit(e: { data: { vendorID: number }; colDef: { field: st
   }
 }
 
-async function deleteVendor() {
-  vendorError.value = ''
-  try {
-    await $fetch('/api/admin/delete', {
-      method: 'POST',
-      body: { type: 'vendor', id: selectedVendor.value!.vendorID },
-    })
-    selectedVendor.value = null
-    refreshVendors()
-  } catch (e: unknown) {
-    vendorError.value = (e as { data?: { message?: string } })?.data?.message ?? 'Failed to delete vendor.'
-  }
-}
-
 // ── Deactivate / Reactivate / Delete ───────────────────────────────────────
 const addUserOpen = ref(false)
 const addProjectOpen = ref(false)
+const addVendorOpen = ref(false)
 const deactivateOpen = ref(false)
 const deactivateProjectOpen = ref(false)
-const deleteUserOpen = ref(false)
 const deleteVendorOpen = ref(false)
 const assignOpen = ref(false)
-const addVendorOpen = ref(false)
 const editProjectOpen = ref(false)
 const editUserOpen = ref(false)
 const editVendorOpen = ref(false)
@@ -463,12 +434,11 @@ function openAddUser() { addUserOpen.value = true }
 function openAddProject() { addProjectOpen.value = true }
 function openDeactivateUser() { deactivateOpen.value = true }
 function openDeactivateProject() { deactivateProjectOpen.value = true }
-function openDeleteUser() { deleteUserOpen.value = true }
-function openDeleteVendor() { deleteVendorOpen.value = true }
 function openAssignProject() { assignOpen.value = true }
 function openEditProject() { editProjectOpen.value = true }
 function openEditUser() { editUserOpen.value = true }
 function openEditVendor() { editVendorOpen.value = true }
+function openDeleteVendor() { deleteVendorOpen.value = true }
 
 async function deactivateUser() {
   await $fetch('/api/admin/deactivate-user', {
@@ -488,14 +458,7 @@ async function reactivateUser() {
   refreshUsers()
 }
 
-async function deleteUser() {
-  await $fetch('/api/admin/delete', {
-    method: 'POST',
-    body: { type: 'user', id: selectedUser.value!.id },
-  })
-  selectedUser.value = null
-  refreshUsers()
-}
+
 
 async function deactivateProject() {
   await $fetch('/api/admin/deactivate-project', {
@@ -504,6 +467,12 @@ async function deactivateProject() {
   })
   selectedProject.value = null
   refreshProjects()
+}
+
+async function handleVendorDeleted() {
+  selectedVendor.value = null
+  vendorError.value = ''
+  await refreshVendors()
 }
 
 // ── Excel Import ───────────────────────────────────────────────────────────
