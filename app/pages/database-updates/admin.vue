@@ -334,19 +334,27 @@ if (!isAdmin.value) await navigateTo('/orders')
 
 const tabs = [{ label: 'Users' }, { label: 'Projects' }, { label: 'Vendors' }, { label: 'Import' }]
 const activeTab = ref(0)
-
 // ── Users ──────────────────────────────────────────────────────────────────
 const { data: userData, refresh: refreshUsers } = await useFetch('/api/user')
 const users = computed(() => userData.value ?? [])
 const selectedUser = ref<{ id: number; firstName: string; lastName: string; active: boolean } | null>(null)
-
 const userColumns = [
   { accessorKey: 'netID', header: 'NetID' },
   { accessorKey: 'firstName', header: 'First Name' },
   { accessorKey: 'lastName', header: 'Last Name' },
   { accessorKey: 'email', header: 'Email' },
-  { accessorKey: '', header: 'Project' },
-  { accessorKey: 'role', header: 'Role'},
+
+ {
+  id: 'project',
+  header: 'Projects',
+  cell: ({ row }) => {
+    return row.original.worksOn
+      ?.map(work => work.project.projectNum)
+      .join(', ') ?? ''
+  }
+},
+
+  { accessorKey: 'role', header: 'Role' },
   { accessorKey: 'active', header: 'Active' },
 ]
 function onUserSelect(e: { api: { getSelectedRows: () => typeof selectedUser.value[] } }) {

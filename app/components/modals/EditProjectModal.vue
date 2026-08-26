@@ -21,11 +21,17 @@
           <UInput
             v-model="form.projectNum"
             placeholder="Project # *"
+            :ui="{
+              base: 'placeholder:text-gray-500 text-gray-900',
+            }"  
           />
 
           <UInput
             v-model="form.projectTitle"
             placeholder="Project title *"
+            :ui="{
+              base: 'placeholder:text-gray-500 text-gray-900',
+            }"  
           />
         </div>
 
@@ -33,11 +39,17 @@
           <UInput
             v-model="form.projectType"
             placeholder="Project type *"
+            :ui="{
+              base: 'placeholder:text-gray-500 text-gray-900',
+            }"  
           />
 
           <UInput
             v-model="form.sponsorCompany"
             placeholder="Sponsor company *"
+            :ui="{
+              base: 'placeholder:text-gray-500 text-gray-900',
+            }"  
           />
         </div>
 
@@ -47,11 +59,17 @@
             type="number"
             min="0"
             placeholder="Starting budget *"
+            :ui="{
+              base: 'placeholder:text-gray-500 text-gray-900',
+            }"  
           />
 
           <UInput
             v-model="form.costCenter"
             placeholder="Cost center (optional)"
+            :ui="{
+              base: 'placeholder:text-gray-500 text-gray-900',
+            }"  
           />
         </div>
 
@@ -60,6 +78,9 @@
           placeholder="Additional info (optional)"
           :rows="3"
           class="w-full"
+          :ui="{
+            base: 'placeholder:text-gray-500 text-gray-900',
+          }"  
         />
       </div>
 

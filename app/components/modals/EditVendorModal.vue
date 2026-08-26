@@ -21,18 +21,27 @@
         <UInput
           v-model="form.vendorName"
           placeholder="Vendor name *"
+          :ui="{
+            base: 'placeholder:text-gray-500 text-gray-900',
+          }"  
         />
 
         <UInput
           v-model="form.vendorEmail"
           type="email"
           placeholder="Vendor email (optional)"
+          :ui="{
+            base: 'placeholder:text-gray-500 text-gray-900',
+          }"  
         />
 
         <UInput
           v-model="form.vendorURL"
           type="url"
           placeholder="Vendor website (optional)"
+          :ui="{
+            base: 'placeholder:text-gray-500 text-gray-900',
+          }"  
         />
 
         <UCheckbox

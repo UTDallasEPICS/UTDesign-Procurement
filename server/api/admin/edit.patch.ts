@@ -1,7 +1,6 @@
 import { ROLES } from '~~/shared/constants/roles'
 import prisma from '~~/server/utils/prisma'
 
-/** PATCH /api/admin/edit — edit a user, project, or vendor */
 export default defineEventHandler(async event => {
   if (event.context.role !== ROLES.ADMIN) {
     throw createError({
@@ -21,13 +20,12 @@ export default defineEventHandler(async event => {
       })
     }
 
-    if (!id) {
+    if (!id && type !== 'worksOn') {
       throw createError({
         statusCode: 400,
         message: 'ID is required',
       })
     }
-
 
     if (type === 'user') {
       const {
@@ -143,17 +141,51 @@ export default defineEventHandler(async event => {
       }
     }
 
+    if (type === 'worksOn') {
+      const userID = Number(body.userID)
+      const projectNum = Number(body.projectNum)
+
+      if (!userID || !projectNum) {
+        throw createError({
+          statusCode: 400,
+          message: 'User ID and project number are required',
+        })
+      }
+
+      const result = await prisma.worksOn.updateMany({
+        where: {
+          userID,
+          projectNum,
+          endDate: null,
+        },
+        data: {
+          endDate: new Date(),
+        },
+      })
+
+      if (result.count === 0) {
+        throw createError({
+          statusCode: 404,
+          message: 'Active project assignment not found',
+        })
+      }
+
+      return {
+        ok: true,
+        message: 'Project unassigned successfully',
+      }
+    }
 
     throw createError({
       statusCode: 400,
       message: `Invalid type: ${type}`,
     })
-  } catch (err: unknown) {
-    if ((err as { statusCode?: number }).statusCode) {
+  } catch (err: any) {
+    console.error('ADMIN EDIT ERROR:', err)
+
+    if (err?.statusCode) {
       throw err
     }
-
-    console.error('ADMIN EDIT ERROR:', err)
 
     throw createError({
       statusCode: 500,

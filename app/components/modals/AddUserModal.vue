@@ -32,11 +32,17 @@
           <UInput
             v-model="form.firstName"
             placeholder="First Name *"
+              :ui="{
+            base: 'placeholder:text-gray-500 text-gray-900',
+          }"
           />
 
           <UInput
             v-model="form.lastName"
             placeholder="Last Name *"
+              :ui="{
+              base: 'placeholder:text-gray-500 text-gray-900',
+            }"
           />
         </div>
 
@@ -49,6 +55,9 @@
               ? 'Email * (any address)'
               : 'UTD Email * (abc123456@utdallas.edu)'
           "
+            :ui="{
+              base: 'placeholder:text-gray-500 text-gray-900',
+            }"
         />
 
         <!-- Role -->
