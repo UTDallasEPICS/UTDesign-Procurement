@@ -32,8 +32,12 @@
 
         <div
           v-else-if="currentProjects.length === 0"
+          
           class="mt-2 text-sm text-gray-500"
         >
+        <pre> {{ currentProjects }} </pre>
+        <pre> {{ projects.value }} </pre>
+
           No projects currently assigned.
         </div>
 
@@ -127,36 +131,41 @@ const unassigningProject = ref<string | number | null>(null)
 
 const projectOptions = computed(() => {
   const assignedProjectNums = new Set(
-    currentProjects.value.map((p: any) => String(p.projectNum)),
+    (currentProjects.value ?? []).map((project: any) =>
+      String(project.projectNum),
+    ),
   )
 
   return (projects.value ?? [])
     .filter(
-      (p: any) =>
-        !assignedProjectNums.has(String(p.projectNum)),
+      (project: any) =>
+        !assignedProjectNums.has(String(project.projectNum)),
     )
-    .map((p: any) => ({
-      label: `#${p.projectNum} - ${p.projectTitle}`,
-      value: p.projectNum,
+    .map((project: any) => ({
+      label: `#${project.projectNum} - ${project.projectTitle}`,
+      value: project.projectNum,
     }))
 })
 
 async function loadCurrentProjects() {
-  if (!props.user) return
+
+  if (!props.user) {
+    return
+  }
 
   loadingProjects.value = true
 
   try {
     const userID = props.user.userID ?? props.user.id
 
-    currentProjects.value = await $fetch(
-      '/api/worksOn/currentProjects',
-      {
-        query: { userID },
-      },
-    )
+
+    const result = await $fetch('/api/worksOn/currentProjects', {
+      query: { userID },
+    })
+
+
+    currentProjects.value = result
   } catch (e: any) {
-    console.error('Failed to load current projects:', e)
 
     error.value =
       e?.data?.message ?? 'Failed to load current projects.'
@@ -166,6 +175,7 @@ async function loadCurrentProjects() {
     loadingProjects.value = false
   }
 }
+
 
 async function save() {
   if (!projectNum.value || !props.user) return
@@ -227,12 +237,16 @@ function close() {
 
 watch(
   () => [open.value, props.user?.userID, props.user?.id],
-  ([isOpen]) => {
+  ([isOpen, userID, id]) => {
+
     if (isOpen) {
-      projectNum.value = ''
       loadCurrentProjects()
     }
   },
   { immediate: true },
 )
+
+
+
+
 </script>

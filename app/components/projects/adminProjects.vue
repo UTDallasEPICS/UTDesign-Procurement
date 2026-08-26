@@ -88,9 +88,11 @@ const projects = computed(() => (data.value ?? []) as any[])
 function getMentors(project: any) {
   return (project.worksOn ?? []).filter((w: any) => w.user?.role === 'MENTOR' && !w.endDate)
 }
-
 function getStudents(project: any) {
-  return (project.worksOn ?? []).filter((w: any) => w.user?.role === 'STUDENT' && !w.endDate)
+
+  return (project.worksOn ?? []).filter((w: any) => {
+    return w.user?.role === 'STUDENT' && !w.endDate
+  })
 }
 
 function formatDate(d: string) {

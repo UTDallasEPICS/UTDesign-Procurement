@@ -141,47 +141,66 @@ export default defineEventHandler(async event => {
       }
     }
 
-    if (type === 'worksOn') {
-      const userID = Number(body.userID)
-      const projectNum = Number(body.projectNum)
+if (type === 'worksOn') {
+  const userID = Number(body.userID)
+  const projectNum = String(body.projectNum)
 
-      if (!userID || !projectNum) {
-        throw createError({
-          statusCode: 400,
-          message: 'User ID and project number are required',
-        })
-      }
+  if (!userID || !projectNum) {
+    throw createError({
+      statusCode: 400,
+      message: 'User ID and project number are required',
+    })
+  }
 
-      const result = await prisma.worksOn.updateMany({
-        where: {
-          userID,
-          projectNum,
-          endDate: null,
-        },
-        data: {
-          endDate: new Date(),
-        },
-      })
+  const project = await prisma.project.findUnique({
+    where: {
+      projectNum,
+    },
+    select: {
+      projectID: true,
+    },
+  })
 
-      if (result.count === 0) {
-        throw createError({
-          statusCode: 404,
-          message: 'Active project assignment not found',
-        })
-      }
+  if (!project) {
+    throw createError({
+      statusCode: 404,
+      message: 'Project not found',
+    })
+  }
 
-      return {
-        ok: true,
-        message: 'Project unassigned successfully',
-      }
-    }
+  const result = await prisma.worksOn.updateMany({
+    where: {
+      userID,
+      projectID: project.projectID,
+      endDate: null,
+    },
+    data: {
+      endDate: new Date(),
+    },
+  })
+
+  if (result.count === 0) {
+    throw createError({
+      statusCode: 404,
+      message: 'Active project assignment not found',
+    })
+  }
+
+  return {
+    ok: true,
+    message: 'Project unassigned successfully',
+  }
+}
+
+
+
+
 
     throw createError({
       statusCode: 400,
       message: `Invalid type: ${type}`,
     })
   } catch (err: any) {
-    console.error('ADMIN EDIT ERROR:', err)
 
     if (err?.statusCode) {
       throw err

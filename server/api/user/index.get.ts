@@ -17,6 +17,9 @@ export default defineEventHandler(async event => {
       },
       include: {
         worksOn: {
+          where: {
+            endDate: null,
+          },
           include: {
             project: {
               select: {
@@ -28,9 +31,8 @@ export default defineEventHandler(async event => {
           },
         },
       },
-      })
+    })
   } catch (error) {
-    console.error('Failed to fetch users:', error)
 
     throw createError({
       statusCode: 500,

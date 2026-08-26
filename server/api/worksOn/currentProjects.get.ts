@@ -33,7 +33,9 @@ export default defineEventHandler(async event => {
       },
     })
 
-    return worksOn.map(w => w.project)
+    return worksOn
+      .map(w => w.project)
+      .filter(Boolean)
   } catch (error: any) {
     if (error?.statusCode) {
       throw error
@@ -44,4 +46,4 @@ export default defineEventHandler(async event => {
       message: 'Internal server error',
     })
   }
-})  
+})

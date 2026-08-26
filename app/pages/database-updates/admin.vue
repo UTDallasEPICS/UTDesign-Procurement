@@ -11,6 +11,7 @@
 
     <!-- Users Tab -->
     <div v-if="activeTab == 0" class="space-y-3">
+
       <div class="flex gap-2 justify-end">
         <UButton
           label="+ add User"
@@ -68,7 +69,7 @@
           title="User management"
           :rows="users"
           :columns="userColumns"
-          @select="user => { selectedUser = user; console.log(user) }"   
+          @select="user => { selectedUser = user}"   
         />
       </div>
 
