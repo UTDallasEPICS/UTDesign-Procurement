@@ -8,12 +8,11 @@
     >
       <div class="space-y-2">
         <h3 class="text-xl font-bold text-gray-900">
-          Add Project
+          Edit Project
         </h3>
 
         <p class="text-sm leading-6 text-gray-600">
-          Create a project manually so admins can start assigning students
-          and mentors immediately.
+          Update the project information below.
         </p>
       </div>
 
@@ -22,11 +21,17 @@
           <UInput
             v-model="form.projectNum"
             placeholder="Project # *"
+            :ui="{
+              base: 'placeholder:text-gray-500 text-gray-900',
+            }"  
           />
 
           <UInput
             v-model="form.projectTitle"
             placeholder="Project title *"
+            :ui="{
+              base: 'placeholder:text-gray-500 text-gray-900',
+            }"  
           />
         </div>
 
@@ -34,27 +39,38 @@
           <UInput
             v-model="form.projectType"
             placeholder="Project type *"
+            :ui="{
+              base: 'placeholder:text-gray-500 text-gray-900',
+            }"  
           />
 
           <UInput
             v-model="form.sponsorCompany"
             placeholder="Sponsor company *"
+            :ui="{
+              base: 'placeholder:text-gray-500 text-gray-900',
+            }"  
           />
         </div>
 
         <div class="grid gap-3 sm:grid-cols-2">
           <UInput
-            v-model="form.startingBudget"
+            v-model.number="form.startingBudget"
             type="number"
             min="0"
             placeholder="Starting budget *"
+            :ui="{
+              base: 'placeholder:text-gray-500 text-gray-900',
+            }"  
           />
 
-        <UInput
-          v-model="form.costCenter"
-          placeholder="Cost center (optional)"
-
-        /> 
+          <UInput
+            v-model="form.costCenter"
+            placeholder="Cost center (optional)"
+            :ui="{
+              base: 'placeholder:text-gray-500 text-gray-900',
+            }"  
+          />
         </div>
 
         <UTextarea
@@ -62,6 +78,9 @@
           placeholder="Additional info (optional)"
           :rows="3"
           class="w-full"
+          :ui="{
+            base: 'placeholder:text-gray-500 text-gray-900',
+          }"  
         />
       </div>
 
@@ -86,7 +105,7 @@
           :loading="saving"
           @click="save"
         >
-          Add Project
+          Save Changes
         </UButton>
       </div>
     </div>
@@ -95,6 +114,19 @@
 
 <script setup lang="ts">
 const open = defineModel<boolean>('open', { default: false })
+
+const props = defineProps<{
+  project: {
+    projectID: string | number
+    projectNum: string
+    projectTitle: string
+    projectType: string
+    sponsorCompany: string
+    startingBudget: string | number
+    costCenter?: string | null
+    additionalInfo?: string | null
+  } | null
+}>()
 
 const emit = defineEmits(['saved'])
 
@@ -111,6 +143,33 @@ const form = reactive({
 const saving = ref(false)
 const error = ref('')
 
+function loadProject() {
+  if (!props.project) return
+
+  form.projectNum = props.project.projectNum ?? ''
+  form.projectTitle = props.project.projectTitle ?? ''
+  form.projectType = props.project.projectType ?? ''
+  form.sponsorCompany = props.project.sponsorCompany ?? ''
+  form.startingBudget = props.project.startingBudget ?? ''
+  form.costCenter = props.project.costCenter ?? ''
+  form.additionalInfo = props.project.additionalInfo ?? ''
+}
+
+watch(
+  () => props.project,
+  () => {
+    loadProject()
+  },
+  { immediate: true }
+)
+
+watch(open, (isOpen) => {
+  if (isOpen) {
+    error.value = ''
+    loadProject()
+  }
+})
+
 async function save() {
   error.value = ''
 
@@ -119,27 +178,51 @@ async function save() {
     !form.projectTitle ||
     !form.projectType ||
     !form.sponsorCompany ||
-    !form.startingBudget
+    form.startingBudget === '' ||
+    form.startingBudget === null ||
+    form.startingBudget === undefined
   ) {
     error.value = 'All required fields must be filled.'
+    return
+  }
+
+  if (!props.project) {
+    error.value = 'No project selected.'
+    return
+  }
+
+  if (!props.project.projectID) {
+    error.value = 'Project ID is missing.'
     return
   }
 
   saving.value = true
 
   try {
-    await $fetch('/api/admin/add', {
-      method: 'POST',
+    await $fetch('/api/admin/edit', {
+      method: 'PUT',
       body: {
         type: 'project',
-        ...form,
+        id: props.project.projectID,
+        projectNum: form.projectNum,
+        projectTitle: form.projectTitle,
+        projectType: form.projectType,
+        sponsorCompany: form.sponsorCompany,
+        startingBudget: Number(form.startingBudget),
+        costCenter: form.costCenter,
+        additionalInfo: form.additionalInfo,
       },
     })
 
     emit('saved')
     open.value = false
   } catch (e: any) {
-    error.value = e?.data?.message ?? 'Failed to add project.'
+    console.error('EDIT PROJECT ERROR:', e)
+
+    error.value =
+      e?.data?.message ||
+      e?.message ||
+      'Failed to update project.'
   } finally {
     saving.value = false
   }

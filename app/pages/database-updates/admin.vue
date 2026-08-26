@@ -1,5 +1,8 @@
 <template>
-  <div class="space-y-6">
+  <div 
+    class="space-y-6" 
+    @click="selectedUser = false; selectedProject = false; selectedVendor = false">
+    
     <div class="flex items-center justify-between">
       <h1 class="text-2xl font-bold text-[#1A1A1A]">Database Management</h1>
     </div>
@@ -8,196 +11,308 @@
 
     <!-- Users Tab -->
     <div v-if="activeTab == 0" class="space-y-3">
-      <div class="flex gap-2">
-        <UButton class="bg-[#154734] text-white cursor-pointer" @click="openAddUser">+ Add User</UButton>
+
+      <div class="flex gap-2 justify-end">
         <UButton
-          v-if="selectedUser"
-          variant="outline"
-          class="border-red-500 text-red-500"
-          @click="openDeactivateUser"
-        >
-          Deactivate
-        </UButton>
+          label="+ add User"
+          class="bg-[#154734] text-white cursor-pointer justify-end" 
+          @click.stop="openAddUser" 
+        />
+        </div>
+    
+      <div v-if="selectedUser" class="flex gap-2 ml-auto justify-end bg-white border border-[#D9D9D9] rounded-xl p-2 w-fit">
+        
+         <UButton
+          label="Deactivate"
+          class="cursor-pointer rounded-lg border border-[#F6C94D] bg-[#FFF9E6] text-[#D88900] hover:bg-[#FFF3CC]"
+          @click.stop="openDeactivateUser"
+        />
+
         <UButton
-          v-if="selectedUser && !selectedUser.active"
-          variant="outline"
-          class="border-[#154734] text-[#154734]"
-          @click="reactivateUser"
-        >
-          Reactivate
-        </UButton>
+          label="Reactivate"
+          class="cursor-pointer rounded-lg border"
+          :class="
+            selectedUser.active
+              ? 'border-[#EAF8F0] bg-[#F8FDFB] text-[#C4E8D3] hover:bg-[#F2FAF6]'
+              : 'border-[#B8E8D0] bg-[#DFF7EA] text-[#5FAF82] hover:bg-[#D0F2E0]'
+          "
+          @click.stop="reactivateUser"
+        />
+
         <UButton
-          v-if="selectedUser"
-          variant="outline"
-          class="border-[#E87722] text-[#E87722]"
-          @click="openAssignProject"
-        >
-          Assign to Project
-        </UButton>
+          label="Assign to Project"
+          class="cursor-pointer rounded-lg border border-[#9DD8F5] bg-[#EFF9FF] text-[#2384C6] hover:bg-[#E2F4FC]"
+          @click.stop="openAssignProject"
+        />
+
         <UButton
-          v-if="selectedUser"
-          variant="outline"
-          class="border-red-700 text-red-700"
-          @click="openDeleteUser"
-        >
-          Delete
-        </UButton>
+          label="Edit"
+          class="cursor-pointer rounded-lg border border-[#D7F2E5] bg-[#F2FCF7] text-[#154734] hover:bg-[#E8F8F0]"
+          @click.stop="openEditUser"
+        />
+
+        <UButton
+          icon="lucide:x"
+          class="bg-white text-slate-400 hover:bg-slate-200 active:bg-slate-300 cursor-pointer"
+          @click.stop="selectedUser = false"
+        />
+        
       </div>
 
       <div class="bg-white border border-[#D9D9D9] rounded-xl overflow-hidden">
-        <div style="height: 500px" class="ag-theme-alpine w-full">
-          <AgGridVue
-            :row-data="users"
-            :column-defs="userColumns"
-            :default-col-def="{ resizable: true, sortable: true, filter: true }"
-            row-selection="single"
-            @selection-changed="onUserSelect"
-            @cell-value-changed="onUserEdit"
-          />
-        </div>
+        <AdminTable
+          title="User management"
+          :rows="users"
+          :columns="userColumns"
+          @select="user => { selectedUser = user}"   
+        />
       </div>
+
     </div>
 
     <!-- Projects Tab -->
     <div v-if="activeTab == 1" class="space-y-3">
-      <div class="flex gap-2">
-        <UButton class="bg-[#154734] text-white" @click="openAddProject">+ Add Project</UButton>
-        <UButton
-          v-if="selectedProject"
-          variant="outline"
-          class="border-red-500 text-red-500"
-          @click="openDeactivateProject"
-        >
-          Deactivate
-        </UButton>
+      <div class="flex gap-2 justify-end">
+        <UButton 
+          label="+ Add Project"
+          class="bg-[#154734] text-white cursor-pointer" 
+          @click.stop="openAddProject"
+        />
       </div>
+
+      <div v-if="selectedProject" class="flex gap-2 ml-auto justify-end bg-white border border-[#D9D9D9] rounded-xl p-2 w-fit">
+        <UButton
+          label="Edit"
+          class="cursor-pointer rounded-lg border border-[#D7F2E5] bg-[#F2FCF7] text-[#0F3828] hover:bg-[#E8F8F0]"
+          @click.stop="openEditProject"
+        />
+
+        <UButton
+          label="Deactivate"
+          class="cursor-pointer rounded-lg border border-[#F6C94D] bg-[#FFF9E6] text-[#D88900] hover:bg-[#FFF3CC]"
+          @click.stop="openDeactivateProject"
+        />
+        <UButton
+          icon="lucide:x"
+          class="bg-white text-slate-400 hover:bg-slate-200 active:bg-slate-300 cursor-pointer"
+          @click="selectedProject = false"
+        />
+      </div>
+      
       <div class="bg-white border border-[#D9D9D9] rounded-xl overflow-hidden">
-        <div style="height: 500px" class="ag-theme-alpine w-full">
-          <AgGridVue
-            :row-data="projects"
-            :column-defs="projectColumns"
-            :default-col-def="{ resizable: true, sortable: true, filter: true }"
-            row-selection="single"
-            @selection-changed="onProjectSelect"
-            @cell-value-changed="onProjectEdit"
+          <AdminTable
+            title="Project management"
+            :rows="projects"
+            :columns="projectColumns"
+            @select="project => selectedProject = project"
           />
         </div>
-      </div>
     </div>
 
     <!-- Vendors Tab -->
     <div v-if="activeTab == 2" class="space-y-3">
-      <div class="flex gap-2">
-        <UButton
-          v-if="selectedVendor"
-          variant="outline"
-          class="border-red-700 text-red-700"
-          @click="openDeleteVendor"
-        >
-          Delete
-        </UButton>
+      <div class="flex gap-2 justify-end">
+        <UButton 
+          label="+ Add Vendor"
+          class="bg-[#154734] text-white cursor-pointer" 
+          @click.stop="openAddVendor"
+        />
       </div>
+
+      <div v-if="selectedVendor" class="flex gap-2 ml-auto justify-end bg-white border border-[#D9D9D9] rounded-xl p-2 w-fit">
+      <UButton
+        label="Edit"
+        class="cursor-pointer rounded-lg border border-[#D7F2E5] bg-[#F2FCF7] text-[#0F3828] hover:bg-[#E8F8F0]"
+        @click.stop="openEditVendor"
+      />
+
+      <UButton
+        label="Delete"
+        class="cursor-pointer rounded-lg border border-[#FFB5B5] bg-[#FFF1F1] text-[#C62828] hover:bg-[#FFE5E5]"
+        @click.stop="openDeleteVendor"
+      />
+
+      <UButton
+        icon="lucide:x"
+        class="cursor-pointer rounded-lg border border-[#E2E8F0] bg-white text-slate-500 hover:bg-slate-100 active:bg-slate-200"
+        @click="selectedVendor = false"
+      />
+      </div>
+      
       <div v-if="vendorError" class="text-sm text-red-600 bg-red-50 border border-red-200 rounded px-3 py-2">
         {{ vendorError }}
       </div>
+
       <div class="bg-white border border-[#D9D9D9] rounded-xl overflow-hidden">
-        <div style="height: 400px" class="ag-theme-alpine w-full">
-          <AgGridVue
-            :row-data="vendors"
-            :column-defs="vendorColumns"
-            :default-col-def="{ resizable: true, sortable: true, filter: true }"
-            row-selection="single"
-            @selection-changed="onVendorSelect"
-            @cell-value-changed="onVendorEdit"
-          />
-        </div>
+        <AdminTable
+          title="Vendor management"
+          :rows="vendors"
+          :columns="vendorColumns"
+          @select="vendor => selectedVendor = vendor"
+        />
       </div>
     </div>
 
     <!-- Import Tab -->
-    <div v-if="activeTab == 3" class="space-y-6 max-w-2xl">
-      <!-- Step 1: Projects -->
-      <div class="bg-white border border-[#D9D9D9] rounded-xl p-6 space-y-3">
-        <h2 class="font-bold text-[#1A1A1A]">Step 1 — Import Projects</h2>
-        <p class="text-sm text-[#5A5A5A]">
-          Columns: <code>projectNum, projectTitle, projectType, startingBudget, sponsorCompany</code>
-          (optional: <code>costCenter, additionalInfo, mentorName, mentorEmail</code>).
+    <div v-if="activeTab == 3" class="w-full space-y-4 sm:space-y-6">
+    <!-- Step 1: Projects -->
+    <div class="w-full rounded-xl border border-[#D9D9D9] bg-white p-4 sm:p-6">
+      <div class="space-y-3">
+        <h2 class="font-bold text-[#1A1A1A]">
+          Step 1 — Import Projects
+        </h2>
+
+        <p class="text-sm leading-6 text-[#5A5A5A] break-words">
+          Columns:
+          <code class="break-all">projectNum, projectTitle, projectType, startingBudget, sponsorCompany</code>
+          (optional:
+          <code class="break-all">costCenter, additionalInfo, mentorName, mentorEmail</code>).
           Existing project numbers are skipped.
         </p>
-        <DragAndDrop v-model="projectFile" accept=".xlsx,.xls" label="Projects spreadsheet (.xlsx)" />
+
+        <DragAndDrop
+          v-model="projectFile"
+          accept=".xlsx,.xls"
+          label="Projects spreadsheet (.xlsx)"
+        />
+
         <UButton
-          class="bg-[#154734] text-white cursor-pointer"
+          class="w-full cursor-pointer bg-[#154734] text-white sm:w-auto"
           :disabled="!projectFile"
           :loading="importingProjects"
-          @click="importProjects"
+          @click.stop="importProjects"
         >
           Import Projects
         </UButton>
-        <ImportResults v-if="projectImportResult" :result="projectImportResult" />
-      </div>
 
-      <!-- Step 2: Students -->
-      <div class="bg-white border border-[#D9D9D9] rounded-xl p-6 space-y-3">
-        <h2 class="font-bold text-[#1A1A1A]">Step 2 — Import Students</h2>
-        <div
-          v-if="!projects.length"
-          class="text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded px-3 py-2"
-        >
-          ⚠ No projects exist yet. Import projects first — student rows referencing unknown project numbers will be rejected.
-        </div>
-        <p class="text-sm text-[#5A5A5A]">
-          Columns: <code>firstName, lastName, email, projectNum</code>.
-          Students must use @utdallas.edu emails and reference an existing project number.
-        </p>
-        <DragAndDrop v-model="studentFile" accept=".xlsx,.xls" label="Students spreadsheet (.xlsx)" />
-        <UButton
-          class="bg-[#154734] text-white"
-          :disabled="!studentFile"
-          :loading="importingStudents"
-          @click="importStudents"
-        >
-          Import Students
-        </UButton>
-        <ImportResults v-if="studentImportResult" :result="studentImportResult" />
+        <ImportResults
+          v-if="projectImportResult"
+          :result="projectImportResult"
+        />
       </div>
     </div>
 
-    <!-- Modals -->
-    <AddUserModal v-model:open="addUserOpen" @saved="refreshUsers" />
-    <AddProjectModal v-model:open="addProjectOpen" @saved="refreshProjects" />
-    <DeactivateModal
-      v-model:open="deactivateOpen"
-      :name="selectedUser ? `${selectedUser.firstName} ${selectedUser.lastName}` : ''"
-      @confirm="deactivateUser"
-    />
-    <DeactivateModal
-      v-model:open="deactivateProjectOpen"
-      :name="selectedProject?.projectTitle ?? ''"
-      @confirm="deactivateProject"
-    />
-    <DeactivateModal
-      v-model:open="deleteUserOpen"
-      :name="selectedUser ? `${selectedUser.firstName} ${selectedUser.lastName} (permanent delete)` : ''"
-      @confirm="deleteUser"
-    />
-    <DeactivateModal
-      v-model:open="deleteVendorOpen"
-      :name="selectedVendor ? `${selectedVendor.vendorName} (permanent delete)` : ''"
-      @confirm="deleteVendor"
-    />
-    <AssignProjectModal
-      v-model:open="assignOpen"
-      :user="selectedUser"
-      @saved="refreshUsers"
-    />
+    <!-- Step 2: Students -->
+    <div class="w-full rounded-xl border border-[#D9D9D9] bg-white p-4 sm:p-6">
+      <div class="space-y-3">
+        <h2 class="font-bold text-[#1A1A1A]">
+          Step 2 — Import Students
+        </h2>
+
+        <div
+          v-if="!projects.length"
+          class="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm leading-5 text-amber-800"
+        >
+          ⚠ No projects exist yet. Import projects first — student rows
+          referencing unknown project numbers will be rejected.
+        </div>
+
+        <p class="text-sm leading-6 text-[#5A5A5A] break-words">
+          Columns:
+          <code class="break-all">firstName, lastName, email, projectNum</code>.
+          Students must use @utdallas.edu emails and reference an existing
+          project number.
+        </p>
+
+        <DragAndDrop
+          v-model="studentFile"
+          accept=".xlsx,.xls"
+          label="Students spreadsheet (.xlsx)"
+        />
+
+        <UButton
+          class="w-full cursor-pointer bg-[#154734] text-white sm:w-auto"
+          :disabled="!studentFile"
+          :loading="importingStudents"
+          @click.stop="importStudents"
+        >
+          Import Students
+        </UButton>
+
+        <ImportResults
+          v-if="studentImportResult"
+          :result="studentImportResult"
+        />
+      </div>
+    </div>
+    </div>
   </div>
+
+<!-- Modals -->
+<AddUserModal
+  v-model:open="addUserOpen"
+  @saved="refreshUsers"
+/>
+
+<AddProjectModal
+  v-model:open="addProjectOpen"
+  @saved="refreshProjects"
+/>
+
+<AddVendorModal
+  v-model:open="addVendorOpen"
+  @saved="refreshVendors"
+/>
+
+<DeactivateModal
+  v-model:open="deactivateOpen"
+  :name="selectedUser ? `${selectedUser.firstName} ${selectedUser.lastName}` : ''"
+  @confirm="deactivateUser"
+/>
+
+<DeactivateModal
+  v-model:open="deactivateProjectOpen"
+  :name="selectedProject?.projectTitle ?? ''"
+  @confirm="deactivateProject"
+/>
+
+<AssignProjectModal
+  v-model:open="assignOpen"
+  :user="selectedUser"
+  @saved="refreshUsers"
+/>
+
+<EditProjectModal
+  v-model:open="editProjectOpen"
+  :project="selectedProject"
+  @saved="refreshProjects"
+/>
+<EditUserModal
+  v-model:open="editUserOpen"
+  :user="selectedUser"
+  @saved="refreshUsers"
+  />
+
+<EditVendorModal
+  v-model:open="editVendorOpen"
+  :vendor="selectedVendor"
+  @saved="refreshVendors"
+  />
+
+<DeleteModal
+  v-model:open="deleteVendorOpen"
+  title="Delete Vendor"
+  :name="selectedVendor?.vendorName ?? ''"
+  type="vendor"
+  :id="selectedVendor?.vendorID ?? ''"
+  @confirm="handleVendorDeleted"
+/>
+  
 </template>
 
+
+
 <script setup lang="ts">
-import { AgGridVue } from 'ag-grid-vue3'
+import { h } from 'vue'
+import { UBadge } from '#components'
 import 'ag-grid-community/styles/ag-grid.css'
 import 'ag-grid-community/styles/ag-theme-alpine.css'
 import ImportResults from '~/components/shared/ImportResults.vue'
+import { ModuleRegistry, AllCommunityModule,} from 'ag-grid-community'
+
+
+
+ModuleRegistry.registerModules([AllCommunityModule])
 
 definePageMeta({ middleware: 'auth' })
 
@@ -206,21 +321,29 @@ if (!isAdmin.value) await navigateTo('/orders')
 
 const tabs = [{ label: 'Users' }, { label: 'Projects' }, { label: 'Vendors' }, { label: 'Import' }]
 const activeTab = ref(0)
-
 // ── Users ──────────────────────────────────────────────────────────────────
 const { data: userData, refresh: refreshUsers } = await useFetch('/api/user')
 const users = computed(() => userData.value ?? [])
 const selectedUser = ref<{ id: number; firstName: string; lastName: string; active: boolean } | null>(null)
-
 const userColumns = [
-  { field: 'netID', headerName: 'NetID' },
-  { field: 'firstName', headerName: 'First Name', editable: true },
-  { field: 'lastName', headerName: 'Last Name', editable: true },
-  { field: 'email', headerName: 'Email' },
-  { field: 'role', headerName: 'Role' },
-  { field: 'active', headerName: 'Active', valueFormatter: (p: { value: boolean }) => p.value ? 'Yes' : 'No' },
-]
+  { accessorKey: 'netID', header: 'NetID' },
+  { accessorKey: 'firstName', header: 'First Name' },
+  { accessorKey: 'lastName', header: 'Last Name' },
+  { accessorKey: 'email', header: 'Email' },
 
+ {
+  id: 'project',
+  header: 'Projects',
+  cell: ({ row }) => {
+    return row.original.worksOn
+      ?.map(work => work.project.projectNum)
+      .join(', ') ?? ''
+  }
+},
+
+  { accessorKey: 'role', header: 'Role' },
+  { accessorKey: 'active', header: 'Active' },
+]
 function onUserSelect(e: { api: { getSelectedRows: () => typeof selectedUser.value[] } }) {
   selectedUser.value = e.api.getSelectedRows()[0] ?? null
 }
@@ -238,13 +361,17 @@ const projects = computed(() => projectData.value ?? [])
 const selectedProject = ref<{ projectID: number; projectTitle: string } | null>(null)
 
 const projectColumns = [
-  { field: 'projectNum', headerName: 'Project #' },
-  { field: 'projectTitle', headerName: 'Title', editable: true },
-  { field: 'projectType', headerName: 'Type', editable: true },
-  { field: 'startingBudget', headerName: 'Budget ($)', editable: true },
-  { field: 'sponsorCompany', headerName: 'Sponsor', editable: true },
-  { field: 'totalExpenses', headerName: 'Expenses ($)' },
+  { accessorKey: 'projectNum', header: 'Project #' },
+  { accessorKey: 'projectTitle', header: 'Title' },
+  { accessorKey: 'projectType', header: 'Type' },
+  { accessorKey: 'startingBudget', header: 'Budget ($)' },
+  { accessorKey: 'sponsorCompany', header: 'Sponsor' },
+  { accessorKey: 'totalExpenses', header: 'Expenses ($)' },
 ]
+
+function handleDeselect(row) {
+  emit('deselect', row)
+}
 
 function onProjectSelect(e: { api: { getSelectedRows: () => typeof selectedProject.value[] } }) {
   selectedProject.value = e.api.getSelectedRows()[0] ?? null
@@ -264,20 +391,11 @@ const selectedVendor = ref<{ vendorID: number; vendorName: string } | null>(null
 const vendorError = ref('')
 
 const vendorColumns = [
-  { field: 'vendorName', headerName: 'Vendor Name', editable: true },
-  {
-    field: 'vendorStatus', headerName: 'Status', editable: true,
-    cellEditor: 'agSelectCellEditor',
-    cellEditorParams: { values: ['APPROVED', 'PENDING', 'DENIED'] },
-  },
-  {
-    field: 'isPreferred', headerName: 'Preferred', editable: true,
-    cellEditor: 'agSelectCellEditor',
-    cellEditorParams: { values: [true, false] },
-    valueFormatter: (p: { value: boolean }) => p.value ? 'Yes ★' : 'No',
-  },
-  { field: 'vendorEmail', headerName: 'Email', editable: true },
-  { field: 'vendorURL', headerName: 'URL', editable: true },
+  { accessorKey: 'vendorName', header: 'Vendor Name' },
+  { accessorKey: 'vendorStatus', header: 'Status' },
+  { accessorKey: 'isPreferred', header: 'Preferred' },
+  { accessorKey: 'vendorEmail', header: 'Email' },
+  { accessorKey: 'vendorURL', header: 'URL' },
 ]
 
 function onVendorSelect(e: { api: { getSelectedRows: () => typeof selectedVendor.value[] } }) {
@@ -298,36 +416,29 @@ async function onVendorEdit(e: { data: { vendorID: number }; colDef: { field: st
   }
 }
 
-async function deleteVendor() {
-  vendorError.value = ''
-  try {
-    await $fetch('/api/admin/delete', {
-      method: 'POST',
-      body: { type: 'vendor', id: selectedVendor.value!.vendorID },
-    })
-    selectedVendor.value = null
-    refreshVendors()
-  } catch (e: unknown) {
-    vendorError.value = (e as { data?: { message?: string } })?.data?.message ?? 'Failed to delete vendor.'
-  }
-}
-
 // ── Deactivate / Reactivate / Delete ───────────────────────────────────────
 const addUserOpen = ref(false)
 const addProjectOpen = ref(false)
+const addVendorOpen = ref(false)
 const deactivateOpen = ref(false)
 const deactivateProjectOpen = ref(false)
-const deleteUserOpen = ref(false)
 const deleteVendorOpen = ref(false)
 const assignOpen = ref(false)
+const editProjectOpen = ref(false)
+const editUserOpen = ref(false)
+const editVendorOpen = ref(false)
 
+
+function openAddVendor() { addVendorOpen.value = true }
 function openAddUser() { addUserOpen.value = true }
 function openAddProject() { addProjectOpen.value = true }
 function openDeactivateUser() { deactivateOpen.value = true }
 function openDeactivateProject() { deactivateProjectOpen.value = true }
-function openDeleteUser() { deleteUserOpen.value = true }
-function openDeleteVendor() { deleteVendorOpen.value = true }
 function openAssignProject() { assignOpen.value = true }
+function openEditProject() { editProjectOpen.value = true }
+function openEditUser() { editUserOpen.value = true }
+function openEditVendor() { editVendorOpen.value = true }
+function openDeleteVendor() { deleteVendorOpen.value = true }
 
 async function deactivateUser() {
   await $fetch('/api/admin/deactivate-user', {
@@ -347,14 +458,7 @@ async function reactivateUser() {
   refreshUsers()
 }
 
-async function deleteUser() {
-  await $fetch('/api/admin/delete', {
-    method: 'POST',
-    body: { type: 'user', id: selectedUser.value!.id },
-  })
-  selectedUser.value = null
-  refreshUsers()
-}
+
 
 async function deactivateProject() {
   await $fetch('/api/admin/deactivate-project', {
@@ -363,6 +467,12 @@ async function deactivateProject() {
   })
   selectedProject.value = null
   refreshProjects()
+}
+
+async function handleVendorDeleted() {
+  selectedVendor.value = null
+  vendorError.value = ''
+  await refreshVendors()
 }
 
 // ── Excel Import ───────────────────────────────────────────────────────────

@@ -4,7 +4,7 @@
     class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 p-4"
     role="dialog"
     aria-modal="true"
-    aria-labelledby="add-user-title"
+    aria-labelledby="edit-user-title"
     @click.self="close"
     @keydown.escape="close"
   >
@@ -15,15 +15,14 @@
         <!-- Header -->
         <div>
           <h3
-            id="add-user-title"
+            id="edit-user-title"
             class="text-xl font-black tracking-tight text-slate-900"
           >
-            Add User
+            Edit User
           </h3>
 
           <p class="mt-1 text-sm text-slate-500">
-            Create a person manually, then assign them to a project right away
-            if needed.
+            Update this user's information and project assignment.
           </p>
         </div>
 
@@ -33,16 +32,16 @@
             v-model="form.firstName"
             placeholder="First Name *"
               :ui="{
-            base: 'placeholder:text-gray-500 text-gray-900',
-          }"
+                base: 'placeholder:text-gray-500 text-gray-900',
+              }"  
           />
 
           <UInput
             v-model="form.lastName"
             placeholder="Last Name *"
-              :ui="{
+            :ui="{
               base: 'placeholder:text-gray-500 text-gray-900',
-            }"
+            }" 
           />
         </div>
 
@@ -55,9 +54,16 @@
               ? 'Email * (any address)'
               : 'UTD Email * (abc123456@utdallas.edu)'
           "
+          :ui="{
+            base: 'placeholder:text-gray-500 text-gray-900',
+            }" 
+        />
+        <UInput
+            v-model="form.netID"
+            placeholder="NetID (e.g. abc123456)"
             :ui="{
               base: 'placeholder:text-gray-500 text-gray-900',
-            }"
+            }" 
         />
 
         <!-- Role -->
@@ -73,9 +79,8 @@
         <AppSelect
           v-model="form.projectNum"
           :items="projectOptions"
-          label="Initial project assignment"
-          placeholder="Optional - assign to a project now"
-          hint="This creates the user and adds an active project assignment in one step."
+          label="Project assignment"
+          placeholder="Optional - assign to a project"
         />
 
         <!-- Error -->
@@ -102,7 +107,7 @@
             :loading="saving"
             @click="save"
           >
-            Add User
+            Save Changes
           </UButton>
         </div>
       </div>
@@ -112,6 +117,18 @@
 
 <script setup lang="ts">
 const open = defineModel<boolean>('open', { default: false })
+
+const props = defineProps<{
+  user: {
+    id: string
+    firstName: string
+    lastName: string
+    netID?: string | null
+    email: string
+    role: string
+    projectNum?: string | null
+  } | null
+}>()
 
 const emit = defineEmits<{
   saved: []
@@ -138,10 +155,30 @@ const form = reactive({
   email: '',
   role: '',
   projectNum: '',
+  netID: '',
 })
 
 const saving = ref(false)
 const error = ref('')
+
+
+watch(
+  () => [open.value, props.user],
+  () => {
+    if (!open.value || !props.user) return
+
+    Object.assign(form, {
+      firstName: props.user.firstName ?? '',
+      lastName: props.user.lastName ?? '',
+      email: props.user.email ?? '',
+      role: props.user.role ?? '',
+      projectNum: props.user.projectNum ?? '',
+    })
+
+    error.value = ''
+  },
+  { immediate: true },
+)
 
 async function save() {
   error.value = ''
@@ -156,32 +193,30 @@ async function save() {
     return
   }
 
+  if (!props.user?.id) {
+    error.value = 'No user selected.'
+    return
+  }
+
   saving.value = true
 
   try {
-    await $fetch('/api/admin/add', {
-      method: 'POST',
-      body: {
+    await $fetch('/api/admin/edit', {
+    method: 'PATCH',
+    body: {
         type: 'user',
+        id: props.user.id,
         ...form,
-      },
+    },
     })
 
     emit('saved')
 
     open.value = false
-
-    Object.assign(form, {
-      firstName: '',
-      lastName: '',
-      email: '',
-      role: '',
-      projectNum: '',
-    })
   } catch (e: unknown) {
     error.value =
       (e as { data?: { message?: string } })?.data?.message ??
-      'Failed to add user.'
+      'Failed to update user.'
   } finally {
     saving.value = false
   }

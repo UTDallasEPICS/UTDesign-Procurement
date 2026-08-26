@@ -61,9 +61,36 @@ export default defineEventHandler(async event => {
       })
     }
 
+    if (type === 'vendor') {
+      const {
+        vendorName,
+        vendorEmail,
+        vendorURL,
+        isPreferred,
+      } = body
+
+      return prisma.vendor.create({
+        data: {
+          vendorName,
+          vendorEmail: vendorEmail ?? null,
+          vendorURL: vendorURL || 'https://default.com',
+          isPreferred: isPreferred ?? false,
+        },
+      })
+    }
     throw createError({ statusCode: 400, message: 'Invalid type' })
   } catch (err: unknown) {
-    if ((err as { statusCode?: number }).statusCode) throw err
-    throw createError({ statusCode: 500, message: 'Internal server error' })
+  console.error('ADMIN ADD ERROR:', err)
+
+  if ((err as { statusCode?: number }).statusCode) {
+    throw err
   }
+
+  throw createError({
+    statusCode: 500,
+    message: err instanceof Error
+      ? err.message
+      : 'Internal server error',
+  })
+}
 })

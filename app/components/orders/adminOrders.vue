@@ -1,6 +1,6 @@
 <template>
   <div class="mx-auto max-w-5xl space-y-6">
-    <section class="app-surface overflow-hidden p-0">
+    <section class="app-surface overflow-hidden p-0 bg-white">
       <div class="border-b border-white/70 bg-gradient-to-r from-[#154734] to-[#0f3326] px-6 py-6 text-white sm:px-8">
         <p class="text-xs font-bold uppercase tracking-[0.3em] text-white/60">Admin dashboard</p>
         <h1 class="mt-2 text-3xl font-black tracking-tight">Process Orders</h1>
