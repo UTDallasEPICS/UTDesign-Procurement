@@ -3,7 +3,9 @@ import prisma from '~~/server/utils/prisma'
 
 export default defineEventHandler(async event => {
   const url = getRequestURL(event)
-
+  if (event.path === '/api/test-email') {
+    return
+  }
   if (!url.pathname.startsWith('/api/')) return
   if (url.pathname.startsWith('/api/auth')) return
 

@@ -24,29 +24,16 @@
           </div>
 
           <form class="px-8 py-6 space-y-4" @submit.prevent="handleLogin">
-            <div>
-              <label class="block text-sm font-semibold text-[#1A1A1A] mb-1.5">Email</label>
               <UInput
+                class="w-full text-slate-500"
+                label="email"
                 v-model="email"
                 type="email"
-                placeholder="abc123456@utdallas.edu"
+                placeholder="abc123456@utdallas.edu..."
                 autocomplete="email"
                 size="lg"
                 required
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-semibold text-[#1A1A1A] mb-1.5">Password</label>
-              <UInput
-                v-model="password"
-                type="password"
-                placeholder="Password"
-                autocomplete="current-password"
-                size="lg"
-                required
-              />
-            </div>
-
+                />
             <div
               v-if="error"
               class="text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2.5"
@@ -60,8 +47,9 @@
               size="lg"
               class="bg-[#154734] hover:bg-[#0f3326] text-white font-semibold mt-2"
               :loading="loading"
+              @click="openInputCodeModal"
             >
-              Sign In
+              send One time password
             </UButton>
           </form>
         </div>
@@ -74,6 +62,12 @@
 
     <div class="h-1 bg-[#154734]/50" />
   </div>
+
+
+  <InputCodeModal
+    v-if="codeInputOpen"
+    @close="codeInputOpen = false"
+  />
 </template>
 
 <script setup lang="ts">
@@ -82,31 +76,23 @@ definePageMeta({ layout: false, middleware: 'auth' })
 const { authClient, isLoggedIn } = useAuth()
 
 const email = ref('')
-const password = ref('')
 const error = ref('')
 const loading = ref(false)
+const codeInputOpen = ref(false)
+
 
 async function handleLogin() {
   error.value = ''
 
-  // Students/admins use UTD emails; external mentors may use any valid email
   const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
   if (!emailRe.test(email.value.trim())) {
     error.value = 'Please enter a valid email address'
     return
   }
 
-  loading.value = true
-  try {
-    await authClient.signIn.email({
-      email: email.value.trim().toLowerCase(),
-      password: password.value,
-    })
-    await navigateTo('/orders')
-  } catch {
-    error.value = 'Invalid email or password.'
-  } finally {
-    loading.value = false
-  }
+  // Open modal after validation
+  codeInputOpen.value = true
 }
+
 </script>
