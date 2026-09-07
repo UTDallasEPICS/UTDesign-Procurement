@@ -21,7 +21,7 @@
             :separator="3"
             placeholder="*"
         >
-</UPinInput>
+      </UPinInput>
         </div>
 
         <UButton
@@ -52,7 +52,6 @@ const emit = defineEmits<{
 
 function verifyCode() {
   console.log('OTP:', code.value)
-
-  // Add your verification logic here.
+  
 }
 </script>

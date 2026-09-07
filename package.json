@@ -13,6 +13,7 @@
     "db:studio": "prisma studio"
   },
   "dependencies": {
+    "@better-auth/infra": "^0.4.5",
     "@nuxt/ui": "^4.9.0",
     "ag-grid-community": "^33.3.0",
     "ag-grid-vue3": "^33.3.0",

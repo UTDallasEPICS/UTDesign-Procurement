@@ -33,7 +33,7 @@ model User {
   netID              String?
   firstName          String
   lastName           String
-  email              String    @unique
+  email              String    @uniqueuser
   active             Boolean   @default(true)
   responsibilities   String?
   deactivationDate   DateTime?

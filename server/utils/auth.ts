@@ -9,13 +9,13 @@ export default defineEventHandler(async event => {
   if (!url.pathname.startsWith('/api/')) return
   if (url.pathname.startsWith('/api/auth')) return
 
-  const session = await auth.api.getSession({ headers: event.headers })
+  const session = await aFuth.api.getSession({ headers: event.headers })
 
   if (!session?.user) {
     throw createError({ statusCode: 401, statusMessage: 'Unauthorized' })
   }
 
-  const user = await prisma.user.findUnique({
+  const user =  await prisma.user.findUnique({
     where: { email: session.user.email },
   })
 

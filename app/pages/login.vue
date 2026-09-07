@@ -43,13 +43,13 @@
 
             <UButton
               type="submit"
+              label="send one time passcode"
               block
               size="lg"
               class="bg-[#154734] hover:bg-[#0f3326] text-white font-semibold mt-2"
               :loading="loading"
-              @click="openInputCodeModal"
+              @click="sendVerificationEmail(email)"
             >
-              send One time password
             </UButton>
           </form>
         </div>
@@ -71,28 +71,55 @@
 </template>
 
 <script setup lang="ts">
+import { sendVerificationEmail } from 'better-auth/api'
+
 definePageMeta({ layout: false, middleware: 'auth' })
 
 const { authClient, isLoggedIn } = useAuth()
 
-const email = ref('')
-const error = ref('')
+const email = ref('')   
 const loading = ref(false)
 const codeInputOpen = ref(false)
-
-
+const error = ref('')
 async function handleLogin() {
   error.value = ''
 
-  const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  const normalizedEmail = email.value.trim().toLowerCase()
 
-  if (!emailRe.test(email.value.trim())) {
+  // Basic validation
+  if (!normalizedEmail) {
+    error.value = 'Please enter your email address'
+    return
+  }
+
+  if (!normalizedEmail.includes('@')) {
     error.value = 'Please enter a valid email address'
     return
   }
 
-  // Open modal after validation
-  codeInputOpen.value = true
-}
+  loading.value = true
 
+  try {
+    const result = await authClient.emailOtp.sendVerificationOtp({
+      email: normalizedEmail,
+      type: 'sign-in'
+    })
+
+    if (result.error) {
+      error.value =
+        result.error.message || 'Unable to send verification code'
+      return
+    }
+
+    // Email was sent successfully.
+    // Open the OTP input modal.
+    codeInputOpen.value = true
+  } catch (err) {
+    console.error('Failed to send verification OTP:', err)
+
+    error.value = 'Unable to send verification code. Please try again.'
+  } finally {
+    loading.value = false
+  }
+}
 </script>
