@@ -20,16 +20,14 @@
             :length="6"
             :separator="3"
             placeholder="*"
-        >
-      </UPinInput>
+        />
         </div>
 
         <UButton
+          label="berify code"
           class="mt-6 w-full bg-[#154734] hover:bg-[#0f3326]"
           @click="verifyCode"
-        >
-          Verify Code
-        </UButton>
+        />
 
         <UButton
           variant="ghost"
@@ -44,14 +42,42 @@
 </template>
 
 <script setup lang="ts">
-const code = ref('')
+const { authClient } = useAuth()
+
+const props = defineProps<{
+  email: string
+}>()
+
+const code = ref<string[]>([])
 
 const emit = defineEmits<{
   close: []
+  verified: []
 }>()
+async function verifyCode() {
+  console.log('RAW CODE:', code.value)
+  console.log('RAW CODE TYPE:', typeof code.value)
+  console.log('IS ARRAY:', Array.isArray(code.value))
 
-function verifyCode() {
-  console.log('OTP:', code.value)
-  
+  const otp = Array.isArray(code.value)
+    ? code.value.join('')
+    : String(code.value)
+
+  console.log('OTP BEING SENT:', otp)
+  console.log('OTP TYPE:', typeof otp)
+
+  const { data, error } = await authClient.signIn.emailOtp({
+    email: props.email,
+    otp: otp,
+  })
+
+  if (error) {
+    console.error('OTP verification failed:', error)
+    return
+  }
+
+  console.log('Email verified!', data)
+  emit('verified')
 }
+
 </script>

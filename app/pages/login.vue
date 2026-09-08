@@ -65,6 +65,7 @@
 
   <InputCodeModal
     v-if="codeInputOpen"
+    :email="verificationEmail"
     @close="codeInputOpen = false"
   />
 </template>
@@ -75,15 +76,16 @@ definePageMeta({ layout: false, middleware: 'auth' })
 const { authClient, isLoggedIn } = useAuth()
 
 const email = ref('')   
+const verificationEmail = ref('')
 const loading = ref(false)
 const codeInputOpen = ref(false)
 const error = ref('')
+
 async function handleLogin() {
   error.value = ''
 
   const normalizedEmail = email.value.trim().toLowerCase()
 
-  // Basic validation
   if (!normalizedEmail) {
     error.value = 'Please enter your email address'
     return
@@ -108,8 +110,10 @@ async function handleLogin() {
       return
     }
 
-    // Email was sent successfully.
-    // Open the OTP input modal.
+    // Remember which email the OTP was sent to
+    verificationEmail.value = normalizedEmail
+
+    // Open OTP modal
     codeInputOpen.value = true
   } catch (err) {
     console.error('Failed to send verification OTP:', err)
@@ -119,4 +123,5 @@ async function handleLogin() {
     loading.value = false
   }
 }
+
 </script>

@@ -50,6 +50,10 @@ model User {
   departmentUsers DepartmentUser[]
   previousRecords PreviousRecord[]
 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+
   sessions Session[]
   accounts Account[]
 }
