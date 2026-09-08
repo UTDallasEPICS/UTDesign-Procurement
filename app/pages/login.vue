@@ -41,16 +41,15 @@
               {{ error }}
             </div>
 
-            <UButton
-              type="submit"
-              label="send one time passcode"
-              block
-              size="lg"
-              class="bg-[#154734] hover:bg-[#0f3326] text-white font-semibold mt-2"
-              :loading="loading"
-              @click="sendVerificationEmail(email)"
-            >
-            </UButton>
+        <UButton
+          type="submit"
+          label="send one time passcode"
+          block
+          size="lg"
+          class="bg-[#154734] hover:bg-[#0f3326] text-white font-semibold mt-2"
+          :loading="loading"
+        />
+
           </form>
         </div>
 
@@ -71,8 +70,6 @@
 </template>
 
 <script setup lang="ts">
-import { sendVerificationEmail } from 'better-auth/api'
-
 definePageMeta({ layout: false, middleware: 'auth' })
 
 const { authClient, isLoggedIn } = useAuth()

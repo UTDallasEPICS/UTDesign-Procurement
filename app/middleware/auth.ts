@@ -18,7 +18,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
   if (!isLoggedIn.value) {
     return navigateTo('/login')
   }
-
+  
   // Database updates: admin only
   if (to.path.startsWith('/database-updates') && !isAdmin.value) {
     return navigateTo('/orders')

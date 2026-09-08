@@ -31,66 +31,60 @@ async function main() {
   console.log("Seeding database...")
 
   // ── Users ──────────────────────────────────────────────────────────────────
- const devUsers = [
-  {
-    email: "abc000000@utdallas.edu",
-    firstName: "Alex",
-    lastName: "Student",
-    netID: "abc000000",
-    role: UserRole.STUDENT,
-  },
-  {
-    email: "cxg230016@utdallas.edu",
-    firstName: "CXG",
-    lastName: "Student",
-    netID: "cxg230016",
-    role: UserRole.STUDENT,
-  },
-  {
-    email: "def000000@utdallas.edu",
-    firstName: "Dana",
-    lastName: "Mentor",
-    netID: "def000000",
-    role: UserRole.MENTOR,
-  },
-  {
-    email: "ghi000000@utdallas.edu",
-    firstName: "Grace",
-    lastName: "Admin",
-    netID: "ghi000000",
-    role: UserRole.ADMIN,
-  },
-]
+
+  const devUsers = [
+    {
+      email: "abc000000@utdallas.edu",
+      name: "Alex Student",
+      netID: "abc000000",
+      role: UserRole.STUDENT,
+    },
+    {
+      email: "cxg230016@utdallas.edu",
+      name: "CXG Student",
+      netID: "cxg230016",
+      role: UserRole.STUDENT,
+    },
+    {
+      email: "def000000@utdallas.edu",
+      name: "Dana Mentor",
+      netID: "def000000",
+      role: UserRole.MENTOR,
+    },
+    {
+      email: "ghi000000@utdallas.edu",
+      name: "Grace Admin",
+      netID: "ghi000000",
+      role: UserRole.ADMIN,
+    },
+  ]
 
   const createdUsers = []
 
+  for (const u of devUsers) {
+    const user = await prisma.user.upsert({
+      where: {
+        email: u.email,
+      },
+      update: {
+        name: u.name,
+        netID: u.netID,
+        role: u.role,
+        active: true,
+      },
+      create: {
+        name: u.name,
+        email: u.email,
+        netID: u.netID,
+        role: u.role,
+        active: true,
+      },
+    })
 
-for (const u of devUsers) {
-  const user = await prisma.user.upsert({
-    where: {
-      email: u.email,
-    },
-    update: {
-      firstName: u.firstName,
-      lastName: u.lastName,
-      netID: u.netID,
-      role: u.role,
-      active: true,
-    },
-    create: {
-      email: u.email,
-      firstName: u.firstName,
-      lastName: u.lastName,
-      netID: u.netID,
-      role: u.role,
-      active: true,
-    },
-  })
+    createdUsers.push(user)
 
-  createdUsers.push(user)
-
-  console.log(`User: ${u.email} (role=${u.role})`)
-}
+    console.log(`User: ${u.email} (role=${u.role})`)
+  }
 
   const student = createdUsers.find(
     (user) => user.email === "abc000000@utdallas.edu",
@@ -104,59 +98,8 @@ for (const u of devUsers) {
     throw new Error("Required seed users were not created.")
   }
 
-  // ── BetterAuth Users ───────────────────────────────────────────────────────
-  //
-  // No password is created here.
-  //
-  // Email OTP authentication should be handled by BetterAuth's email OTP
-  // plugin/configuration. The AuthUser records below simply ensure that
-  // BetterAuth knows about the seeded users.
-  //
-  const now = new Date().toISOString()
-
-  for (const user of createdUsers) {
-    const meta = devUsers.find((u) => u.email === user.email)
-
-    if (!meta) {
-      throw new Error(`Could not find seed metadata for ${user.email}`)
-    }
-
-    const name = `${meta.firstName} ${meta.lastName}`
-
-    const existingUser = await prisma.$queryRawUnsafe<
-      { id: string }[]
-    >(
-      `SELECT id FROM "User" WHERE email = ?`,
-      user.email,
-    )
-
-    let UserId: string
-
-    if (existingUser.length > 0) {
-      UserId = existingUser[0].id
-    } else {
-      UserId = crypto.randomUUID()
-
-      await prisma.$executeRawUnsafe(
-        `INSERT INTO "User"
-          ("id", "name", "email", "emailVerified", "createdAt", "updatedAt")
-         VALUES (?, ?, ?, 0, ?, ?)`,
-        UserId,
-        name,
-        user.email,
-        now,
-        now,
-      )
-    }
-
-    console.log(`BetterAuth user: ${user.email}`)
-  }
-
-  console.log("BetterAuth users created.")
-  console.log("No password credentials were seeded.")
-  console.log("Authentication should use email OTP.")
-
   // ── Projects ───────────────────────────────────────────────────────────────
+
   const project1 = await prisma.project.upsert({
     where: {
       projectNum: "10000",
@@ -190,10 +133,12 @@ for (const u of devUsers) {
   console.log(`Projects: ${project1.projectNum}, ${project2.projectNum}`)
 
   // ── Vendors ────────────────────────────────────────────────────────────────
+
   await prisma.vendor.upsert({
     where: { vendorID: 1 },
     update: { isPreferred: true },
     create: {
+      vendorID: 1,
       vendorName: "Digi-Key Electronics",
       vendorStatus: "APPROVED",
       vendorURL: "https://www.digikey.com",
@@ -205,6 +150,7 @@ for (const u of devUsers) {
     where: { vendorID: 2 },
     update: { isPreferred: true },
     create: {
+      vendorID: 2,
       vendorName: "McMaster-Carr",
       vendorStatus: "APPROVED",
       vendorURL: "https://www.mcmaster.com",
@@ -216,6 +162,7 @@ for (const u of devUsers) {
     where: { vendorID: 3 },
     update: {},
     create: {
+      vendorID: 3,
       vendorName: "Unknown Supplier",
       vendorStatus: "PENDING",
       vendorURL: "https://default.com",
@@ -226,6 +173,7 @@ for (const u of devUsers) {
     where: { vendorID: 4 },
     update: {},
     create: {
+      vendorID: 4,
       vendorName: "Generic Web Store",
       vendorStatus: "APPROVED",
       vendorURL: "https://example.com",
@@ -235,6 +183,7 @@ for (const u of devUsers) {
   console.log("Vendors seeded.")
 
   // ── WorksOn ────────────────────────────────────────────────────────────────
+
   const startDate = new Date("2025-01-01")
 
   await prisma.worksOn.upsert({

@@ -1,6 +1,6 @@
 generator client {
-  provider      = "prisma-client"
-  output        = "./generated"
+  provider = "prisma-client"
+  output   = "./generated"
 }
 
 datasource db {
@@ -29,59 +29,51 @@ enum ProcessStatus {
 // ─── Core Models ──────────────────────────────────────────────────────────────
 
 model User {
-  id                 Int       @id @default(autoincrement())
-  netID              String?
-  firstName          String
-  lastName           String
-  email              String    @uniqueuser
-  active             Boolean   @default(true)
-  responsibilities   String?
-  deactivationDate   DateTime?
-  role               UserRole  @default(STUDENT)
+  id            String  @id @default(uuid())
+  name          String
+  email         String  @unique
+  emailVerified Boolean @default(false)
+  image         String?
 
-  requests          Request[]         @relation("StudentRequests")
-  reimbursements    Reimbursement[]   @relation("StudentReimbursements")
-  mentorProcesses   Process[]         @relation("MentorProcesses")
-  adminProcesses    Process[]         @relation("AdminProcesses")
-  orders            Order[]
-  worksOn           WorksOn[]
-  departmentUsers   DepartmentUser[]
-  previousRecords   PreviousRecord[]
+  netID            String?
+  active           Boolean   @default(true)
+  responsibilities String?
+  deactivationDate DateTime?
+  role             UserRole  @default(STUDENT)
+
+  requests        Request[]        @relation("StudentRequests")
+  reimbursements  Reimbursement[]  @relation("StudentReimbursements")
+  mentorProcesses Process[]        @relation("MentorProcesses")
+  adminProcesses  Process[]        @relation("AdminProcesses")
+  orders          Order[]
+  worksOn         WorksOn[]
+  departmentUsers DepartmentUser[]
+  previousRecords PreviousRecord[]
+
+  sessions Session[]
+  accounts Account[]
 }
 
 // ─── BetterAuth Tables (separate from app User model) ─────────────────────────
 
-model AuthUser {
-  id            String    @id @default(cuid())
-  name          String
-  email         String    @unique
-  emailVerified Boolean   @default(false)
-  image         String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-
-  sessions      AuthSession[]
-  accounts      AuthAccount[]
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime
+  updatedAt DateTime
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-model AuthSession {
-  id           String   @id
-  expiresAt    DateTime
-  token        String   @unique
-  createdAt    DateTime
-  updatedAt    DateTime
-  ipAddress    String?
-  userAgent    String?
-  userId       String
-  user         AuthUser @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-model AuthAccount {
+model Account {
   id                    String    @id
   accountId             String
   providerId            String
   userId                String
-  user                  AuthUser  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   accessToken           String?
   refreshToken          String?
   idToken               String?
@@ -95,8 +87,8 @@ model AuthAccount {
   @@unique([providerId, accountId])
 }
 
-model AuthVerification {
-  id         String   @id
+model Verification {
+  id         String    @id
   identifier String
   value      String
   expiresAt  DateTime
@@ -107,49 +99,49 @@ model AuthVerification {
 }
 
 model Project {
-  projectID       Int       @id @default(autoincrement())
-  projectNum      String    @unique
-  projectTitle    String
-  projectType     String    // "Capstone" | "EPICS" | etc.
-  startingBudget  Int
-  sponsorCompany  String
-  totalExpenses   Int       @default(0)
-  activationDate  DateTime  @default(now())
+  projectID        Int       @id @default(autoincrement())
+  projectNum       String    @unique
+  projectTitle     String
+  projectType      String // "Capstone" | "EPICS" | etc.
+  startingBudget   Int
+  sponsorCompany   String
+  totalExpenses    Int       @default(0)
+  activationDate   DateTime  @default(now())
   deactivationDate DateTime?
-  additionalInfo  String?
-  costCenter      String?   // for internal UTD departments
+  additionalInfo   String?
+  costCenter       String? // for internal UTD departments
 
-  requests          Request[]
-  reimbursements    Reimbursement[]
-  otherExpenses     OtherExpense[]
-  worksOn           WorksOn[]
+  requests           Request[]
+  reimbursements     Reimbursement[]
+  otherExpenses      OtherExpense[]
+  worksOn            WorksOn[]
   projectDepartments ProjectDepartment[]
-  previousRecords   PreviousRecord[]
+  previousRecords    PreviousRecord[]
 }
 
 // ─── Request Flow ─────────────────────────────────────────────────────────────
 
 model Request {
-  requestID      Int       @id @default(autoincrement())
-  dateNeeded     DateTime
-  dateSubmitted  DateTime  @default(now())
-  dateOrdered    DateTime?
-  dateReceived   DateTime?
-  dateApproved   DateTime?
-  additionalInfo String?
-  expense        Int       @default(0)
+  requestID           Int       @id @default(autoincrement())
+  dateNeeded          DateTime
+  dateSubmitted       DateTime  @default(now())
+  dateOrdered         DateTime?
+  dateReceived        DateTime?
+  dateApproved        DateTime?
+  additionalInfo      String?
+  expense             Int       @default(0)
   trackingRequested   Boolean   @default(false)
   trackingRequestedAt DateTime?
 
-  projectID  Int
-  studentID  Int
-  processID  Int       @unique
-  uploadID   Int?
+  projectID Int
+  studentID String
+  processID Int    @unique
+  uploadID  Int?
 
-  project  Project        @relation(fields: [projectID], references: [projectID])
-  student  User           @relation("StudentRequests", fields: [studentID], references: [id])
-  process  Process        @relation(fields: [processID], references: [processID])
-  upload   RequestUpload? @relation(fields: [uploadID], references: [uploadID])
+  project Project        @relation(fields: [projectID], references: [projectID])
+  student User           @relation("StudentRequests", fields: [studentID], references: [id])
+  process Process        @relation(fields: [processID], references: [processID])
+  upload  RequestUpload? @relation(fields: [uploadID], references: [uploadID])
 
   items         RequestItem[]
   orders        Order[]
@@ -191,8 +183,8 @@ model Reimbursement {
   expense         Int      @default(0)
 
   projectID Int
-  studentID Int
-  processID Int @unique
+  studentID String
+  processID Int    @unique
 
   project Project @relation(fields: [projectID], references: [projectID])
   student User    @relation("StudentReimbursements", fields: [studentID], references: [id])
@@ -232,15 +224,15 @@ model ReimbursementUpload {
 // ─── Workflow Process ─────────────────────────────────────────────────────────
 
 model Process {
-  processID              Int           @id @default(autoincrement())
-  status                 ProcessStatus @default(UNDER_REVIEW)
-  mentorProcessed        DateTime?
+  processID               Int           @id @default(autoincrement())
+  status                  ProcessStatus @default(UNDER_REVIEW)
+  mentorProcessed         DateTime?
   mentorProcessedComments String?
-  adminProcessed         DateTime?
-  adminProcessedComments String?
+  adminProcessed          DateTime?
+  adminProcessedComments  String?
 
-  mentorID Int?
-  adminID  Int?
+  mentorID String?
+  adminID  String?
 
   mentor User? @relation("MentorProcesses", fields: [mentorID], references: [id])
   admin  User? @relation("AdminProcesses", fields: [adminID], references: [id])
@@ -260,7 +252,7 @@ model Order {
   shippingCost Float
 
   requestID Int
-  adminID   Int
+  adminID   String
 
   request Request @relation(fields: [requestID], references: [requestID])
   admin   User    @relation(fields: [adminID], references: [id])
@@ -290,7 +282,7 @@ model Vendor {
   vendorURL    String  @default("https://default.com")
   isPreferred  Boolean @default(false)
 
-  requestItems      RequestItem[]
+  requestItems       RequestItem[]
   reimbursementItems ReimbursementItem[]
 }
 
@@ -307,7 +299,7 @@ model Department {
 // ─── Association Tables ───────────────────────────────────────────────────────
 
 model WorksOn {
-  userID    Int
+  userID    String
   projectID Int
   startDate DateTime
 
@@ -322,7 +314,7 @@ model WorksOn {
 
 model DepartmentUser {
   departmentID Int
-  userID       Int
+  userID       String
 
   department Department @relation(fields: [departmentID], references: [departmentID])
   user       User       @relation(fields: [userID], references: [id])
@@ -344,7 +336,7 @@ model PreviousRecord {
   recordID  Int      @id @default(autoincrement())
   projectID Int
   role      UserRole
-  userID    Int
+  userID    String
 
   project Project @relation(fields: [projectID], references: [projectID])
   user    User    @relation(fields: [userID], references: [id])
