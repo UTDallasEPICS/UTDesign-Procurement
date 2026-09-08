@@ -55,16 +55,10 @@ const emit = defineEmits<{
   verified: []
 }>()
 async function verifyCode() {
-  console.log('RAW CODE:', code.value)
-  console.log('RAW CODE TYPE:', typeof code.value)
-  console.log('IS ARRAY:', Array.isArray(code.value))
 
   const otp = Array.isArray(code.value)
     ? code.value.join('')
     : String(code.value)
-
-  console.log('OTP BEING SENT:', otp)
-  console.log('OTP TYPE:', typeof otp)
 
   const { data, error } = await authClient.signIn.emailOtp({
     email: props.email,
@@ -75,8 +69,6 @@ async function verifyCode() {
     console.error('OTP verification failed:', error)
     return
   }
-
-  console.log('Email verified!', data)
   emit('verified')
 }
 

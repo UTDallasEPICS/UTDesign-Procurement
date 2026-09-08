@@ -66,7 +66,7 @@
   <InputCodeModal
     v-if="codeInputOpen"
     :email="verificationEmail"
-    @close="codeInputOpen = false"
+    @verified="handleVerified"
   />
 </template>
 
@@ -124,4 +124,8 @@ async function handleLogin() {
   }
 }
 
+async function handleVerified() {
+  codeInputOpen.value = false
+  await navigateTo ('/projects')
+}
 </script>
