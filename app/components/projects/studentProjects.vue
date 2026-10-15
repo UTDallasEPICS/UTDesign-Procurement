@@ -50,9 +50,15 @@
 <script setup lang="ts">
 definePageMeta({ middleware: 'auth' })
 
-const { isStudent } = useAuth()
+const { isStudent, user } = useAuth()
 if (!isStudent.value) await navigateTo('/orders')
 
-const { data, pending } = await useFetch('/api/worksOn/currentProjects')
+const { data, pending, error } = await useFetch('/api/worksOn/currentProjects', {
+  query: {
+    userID: user.value?.id 
+  },
+  headers: useRequestHeaders(['cookie']) as HeadersInit
+})
+
 const projects = computed(() => data.value ?? [])
 </script>

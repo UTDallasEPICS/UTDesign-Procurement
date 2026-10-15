@@ -1,7 +1,5 @@
 import prisma from '~~/server/utils/prisma'
 
-/** GET /api/worksOn/currentProjects?userID=123 */
-
 export default defineEventHandler(async event => {
   try {
     const currentUser = event.context.user
@@ -13,15 +11,8 @@ export default defineEventHandler(async event => {
       })
     }
 
-    const query = getQuery(event)
-    const userID = Number(query.userID)
-
-    if (!userID) {
-      throw createError({
-        statusCode: 400,
-        message: 'userID is required',
-      })
-    }
+    // Use the signed-in user's ID directly from context
+    const userID = Number(currentUser.id) // Or currentUser.userID depending on your schema
 
     const worksOn = await prisma.worksOn.findMany({
       where: {
