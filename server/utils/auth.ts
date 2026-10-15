@@ -3,7 +3,9 @@ import prisma from '~~/server/utils/prisma'
 
 export default defineEventHandler(async event => {
   const url = getRequestURL(event)
-
+  if (event.path === '/api/test-email') {
+    return
+  }
   if (!url.pathname.startsWith('/api/')) return
   if (url.pathname.startsWith('/api/auth')) return
 
@@ -13,7 +15,7 @@ export default defineEventHandler(async event => {
     throw createError({ statusCode: 401, statusMessage: 'Unauthorized' })
   }
 
-  const user = await prisma.user.findUnique({
+  const user =  await prisma.user.findUnique({
     where: { email: session.user.email },
   })
 

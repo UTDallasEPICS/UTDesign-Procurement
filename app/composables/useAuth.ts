@@ -1,11 +1,19 @@
 import { createAuthClient } from 'better-auth/vue'
+import { emailOTPClient } from 'better-auth/client/plugins'
 import { ROLES, type Role } from '~~/shared/constants/roles'
+
+//client side
 
 let _authClient: ReturnType<typeof createAuthClient> | null = null
 
 function getAuthClient() {
   if (!_authClient) {
-    _authClient = createAuthClient({ baseURL: '' })
+    _authClient = createAuthClient({
+      baseURL: '',
+      plugins: [
+        emailOTPClient()
+      ]
+})
   }
   return _authClient
 }
