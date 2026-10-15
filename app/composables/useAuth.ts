@@ -24,17 +24,18 @@ export const useAuth = () => {
   const isStudent = computed(() => role.value === ROLES.STUDENT)
   const isLoggedIn = computed(() => !!user.value)
 
-  async function fetchSession() {
-    try {
-      const data = await $fetch<{
-        user: { email: string; name?: string; netID?: string | null }
-        role: Role
-      } | null>('/api/auth/me')
-      session.value = data
-    } catch {
-      session.value = null
-    }
+async function fetchSession() {
+  try {
+    const headers = import.meta.server ? useRequestHeaders(['cookie']) : undefined
+    const data = await $fetch<{
+      user: { email: string; name?: string; netID?: string | null }
+      role: Role
+    } | null>('/api/auth/me', { headers })
+    session.value = data
+  } catch {
+    session.value = null
   }
+}
 
   async function signOut() {
     await authClient.signOut()

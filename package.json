@@ -18,6 +18,7 @@
     "ag-grid-vue3": "^33.3.0",
     "bcryptjs": "^3.0.3",
     "better-auth": "^1.2.7",
+    "exceljs": "^4.4.0",
     "lucide-vue-next": "^1.0.0",
     "nodemailer": "^6.9.16",
     "nuxt": "^4.4.8",
@@ -26,7 +27,7 @@
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
-    "@nuxt/devtools": "latest",
+    "@nuxt/devtools": "^2.6.0",
     "@prisma/adapter-better-sqlite3": "^7.8.0",
     "@prisma/client": "^7.8.0",
     "@types/better-sqlite3": "^7.6.13",

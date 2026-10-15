@@ -122,10 +122,6 @@
 </template>
 
 <script setup lang="ts">
-definePageMeta({ middleware: 'auth' })
-
-const { isAdmin } = useAuth()
-if (!isAdmin.value) await navigateTo('/orders')
 
 const tabs = [{ label: 'Requests' }, { label: 'Reimbursements' }]
 const activeTab = ref(0)

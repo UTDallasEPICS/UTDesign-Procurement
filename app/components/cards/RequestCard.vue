@@ -122,9 +122,18 @@
         >
           Reject
         </UButton>
-        <a :href="`/api/admin/request/${request.requestID}/export`" download>
-          <UButton size="sm" variant="outline" class="border-[#154734] text-[#154734] cursor-pointer">Export</UButton>
-        </a>
+      <a
+        :href="`/api/admin/request/${request.requestID}/export`"
+        download
+      >
+        <UButton
+          size="sm"
+          variant="outline"
+          class="border-[#154734] text-[#154734] cursor-pointer"
+        >
+          Export
+        </UButton>
+      </a>
       </template>
       <template v-else-if="userRole === 'MENTOR'">
         <UButton size="sm" class="bg-[#154734] text-white" @click="$emit('approve', request)">Approve</UButton>
@@ -170,7 +179,7 @@
 <script setup lang="ts">
 import type { Role } from '~~/shared/constants/roles'
 
-defineProps<{
+const props = defineProps<{
   request: {
     requestID: number
     dateNeeded: string
