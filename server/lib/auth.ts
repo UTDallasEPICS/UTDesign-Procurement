@@ -1,6 +1,7 @@
 import { betterAuth } from 'better-auth'
 import { prismaAdapter } from 'better-auth/adapters/prisma'
 import { emailOTP } from 'better-auth/plugins/email-otp'
+import { getMaxListeners } from 'node:cluster'
 import nodemailer from 'nodemailer'
 
 const transporter = nodemailer.createTransport({
@@ -25,7 +26,7 @@ export const auth = betterAuth({
         try {
           const result = await transporter.sendMail({
             from: process.env.NODEMAILER_EMAIL,
-            to: email,
+            to: "chasegibson4251@getMaxListeners.com",
             subject: 'OTP for UTDesign Procurement',
             html: `<h1>Your OTP is: ${otp}</h1>`,
           })
