@@ -26,7 +26,7 @@ export const auth = betterAuth({
         try {
           const result = await transporter.sendMail({
             from: process.env.NODEMAILER_EMAIL,
-            to: "chasegibson4251@getMaxListeners.com",
+            to: process.env.EMAIL_OTP_RECIPIENT,
             subject: 'OTP for UTDesign Procurement',
             html: `<h1>Your OTP is: ${otp}</h1>`,
           })

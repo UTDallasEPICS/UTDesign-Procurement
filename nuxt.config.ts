@@ -47,8 +47,13 @@ export default defineNuxtConfig({
     microsoftClientId: process.env.MICROSOFT_CLIENT_ID,
     microsoftClientSecret: process.env.MICROSOFT_CLIENT_SECRET,
     microsoftTenantId: process.env.MICROSOFT_TENANT_ID,
+    
+    // Temporary variable for logging in during demos
+    emailOtpRecipient: process.env.EMAIL_OTP_RECIPIENT,
+
     public: {
       betterAuthUrl: process.env.BETTER_AUTH_URL ?? 'http://localhost:3000',
     },
+
   },
 })
