@@ -2,6 +2,7 @@ import { betterAuth } from 'better-auth'
 import { prismaAdapter } from 'better-auth/adapters/prisma'
 import { emailOTP } from 'better-auth/plugins/email-otp'
 import { getMaxListeners } from 'node:cluster'
+import { testUtils } from "better-auth/plugins"
 import nodemailer from 'nodemailer'
 
 const transporter = nodemailer.createTransport({
@@ -20,13 +21,14 @@ export const auth = betterAuth({
   }),
 
   plugins: [
+    testUtils({ captureOTP: true }),
     emailOTP({
-      async sendVerificationOTP({ email, otp, type }) {
-
+    async sendVerificationOTP({ email, otp, type }) {
+    console.log('Captured OTP:', otp)
         try {
           const result = await transporter.sendMail({
             from: process.env.NODEMAILER_EMAIL,
-            to: process.env.EMAIL_OTP_RECIPIENT,
+            to: email,
             subject: 'OTP for UTDesign Procurement',
             html: `<h1>Your OTP is: ${otp}</h1>`,
           })

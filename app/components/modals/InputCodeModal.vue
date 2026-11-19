@@ -24,7 +24,7 @@
         </div>
 
         <UButton
-          label="berify code"
+          label="verify code"
           class="mt-6 w-full bg-[#154734] hover:bg-[#0f3326]"
           @click="verifyCode"
         />
