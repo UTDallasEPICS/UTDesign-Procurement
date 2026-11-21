@@ -54,9 +54,6 @@ const { isStudent, user } = useAuth()
 if (!isStudent.value) await navigateTo('/orders')
 
 const { data, pending, error } = await useFetch('/api/worksOn/currentProjects', {
-  query: {
-    userID: user.value?.id 
-  },
   headers: useRequestHeaders(['cookie']) as HeadersInit
 })
 

@@ -12,11 +12,9 @@ export default defineEventHandler(async event => {
     }
 
     // Use the signed-in user's ID directly from context
-    const userID = Number(currentUser.id) // Or currentUser.userID depending on your schema
-
     const worksOn = await prisma.worksOn.findMany({
       where: {
-        userID,
+        userID: currentUser.id,
         endDate: null,
       },
       include: {
