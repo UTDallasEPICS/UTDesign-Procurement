@@ -1,41 +1,24 @@
 import { betterAuth } from 'better-auth'
 import { prismaAdapter } from 'better-auth/adapters/prisma'
 import { emailOTP } from 'better-auth/plugins/email-otp'
-import { getMaxListeners } from 'node:cluster'
-import { testUtils } from "better-auth/plugins"
-import nodemailer from 'nodemailer'
+import { testUtils } from 'better-auth/plugins'
+import prisma from '~~/server/utils/prisma'
+import { sendEmail, templateOtp } from '~~/server/utils/email'
 
-const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 587,
-  secure: false,
-  auth: {
-    user: process.env.NODEMAILER_EMAIL,
-    pass: process.env.NODEMAILER_PASSWORD,
-  },
-})
+const isDev = process.env.NODE_ENV !== 'production'
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: 'sqlite',
   }),
-
   plugins: [
     testUtils({ captureOTP: true }),
     emailOTP({
-    async sendVerificationOTP({ email, otp, type }) {
-    console.log('Captured OTP:', otp)
-        try {
-          const result = await transporter.sendMail({
-            from: process.env.NODEMAILER_EMAIL,
-            to: email,
-            subject: 'OTP for UTDesign Procurement',
-            html: `<h1>Your OTP is: ${otp}</h1>`,
-          })
-        } catch (error) {
-          console.error('NODEMAILER ERROR:', error)
-          throw error
+      async sendVerificationOTP({ email, otp }) {
+        if (isDev) {
+          console.log(`\n[DEV] OTP for ${email}: ${otp}\n`)
         }
+        await sendEmail(email, 'OTP for UTDesign Procurement', templateOtp(otp))
       },
     }),
   ],

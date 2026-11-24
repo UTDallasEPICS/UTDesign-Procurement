@@ -47,7 +47,10 @@
               <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm">
                 <p class="text-xs font-bold uppercase tracking-[0.24em] text-slate-500">Students</p>
                 <p class="mt-2 text-slate-700">
-                  {{ getStudents(project).map((u: any) => `${u.user.name}`).join(', ') || 'None' }}
+                  {{ getStudents(project)
+                    .filter((u: any) => u.user.active)
+                    .map((u: any) => u.user.name)
+                    .join(', ') || 'None' }}
                 </p>
               </div>
             </div>

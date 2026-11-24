@@ -64,6 +64,14 @@ function baseTemplate(body: string): string {
   `
 }
 
+export function templateOtp(otp: string): string {
+  return baseTemplate(`
+    <p>Your one-time passcode is:</p>
+    <h1 style="letter-spacing:4px;">${otp}</h1>
+    <p>If you didn't request this, you can ignore this email.</p>
+  `)
+}
+
 export function templateRequestSubmitted(projectTitle: string, studentName: string): string {
   return baseTemplate(`
     <p>A new procurement request has been submitted and is awaiting your review.</p>

@@ -8,8 +8,8 @@
         <!-- Logo block -->
         <div class="text-center mb-8">
           <div class="inline-flex items-center gap-3 mb-3">
-            <div class="font-black text-3xl tracking-tight bg-white text-[#154734] px-2.5 py-1 leading-tight">
-              UT<span class="text-[#E87722]">D</span>
+            <div>
+              <img src="/UTD-Logo.svg" alt="UTDesign Logo" class="h-25 w-25">
             </div>
           </div>
           <p class="text-white/50 text-xs uppercase tracking-widest">The University of Texas at Dallas</p>

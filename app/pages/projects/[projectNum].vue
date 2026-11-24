@@ -23,6 +23,9 @@
           <a v-if="isAdmin" :href="`/api/admin/project/${project.projectNum}/export`" download>
             <UButton size="sm" variant="outline" class="border-white text-white">Export Orders</UButton>
           </a>
+          <a v-else :href="`/api/project/export`" download>
+            <UButton size="sm" variant="outline" class="border-white text-white">Export Orders</UButton>
+          </a>
         </div>
       </div>
 
@@ -80,7 +83,7 @@
         >
           {{ w.user.name }}
           <span class="text-xs ml-2">{{ w.user.role }}</span>
-          <span class="text-xs ml-2">{{ formatDate(w.startDate) }} → {{ formatDate(w.endDate) }}</span>
+          <span class="text-xs ml-2">{{ formatDate(w.startDate) }}</span>
         </div>
       </div>
 
@@ -172,8 +175,13 @@ const remaining = computed(() =>
   project.value ? project.value.startingBudget - project.value.totalExpenses : 0,
 )
 
-const currentTeam = computed(() => (project.value?.worksOn ?? []).filter(w => !w.endDate))
-const previousTeam = computed(() => (project.value?.worksOn ?? []).filter(w => w.endDate))
+const currentTeam = computed(() =>
+  (project.value?.worksOn ?? []).filter(w => w.user.active)
+)
+
+const previousTeam = computed(() =>
+  (project.value?.worksOn ?? []).filter(w => !w.user.active)
+)
 
 async function removeMember(w: WorksOnEntry) {
   await $fetch('/api/worksOn/deactivate', {

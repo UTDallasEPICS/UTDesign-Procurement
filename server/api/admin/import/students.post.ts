@@ -45,7 +45,7 @@ export default defineEventHandler(async event => {
 
       const student = await prisma.user.upsert({
         where: { email },
-        update: {},
+        update: {active: true },
         create: {
           email,
           name: `${row.firstName.trim()} ${row.lastName.trim()}`,

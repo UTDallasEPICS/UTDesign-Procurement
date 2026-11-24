@@ -58,7 +58,7 @@
                 <h2 class="text-lg font-bold text-slate-900">Receipts</h2>
                 <p class="text-sm text-slate-500">Attach clear receipt images or PDFs for at least one line item.</p>
               </div>
-              <UButton size="sm" variant="outline" class="border-[#d86e18] text-[#d86e18]" @click="addItem">
+              <UButton size="lg" variant="outline" class="border-[#d86e18] bg-[#d86e18] text-white" @click="addItem">
                 + Add receipt
               </UButton>
             </div>

@@ -7,7 +7,16 @@
       <h1 class="text-2xl font-bold text-[#1A1A1A]">Database Management</h1>
     </div>
 
-    <UTabs :items="tabs" v-model="activeTab" class="[&_[role=tab]]:cursor-pointer" />
+    <UTabs
+      :items="tabs"
+      v-model="activeTab"
+      variant="link"
+      :ui="{
+        indicator: 'bg-[#f4792a]',
+        trigger: 'data-[state=active]:text-[#f4792a]'
+      }"
+      class="[&_[role=tab]]:cursor-pointer"
+    />
 
     <!-- Users Tab -->
     <div v-if="activeTab == 0" class="space-y-3">
@@ -474,6 +483,7 @@ async function deactivateProject() {
   })
   selectedProject.value = null
   refreshProjects()
+  refreshUsers()
 }
 
 async function handleVendorDeleted() {

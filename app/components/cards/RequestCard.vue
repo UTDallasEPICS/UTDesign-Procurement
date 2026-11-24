@@ -58,8 +58,18 @@
         <div v-if="item.justification" class="text-xs text-[#5A5A5A] italic mt-0.5">
           Justification: {{ item.justification }}
         </div>
+        <div>
+          <template v-if="item.upload">
+            Receipt:
+            <a
+              :href="`/api/request/download/${item.upload.uploadID}`"
+              class="text-[#E87722] hover:underline"
+            >
+              {{ item.upload.attachmentName }}
+            </a>
+          </template>
       </div>
-
+    </div>
       <!-- Orders section (admin only) -->
       <div v-if="userRole === 'ADMIN'">
         <h4 class="text-sm font-semibold text-[#1A1A1A] mb-1">Orders</h4>
@@ -122,10 +132,7 @@
         >
           Reject
         </UButton>
-      <a
-        :href="`/api/admin/request/${request.requestID}/export`"
-        download
-      >
+       <a v-else :href="`/api/project/export`" download>
         <UButton
           size="sm"
           variant="outline"
@@ -206,6 +213,10 @@ const props = defineProps<{
       category?: string
       otherCategoryDescription?: string | null
       vendor?: { vendorName: string }
+      upload?: {
+        attachmentName: string
+        fileUrl: string
+      } | null
     }>
     orders?: Array<{
       orderID: number

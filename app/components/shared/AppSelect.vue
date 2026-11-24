@@ -10,7 +10,7 @@
         :disabled="disabled"
         :placeholder="placeholder"
         :required="required"
-        class="app-select w-full"
+        class="app-select w-full bg-white! border-2! border-slate-300!"
         @focus="open = true"
         @keydown.escape="open = false"
       />

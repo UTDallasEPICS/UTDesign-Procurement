@@ -43,6 +43,31 @@
             />
           </div>
         </div>
+        
+        <div v-if="activeTab == 2" class="space-y-4">
+          <div v-if="pending || reimbPending" class="rounded-2xl border border-slate-200 bg-white px-6 py-12 text-center text-slate-500">Loading...</div>
+          <div v-else-if="!allOrders.length" class="rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-12 text-center text-slate-500">Nothing here yet.</div>
+          <div v-else class="space-y-4">
+            <template v-for="o in allOrders" :key="o.uniqueID">
+              <RequestCard
+                v-if="o.orderType === 'request'"
+                :request="o"
+                user-role="MENTOR"
+                @approve="approveRequest(o)"
+                @reject="openModal(o, 'request', 'REJECTED')"
+                @request-changes="openModal(o, 'request', 'CHANGES_REQUESTED')"
+              />
+              <ReimbursementCard
+                v-else
+                :reimbursement="o"
+                user-role="MENTOR"
+                @approve="approveReimbursement(o)"
+                @reject="openModal(o, 'reimbursement', 'REJECTED')"
+                @request-changes="openModal(o, 'reimbursement', 'CHANGES_REQUESTED')"
+              />
+            </template>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -73,7 +98,11 @@ const handleReject = (req) => {
 const { isMentor } = useAuth()
 if (!isMentor.value) await navigateTo('/orders')
 
-const tabs = [{ label: 'Requests' }, { label: 'Reimbursements' }]
+const tabs = [
+  { label: 'Requests' },
+  { label: 'Reimbursements' },
+  { label: 'All Orders' }
+]
 const activeTab = ref(0)
 
 const { data: reqData, pending, refresh } = await useFetch('/api/request/get', { method: 'POST', body: {} })
@@ -86,6 +115,21 @@ const modalOpen = ref(false)
 const modalTarget = ref<{ process: { processID: number } } | null>(null)
 const modalType = ref<'request' | 'reimbursement'>('request')
 const modalStatus = ref<'REJECTED' | 'CHANGES_REQUESTED'>('REJECTED')
+
+const allOrders = computed(() =>
+  [
+    ...requests.value.map((req) => ({
+      ...req,
+      orderType: 'request' as const,
+      uniqueID: `request-${req.requestID}`,
+    })),
+    ...reimbursements.value.map((r) => ({
+      ...r,
+      orderType: 'reimbursement' as const,
+      uniqueID: `reimbursement-${r.reimbursementID}`,
+    })),
+  ].sort((a, b) => new Date(b.dateSubmitted).getTime() - new Date(a.dateSubmitted).getTime())
+)
 
 function openModal(item: typeof modalTarget.value, type: 'request' | 'reimbursement', status: 'REJECTED' | 'CHANGES_REQUESTED') {
   modalTarget.value = item

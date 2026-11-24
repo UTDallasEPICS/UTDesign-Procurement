@@ -8,10 +8,11 @@
 
         <!-- Logo / Brand -->
         <div class="flex min-w-0 shrink items-center gap-3">
-          <div
-            class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white font-black text-[#0f3d2f] shadow-lg shadow-black/10 select-none"
-          >
-            UT<span class="text-[#d86e18]">D</span>
+          <div>
+            <img
+              src="/UTD-Logo.svg"
+              alt="UTDesign Logo"
+              class="h-15 w-15">
           </div>
 
           <div class="min-w-0 leading-tight">

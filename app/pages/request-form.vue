@@ -69,7 +69,7 @@
                 <h2 class="text-lg font-bold text-slate-900">Items</h2>
                 <p class="text-sm text-slate-500">Each line item should be specific enough that a reviewer can understand what you are buying.</p>
               </div>
-              <UButton size="sm" variant="outline" class="border-[#d86e18] text-[#d86e18]" @click="addItem">
+              <UButton size="lg" variant="outline" class="border-[#d86e18] bg-[#d86e18] text-white" @click="addItem">
                 + Add item
               </UButton>
             </div>
@@ -183,6 +183,12 @@
                   This vendor is not marked as preferred. Software, chemicals, and expensive items may need extra review.
                 </div>
 
+                <!-- Attachment Upload -->
+               <div class="mt-6 rounded-2xl border-2 border-slate-300 bg-slate-50 p-5 space-y-3">
+                <label class="block text-sm font-bold text-slate-900">Quote or attachment (optional)</label>
+                <DragAndDrop v-model="item.file" accept=".pdf,.png,.jpg" label="Drag and drop a quote, spec sheet, or screenshot" />
+              </div>
+
                 <div class="mt-4 text-right text-sm font-semibold text-slate-700">
                   Line total: ${{ (Number(item.quantity) * Number(item.unitPrice) || 0).toFixed(2) }}
                 </div>
@@ -210,6 +216,7 @@
               {{ editRequestID ? 'Resubmit Request' : 'Submit Request' }}
             </UButton>
           </div>
+          
         </form>
       </div>
     </section>
@@ -234,6 +241,7 @@ type RequestItem = {
   vendorID: number | string | undefined
   newVendor: { name: string; email: string; url: string } | null
   selectedVendor: { vendorID: number; vendorName: string; isPreferred?: boolean } | null
+  file: File | null
 }
 
 const { isStudent } = useAuth()
@@ -268,7 +276,6 @@ const form = reactive<{
   items: [newItem()],
 })
 
-const attachmentFile = ref<File | null>(null)
 const submitting = ref(false)
 const error = ref('')
 
@@ -322,7 +329,17 @@ function newItem(): RequestItem {
     vendorID: undefined as number | string | undefined,
     newVendor: null as { name: string; email: string; url: string } | null,
     selectedVendor: null as { vendorID: number; vendorName: string; isPreferred?: boolean } | null,
+    file: null as File | null,
   }
+}
+
+function readFileAsDataURL(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(reader.result as string)
+    reader.onerror = reject
+    reader.readAsDataURL(file)
+  })
 }
 
 function addItem() {
@@ -405,34 +422,41 @@ async function submit() {
   }
 
   submitting.value = true
-  try {
-    await $fetch('/api/request', {
-      method: 'POST',
-      body: {
-        projectNum: form.projectNum,
-        dateNeeded: form.dateNeeded,
-        additionalInfo: form.additionalInfo,
-        totalExpenses: itemsTotal.value,
-        resubmitRequestID: editRequestID ?? undefined,
-        items: form.items.map(i => ({
-          description: i.description,
-          justification: i.justification,
-          url: i.url,
-          partNumber: i.partNumber,
-          quantity: i.quantity,
-          unitPrice: i.unitPrice,
-          category: i.category,
-          otherCategoryDescription: i.category === 'Other' ? i.otherCategoryDescription : undefined,
-          vendorID: i.vendorID !== '__new__' ? Number(i.vendorID) : null,
-          newVendorName: i.vendorID === '__new__' ? i.newVendor?.name : undefined,
-          newVendorEmail: i.vendorID === '__new__' ? i.newVendor?.email : undefined,
-          newVendorURL: i.vendorID === '__new__' ? i.newVendor?.url : undefined,
-        })),
-      },
-    })
-    await navigateTo('/orders')
-  } catch (e: any) {
-    error.value = e?.data?.message ?? 'Submission failed. Please try again.'
+try {
+  const items = await Promise.all(
+    form.items.map(async i => ({
+      description: i.description,
+      justification: i.justification,
+      url: i.url,
+      partNumber: i.partNumber,
+      quantity: i.quantity,
+      unitPrice: i.unitPrice,
+      category: i.category,
+      otherCategoryDescription: i.category === 'Other' ? i.otherCategoryDescription : undefined,
+      vendorID: i.vendorID !== '__new__' ? Number(i.vendorID) : null,
+      newVendorName: i.vendorID === '__new__' ? i.newVendor?.name : undefined,
+      newVendorEmail: i.vendorID === '__new__' ? i.newVendor?.email : undefined,
+      newVendorURL: i.vendorID === '__new__' ? i.newVendor?.url : undefined,
+      fileData: i.file ? await readFileAsDataURL(i.file) : null,
+      fileName: i.file?.name ?? null,
+    })),
+  )
+
+  await $fetch('/api/request', {
+    method: 'POST',
+    body: {
+      projectNum: form.projectNum,
+      dateNeeded: form.dateNeeded,
+      additionalInfo: form.additionalInfo,
+      totalExpenses: itemsTotal.value,
+      resubmitRequestID: editRequestID ?? undefined,
+      items,
+    },
+  })
+  await navigateTo('/orders')
+} catch (e: any) {
+  console.error(e)
+  error.value = e?.data?.message ?? e?.message ?? 'Submission failed. Please try again.'
   } finally {
     submitting.value = false
   }

@@ -55,7 +55,15 @@
             {{ item.category }}<template v-if="item.otherCategoryDescription"> ({{ item.otherCategoryDescription }})</template> &bull;
           </template>
           Purchased {{ formatDate(item.receiptDate) }}
-          <template v-if="item.upload"> &bull; Receipt: {{ item.upload.attachmentName }}</template>
+          <template v-if="item.upload">
+            &bull; Receipt:
+            <a
+              :href="`/api/reimbursement/download/${item.upload.uploadID}`"
+              class="text-[#E87722] hover:underline"
+            >
+              {{ item.upload.attachmentName }}
+            </a>
+          </template>
         </div>
         <div v-if="item.justification" class="text-xs italic mt-0.5">
           Justification: {{ item.justification }}
@@ -130,7 +138,10 @@ defineProps<{
       otherCategoryDescription?: string | null
       justification?: string | null
       vendor?: { vendorName: string }
-      upload?: { attachmentName: string } | null
+      upload?: {
+        attachmentName: string
+        fileUrl: string
+      } | null
     }>
   }
   userRole: Role
