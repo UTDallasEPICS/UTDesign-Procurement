@@ -7,11 +7,16 @@ export default defineEventHandler(async event => {
 
   try {
     const { userID, projectNum } = await readBody(event)
-    const project = await prisma.project.findUnique({ where: { projectNum } })
+
+    if (!userID || !projectNum) {
+      throw createError({ statusCode: 400, message: 'User ID and project number are required' })
+    }
+
+    const project = await prisma.project.findUnique({ where: { projectNum: String(projectNum) } })
     if (!project) throw createError({ statusCode: 404, message: 'Project not found' })
 
     return prisma.worksOn.create({
-      data: { userID: Number(userID), projectID: project.projectID, startDate: new Date() },
+      data: { userID: String(userID), projectID: project.projectID, startDate: new Date() },
     })
   } catch (err: unknown) {
     if ((err as { statusCode?: number }).statusCode) throw err

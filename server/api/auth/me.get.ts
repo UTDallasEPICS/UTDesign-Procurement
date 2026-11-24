@@ -16,7 +16,7 @@ export default defineEventHandler(async event => {
   return {
     user: {
       email: user.email,
-      name: `${user.firstName} ${user.lastName}`,
+      name: user.name,
       netID: user.netID,
     },
     role: user.role,

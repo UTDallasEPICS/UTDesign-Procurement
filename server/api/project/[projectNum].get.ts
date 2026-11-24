@@ -12,8 +12,8 @@ export default defineEventHandler(async event => {
       where: { projectNum },
       include: {
         worksOn: { include: { user: true } },
-        requests: { include: { items: { include: { vendor: true } }, process: true, orders: true, student: { select: { firstName: true, lastName: true } } } },
-        reimbursements: { include: { items: { include: { vendor: true } }, process: true, student: { select: { firstName: true, lastName: true } } } },
+        requests: { include: { items: { include: { vendor: true } }, process: true, orders: true, student: true } },
+        reimbursements: { include: { items: { include: { vendor: true } }, process: true, student: true } },
         otherExpenses: true,
       },
     })

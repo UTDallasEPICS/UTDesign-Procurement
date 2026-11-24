@@ -6,9 +6,9 @@ export default defineEventHandler(async event => {
   try {
     const { userID } = await readBody(event)
     await prisma.user.update({
-      where: { id: Number(userID) },
+      where: { id: userID },
       data: { active: true, deactivationDate: null },
-    })
+    }) 
     return { ok: true }
   } catch (err: unknown) {
     if ((err as { statusCode?: number }).statusCode) throw err

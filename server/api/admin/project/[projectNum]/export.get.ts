@@ -27,7 +27,7 @@ export default defineEventHandler(async event => {
         'Request',
         r.process.status,
         r.dateSubmitted.toISOString().slice(0, 10),
-        `${r.student.firstName} ${r.student.lastName}`,
+        `${r.student.name}`,
         r.expense,
       ]),
       ...project.reimbursements.map(r => [
@@ -35,7 +35,7 @@ export default defineEventHandler(async event => {
         'Reimbursement',
         r.process.status,
         r.dateSubmitted.toISOString().slice(0, 10),
-        `${r.student.firstName} ${r.student.lastName}`,
+        `${r.student.name}`,
         r.expense,
       ]),
     ]

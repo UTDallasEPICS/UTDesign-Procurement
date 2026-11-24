@@ -54,7 +54,7 @@
           class="flex items-center justify-between text-sm border border-[#F0F0F0] rounded-lg px-4 py-2"
         >
           <span>
-            {{ w.user.firstName }} {{ w.user.lastName }}
+            {{ w.user.name }}
             <span class="text-xs text-[#5A5A5A] ml-2">{{ w.user.role }}</span>
             <span class="text-xs text-[#5A5A5A] ml-2">since {{ formatDate(w.startDate) }}</span>
           </span>
@@ -78,7 +78,7 @@
           :key="`${w.userID}-${w.startDate}`"
           class="text-sm text-[#5A5A5A] border border-[#F0F0F0] rounded-lg px-4 py-2"
         >
-          {{ w.user.firstName }} {{ w.user.lastName }}
+          {{ w.user.name }}
           <span class="text-xs ml-2">{{ w.user.role }}</span>
           <span class="text-xs ml-2">{{ formatDate(w.startDate) }} → {{ formatDate(w.endDate) }}</span>
         </div>
@@ -95,7 +95,7 @@
         >
           <span>
             <span class="font-medium">Request #{{ req.requestID }}</span>
-            <span class="text-[#5A5A5A] ml-2">by {{ req.student?.firstName }} {{ req.student?.lastName }}</span>
+            <span class="text-[#5A5A5A] ml-2">by {{ req.student?.name }}</span>
             <span class="text-[#5A5A5A] ml-2">{{ formatDate(req.dateSubmitted) }}</span>
             <span class="text-[#5A5A5A] ml-2">${{ req.expense?.toFixed(2) }}</span>
           </span>
@@ -114,7 +114,7 @@
         >
           <span>
             <span class="font-medium">Reimbursement #{{ r.reimbursementID }}</span>
-            <span class="text-[#5A5A5A] ml-2">by {{ r.student?.firstName }} {{ r.student?.lastName }}</span>
+            <span class="text-[#5A5A5A] ml-2">by {{ r.student?.name }}</span>
             <span class="text-[#5A5A5A] ml-2">{{ formatDate(r.dateSubmitted) }}</span>
             <span class="text-[#5A5A5A] ml-2">${{ r.expense?.toFixed(2) }}</span>
           </span>
@@ -132,10 +132,10 @@ const { isAdmin } = useAuth()
 const route = useRoute()
 
 interface WorksOnEntry {
-  userID: number
+  userID: string // User.id is a String (uuid) now
   startDate: string
   endDate?: string | null
-  user: { firstName: string; lastName: string; role: string }
+  user: { name: string; role: string }
 }
 
 interface ProjectDetail {
@@ -152,14 +152,14 @@ interface ProjectDetail {
     requestID: number
     dateSubmitted: string
     expense?: number
-    student?: { firstName: string; lastName: string }
+    student?: { name: string }
     process?: { status: string }
   }>
   reimbursements?: Array<{
     reimbursementID: number
     dateSubmitted: string
     expense?: number
-    student?: { firstName: string; lastName: string }
+    student?: { name: string }
     process?: { status: string }
   }>
 }

@@ -13,8 +13,7 @@ export default defineEventHandler(async event => {
         where: {
           OR: [
             { netID: { contains: query } },
-            { firstName: { contains: query } },
-            { lastName: { contains: query } },
+            { name: { contains: query } },
             { email: { contains: query } },
           ],
         },

@@ -31,9 +31,9 @@
           <UInput
             v-model="form.firstName"
             placeholder="First Name *"
-              :ui="{
-                base: 'placeholder:text-gray-500 text-gray-900',
-              }"  
+            :ui="{
+              base: 'placeholder:text-gray-500 text-gray-900',
+            }"
           />
 
           <UInput
@@ -41,31 +41,33 @@
             placeholder="Last Name *"
             :ui="{
               base: 'placeholder:text-gray-500 text-gray-900',
-            }" 
+            }"
           />
         </div>
 
         <!-- Email -->
-        <UInput
-          v-model="form.email"
-          type="email"
-          :placeholder="
-            form.role === 'MENTOR'
-              ? 'Email * (any address)'
-              : 'UTD Email * (abc123456@utdallas.edu)'
-          "
-          :ui="{
-            base: 'placeholder:text-gray-500 text-gray-900',
-            }" 
-        />
-        <UInput
+         <div class="grid gap-3 sm:grid-cols-2">
+          <UInput
+            v-model="form.email"
+            type="email"
+            :placeholder="
+              form.role === 'MENTOR'
+                ? 'Email * (any address)'
+                : 'UTD Email * (abc123456@utdallas.edu)'
+            "
+            :ui="{
+              base: 'placeholder:text-gray-500 text-gray-900',
+            }"
+          />
+
+          <UInput
             v-model="form.netID"
             placeholder="NetID (e.g. abc123456)"
             :ui="{
               base: 'placeholder:text-gray-500 text-gray-900',
-            }" 
-        />
-
+            }"
+          />
+        </div>
         <!-- Role -->
         <AppSelect
           v-model="form.role"
@@ -121,8 +123,7 @@ const open = defineModel<boolean>('open', { default: false })
 const props = defineProps<{
   user: {
     id: string
-    firstName: string
-    lastName: string
+    name: string
     netID?: string | null
     email: string
     role: string
@@ -161,6 +162,16 @@ const form = reactive({
 const saving = ref(false)
 const error = ref('')
 
+// "Mary Ann Smith" -> { firstName: 'Mary Ann', lastName: 'Smith' }
+function splitName(full: string | null | undefined) {
+  const trimmed = (full ?? '').trim()
+  const idx = trimmed.lastIndexOf(' ')
+  if (idx === -1) return { firstName: trimmed, lastName: '' }
+  return {
+    firstName: trimmed.slice(0, idx).trim(),
+    lastName: trimmed.slice(idx + 1).trim(),
+  }
+}
 
 watch(
   () => [open.value, props.user],
@@ -168,11 +179,11 @@ watch(
     if (!open.value || !props.user) return
 
     Object.assign(form, {
-      firstName: props.user.firstName ?? '',
-      lastName: props.user.lastName ?? '',
+      ...splitName(props.user.name),
       email: props.user.email ?? '',
       role: props.user.role ?? '',
       projectNum: props.user.projectNum ?? '',
+      netID: props.user.netID ?? '',
     })
 
     error.value = ''
@@ -189,7 +200,7 @@ async function save() {
     !form.email.trim() ||
     !form.role
   ) {
-    error.value = 'All fields are required.'
+    error.value = 'First name, last name, email, and role are required.'
     return
   }
 
@@ -201,13 +212,16 @@ async function save() {
   saving.value = true
 
   try {
+    const { firstName, lastName, ...rest } = form
+
     await $fetch('/api/admin/edit', {
-    method: 'PATCH',
-    body: {
+      method: 'PATCH',
+      body: {
         type: 'user',
         id: props.user.id,
-        ...form,
-    },
+        ...rest,
+        name: `${firstName.trim()} ${lastName.trim()}`,
+      },
     })
 
     emit('saved')

@@ -209,7 +209,7 @@
 
         <p class="text-sm leading-6 text-[#5A5A5A] break-words">
           Columns:
-          <code class="break-all">firstName, lastName, email, projectNum</code>.
+          <code class="break-all">projectNum, firstName, lastName, email</code>.
           Students must use @utdallas.edu emails and reference an existing
           project number.
         </p>
@@ -256,7 +256,7 @@
 
 <DeactivateModal
   v-model:open="deactivateOpen"
-  :name="selectedUser ? `${selectedUser.firstName} ${selectedUser.lastName}` : ''"
+  :name="selectedUser?.name ?? ''"
   @confirm="deactivateUser"
 />
 
@@ -324,11 +324,11 @@ const activeTab = ref(0)
 // ── Users ──────────────────────────────────────────────────────────────────
 const { data: userData, refresh: refreshUsers } = await useFetch('/api/user')
 const users = computed(() => userData.value ?? [])
-const selectedUser = ref<{ id: number; firstName: string; lastName: string; active: boolean } | null>(null)
+const selectedUser = ref<{ id: number; name: string; active: boolean } | null>(null)
 const userColumns = [
   { accessorKey: 'netID', header: 'NetID' },
-  { accessorKey: 'firstName', header: 'First Name' },
-  { accessorKey: 'lastName', header: 'Last Name' },
+  { id: 'firstName', header: 'First Name', accessorFn: (row) => splitName(row.name).firstName },
+  { id: 'lastName',  header: 'Last Name',  accessorFn: (row) => splitName(row.name).lastName },
   { accessorKey: 'email', header: 'Email' },
 
  {
@@ -397,6 +397,13 @@ const vendorColumns = [
   { accessorKey: 'vendorEmail', header: 'Email' },
   { accessorKey: 'vendorURL', header: 'URL' },
 ]
+
+function splitName(fullName?: string | null) {
+  const parts = (fullName ?? '').trim().split(/\s+/).filter(Boolean)
+  if (parts.length === 0) return { firstName: '', lastName: '' }
+  const [firstName, ...rest] = parts
+  return { firstName, lastName: rest.join(' ') }
+}
 
 function onVendorSelect(e: { api: { getSelectedRows: () => typeof selectedVendor.value[] } }) {
   selectedVendor.value = e.api.getSelectedRows()[0] ?? null

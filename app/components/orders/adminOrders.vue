@@ -25,7 +25,7 @@
                 <p class="font-semibold text-slate-900">
                   #{{ req.requestID }} - {{ req.project?.projectTitle }}
                 </p>
-                <p>{{ req.student?.firstName }} {{ req.student?.lastName }}</p>
+                <p>{{ req.student?.name }}</p>
               </div>
               <UButton size="xs" class="bg-blue-600 text-white" @click="openOrderModal(req)">
                 Add order / tracking info
@@ -130,7 +130,7 @@ interface AdminRequest {
   requestID: number
   trackingRequested?: boolean
   project?: { projectTitle: string }
-  student?: { firstName: string; lastName: string }
+  student?: String
   process: { processID: number; status: string }
   orders?: Array<{ trackingInfo: string }>
 }

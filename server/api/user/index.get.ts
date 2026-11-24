@@ -12,9 +12,7 @@ export default defineEventHandler(async event => {
 
   try {
     return await prisma.user.findMany({
-      orderBy: {
-        lastName: 'asc',
-      },
+    
       include: {
         worksOn: {
           where: {

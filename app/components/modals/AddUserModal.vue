@@ -163,7 +163,9 @@ async function save() {
       method: 'POST',
       body: {
         type: 'user',
-        ...form,
+        name: [form.firstName, form.lastName].map(s => s.trim()).join(' '),        email: form.email.trim(),
+        role: form.role,
+        projectNum: form.projectNum || null,
       },
     })
 

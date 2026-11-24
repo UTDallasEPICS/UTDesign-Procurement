@@ -28,15 +28,9 @@ export default defineEventHandler(async event => {
     }
 
     if (type === 'user') {
-      const {
-        firstName,
-        lastName,
-        netID,
-        email,
-        role,
-      } = body
+      const { name, netID, email, role } = body
 
-      if (!firstName || !lastName || !email || !role) {
+      if (!name?.trim() || !email?.trim() || !role) {
         throw createError({
           statusCode: 400,
           message: 'All required user fields must be provided',
@@ -45,13 +39,12 @@ export default defineEventHandler(async event => {
 
       const user = await prisma.user.update({
         where: {
-          id: Number(id),
+          id: String(id),
         },
         data: {
-          firstName,
-          lastName,
-          netID: netID || null,
-          email,
+          name: name.trim(),
+          netID: netID?.trim() || null,
+          email: email.trim(),
           role,
         },
       })
@@ -109,12 +102,7 @@ export default defineEventHandler(async event => {
     }
 
     if (type === 'vendor') {
-      const {
-        vendorName,
-        vendorEmail,
-        vendorURL,
-        isPreferred,
-      } = body
+      const { vendorName, vendorEmail, vendorURL, isPreferred } = body
 
       if (!vendorName?.trim()) {
         throw createError({
@@ -141,67 +129,62 @@ export default defineEventHandler(async event => {
       }
     }
 
-if (type === 'worksOn') {
-  const userID = Number(body.userID)
-  const projectNum = String(body.projectNum)
+    if (type === 'worksOn') {
+      const userID = body.userID ? String(body.userID) : ''
+      const projectNum = body.projectNum ? String(body.projectNum) : ''
 
-  if (!userID || !projectNum) {
-    throw createError({
-      statusCode: 400,
-      message: 'User ID and project number are required',
-    })
-  }
+      if (!userID || !projectNum) {
+        throw createError({
+          statusCode: 400,
+          message: 'User ID and project number are required',
+        })
+      }
 
-  const project = await prisma.project.findUnique({
-    where: {
-      projectNum,
-    },
-    select: {
-      projectID: true,
-    },
-  })
+      const project = await prisma.project.findUnique({
+        where: {
+          projectNum,
+        },
+        select: {
+          projectID: true,
+        },
+      })
 
-  if (!project) {
-    throw createError({
-      statusCode: 404,
-      message: 'Project not found',
-    })
-  }
+      if (!project) {
+        throw createError({
+          statusCode: 404,
+          message: 'Project not found',
+        })
+      }
 
-  const result = await prisma.worksOn.updateMany({
-    where: {
-      userID,
-      projectID: project.projectID,
-      endDate: null,
-    },
-    data: {
-      endDate: new Date(),
-    },
-  })
+      const result = await prisma.worksOn.updateMany({
+        where: {
+          userID,
+          projectID: project.projectID,
+          endDate: null,
+        },
+        data: {
+          endDate: new Date(),
+        },
+      })
 
-  if (result.count === 0) {
-    throw createError({
-      statusCode: 404,
-      message: 'Active project assignment not found',
-    })
-  }
+      if (result.count === 0) {
+        throw createError({
+          statusCode: 404,
+          message: 'Active project assignment not found',
+        })
+      }
 
-  return {
-    ok: true,
-    message: 'Project unassigned successfully',
-  }
-}
-
-
-
-
+      return {
+        ok: true,
+        message: 'Project unassigned successfully',
+      }
+    }
 
     throw createError({
       statusCode: 400,
       message: `Invalid type: ${type}`,
     })
   } catch (err: any) {
-
     if (err?.statusCode) {
       throw err
     }

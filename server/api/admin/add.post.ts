@@ -12,7 +12,7 @@ export default defineEventHandler(async event => {
 
   try {
     if (type === 'user') {
-      const { email, firstName, lastName, role, projectNum } = body
+    const { email, name, role, projectNum } = body
 
       let netID: string | null
       try {
@@ -24,8 +24,7 @@ export default defineEventHandler(async event => {
       const user = await prisma.user.create({
         data: {
           email: email.toLowerCase(),
-          firstName,
-          lastName,
+          name,
           netID,
           role: role as UserRole,
           active: true,

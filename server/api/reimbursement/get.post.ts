@@ -17,7 +17,7 @@ export default defineEventHandler(async event => {
       items: { include: { vendor: true, upload: true } },
       process: true,
       project: true,
-      student: { select: { firstName: true, lastName: true, email: true, netID: true } },
+      student: { select: { name: true, email: true, netID: true } },
     }
 
     if (role === ROLES.ADMIN) {

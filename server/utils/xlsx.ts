@@ -41,12 +41,17 @@ export interface ErrorRow {
 }
 
 /** Parse the first sheet of an XLSX buffer into row objects. */
-export function parseSheet<T = Record<string, unknown>>(buffer: Buffer): T[] {
+/** Parse the first sheet of an XLSX buffer into row objects.
+ *  If `columns` is given, row 1 is skipped and columns are mapped by position. */
+export function parseSheet<T = Record<string, unknown>>(buffer: Buffer, columns?: string[]): T[] {
   const workbook = XLSX.read(buffer, { type: 'buffer', cellDates: true })
   const sheetName = workbook.SheetNames[0]
   if (!sheetName) return []
   const sheet = workbook.Sheets[sheetName]
-  return XLSX.utils.sheet_to_json<T>(sheet, { defval: '' })
+  return XLSX.utils.sheet_to_json<T>(
+    sheet,
+    columns ? { header: columns, range: 1, defval: '' } : { defval: '' },
+  )
 }
 
 const UTD_EMAIL_RE = /^[a-zA-Z]{3}\d{6}@utdallas\.edu$/i

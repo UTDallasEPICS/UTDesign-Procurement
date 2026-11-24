@@ -184,7 +184,7 @@ export default defineEventHandler(async event => {
       include: { user: true },
     })
     const mentorEmails = mentors.filter(w => w.user.role === ROLES.MENTOR).map(w => w.user.email)
-    const studentName = `${user.firstName} ${user.lastName}`
+    const studentName = `${user.name}`
 
     await Promise.all(
       mentorEmails.map(email =>

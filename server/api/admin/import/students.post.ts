@@ -23,7 +23,7 @@ export default defineEventHandler(async event => {
     if (!fileData) throw createError({ statusCode: 400, message: 'No file provided' })
 
     const buffer = Buffer.from(String(fileData).replace(/^data:[^;]+;base64,/, ''), 'base64')
-    const rows = parseSheet<StudentRow>(buffer)
+    const rows = parseSheet<StudentRow>(buffer, ['projectNum', 'firstName', 'lastName', 'email'])
     if (!rows.length) throw createError({ statusCode: 400, message: 'The file contains no rows' })
 
     const projects = await prisma.project.findMany({ select: { projectNum: true, projectID: true } })
@@ -48,8 +48,7 @@ export default defineEventHandler(async event => {
         update: {},
         create: {
           email,
-          firstName: row.firstName.trim(),
-          lastName: row.lastName.trim(),
+          name: `${row.firstName.trim()} ${row.lastName.trim()}`,
           netID: emailToNetID(email),
           role: 'STUDENT',
           active: true,

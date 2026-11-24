@@ -12,7 +12,7 @@
         </h3>
 
         <p v-if="user" class="text-sm leading-6 text-gray-600">
-          Assign <strong>{{ user.firstName }} {{ user.lastName }}</strong>
+          Assign <strong>{{ user.name }}</strong>
           to an active project.
         </p>
       </div>
@@ -35,8 +35,6 @@
           
           class="mt-2 text-sm text-gray-500"
         >
-        <pre> {{ currentProjects }} </pre>
-        <pre> {{ projects.value }} </pre>
 
           No projects currently assigned.
         </div>
@@ -192,17 +190,14 @@ async function save() {
       },
     })
 
-    projectNum.value = ''
-
-    await loadCurrentProjects()
     emit('saved')
+    close() 
   } catch (e: any) {
     error.value = e?.data?.message ?? 'Failed to assign.'
   } finally {
     saving.value = false
   }
 }
-
 async function unassign(project: any) {
   if (!props.user || !project) return
 
